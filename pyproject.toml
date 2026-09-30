@@ -25,3 +25,6 @@ dev = [
 ]
 [tool.ruff]
 line-length = 100
+
+[tool.setuptools.packages.find]
+include = ["services*", "packages*"]
