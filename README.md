@@ -25,4 +25,4 @@ See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and s
 
 ## Status
 
-Phase 0 — repository foundation and architecture scaffold.
+Phase 2 — LMS foundation implemented. Includes course authoring, modules, lessons, enrollment, progress tracking, assessments, grading, learner dashboard and PostgreSQL migrations.\n\nPhase 1 identity foundation remains the security and tenancy layer.
