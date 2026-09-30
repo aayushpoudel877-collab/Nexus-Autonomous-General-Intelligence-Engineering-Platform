@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     nexus_env: str = "development"
     database_url: str = "postgresql+asyncpg://nexus:nexus@localhost:5432/nexus"
     redis_url: str = "redis://localhost:6379/0"
-    nexus_secret_key: str = Field(min_length=16)
+    nexus_secret_key: str = Field(default="development-only-change-this-secret", min_length=16)
     jwt_access_minutes: int = 30
     jwt_refresh_days: int = 14
     cors_origins: list[str] = ["http://localhost:3000"]
