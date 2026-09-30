@@ -102,3 +102,10 @@ class AssessmentAttempt(Base):
     score: Mapped[int] = mapped_column(Integer, default=0)
     passed: Mapped[bool] = mapped_column(Boolean, default=False)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+class AssessmentAnswer(Base):
+    __tablename__ = "assessment_answers"
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    attempt_id: Mapped[UUID] = mapped_column(ForeignKey("assessment_attempts.id", ondelete="CASCADE"), index=True)
+    question_id: Mapped[UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"))
+    choice_id: Mapped[UUID | None] = mapped_column(ForeignKey("question_choices.id", ondelete="SET NULL"), nullable=True)
