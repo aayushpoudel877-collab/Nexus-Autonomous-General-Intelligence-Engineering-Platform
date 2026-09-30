@@ -7,6 +7,11 @@ services:
       POSTGRES_DB: nexus
     ports: ["5432:5432"]
     volumes: [nexus_pg:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   redis:
     image: redis:7-alpine
     ports: ["6379:6379"]
@@ -17,7 +22,14 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
       REDIS_URL: redis://redis:6379/0
+      NEXUS_SECRET_KEY: replace-with-a-development-secret
+      CORS_ORIGINS: http://localhost:3000
+    command: ["sh", "-c", "alembic upgrade head && uvicorn services.api.app.main:app --host 0.0.0.0 --port 8000"]
     ports: ["8000:8000"]
-    depends_on: [postgres, redis]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 volumes:
   nexus_pg:
