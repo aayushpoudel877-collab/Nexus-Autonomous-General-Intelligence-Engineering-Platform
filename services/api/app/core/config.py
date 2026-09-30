@@ -10,7 +10,11 @@ class Settings(BaseSettings):
     nexus_secret_key: str = Field(default="development-only-change-this-secret", min_length=16)
     jwt_access_minutes: int = 30
     jwt_refresh_days: int = 14
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
 
     @property
     def is_production(self) -> bool:
