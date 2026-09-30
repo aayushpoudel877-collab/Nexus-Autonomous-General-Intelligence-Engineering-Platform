@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from ..core.config import settings
 from ..core.dependencies import get_current_user
 from ..core.security import create_access_token, create_refresh_token, hash_password, hash_refresh_token, verify_password
@@ -10,7 +10,7 @@ from ..models import AuditEvent, Membership, Organization, RefreshSession, Role,
 from ..schemas.auth import LoginRequest, MeResponse, RegisterRequest, TokenResponse, UserResponse
 from ..services.audit import record_audit
 
-router = APIRouter(tags=["auth"])
+router = APIRouter(tags=["auth"])\n\ndef _set_auth_cookies(response: Response, tokens: TokenResponse) -> None:\n    secure = settings.is_production\n    response.set_cookie("nexus_access_token", tokens.access_token, httponly=True, secure=secure, samesite="lax", max_age=settings.jwt_access_minutes * 60, path="/")\n    response.set_cookie("nexus_refresh_token", tokens.refresh_token, httponly=True, secure=secure, samesite="lax", max_age=settings.jwt_refresh_days * 86400, path="/api/v1/auth")
 
 async def _issue_tokens(db: AsyncSession, user: User) -> TokenResponse:
     refresh = create_refresh_token()
@@ -26,7 +26,7 @@ def _request_meta(request: Request) -> tuple[str | None, str | None]:
     return request.client.host if request.client else None, request.headers.get("user-agent")
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(payload: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def register(payload: RegisterRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     email = payload.email.lower()
     if await db.scalar(select(User).where(User.email == email)):
         raise HTTPException(status_code=409, detail="Email is already registered")
@@ -47,7 +47,7 @@ async def register(payload: RegisterRequest, request: Request, db: AsyncSession 
     return tokens
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def login(payload: LoginRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     email = payload.email.lower()
     user = await db.scalar(select(User).where(User.email == email))
     if not user or not verify_password(payload.password, user.password_hash):
@@ -62,7 +62,7 @@ async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depe
     return tokens
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
+async def refresh(request: Request, response: Response, refresh_token: str | None = None, db: AsyncSession = Depends(get_db)):\n    refresh_token = refresh_token or request.cookies.get("nexus_refresh_token")\n    if not refresh_token:\n        raise HTTPException(status_code=401, detail="Refresh token required")
     token_hash = hash_refresh_token(refresh_token)
     session = await db.scalar(select(RefreshSession).where(RefreshSession.token_hash == token_hash))
     now = datetime.now(timezone.utc)
@@ -77,7 +77,7 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     return tokens
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(refresh_token: str, db: AsyncSession = Depends(get_db)):
+async def logout(request: Request, response: Response, refresh_token: str | None = None, db: AsyncSession = Depends(get_db)):\n    refresh_token = refresh_token or request.cookies.get("nexus_refresh_token")\n    if not refresh_token:\n        return
     session = await db.scalar(select(RefreshSession).where(RefreshSession.token_hash == hash_refresh_token(refresh_token)))
     if session and not session.revoked_at:
         session.revoked_at = datetime.now(timezone.utc)
