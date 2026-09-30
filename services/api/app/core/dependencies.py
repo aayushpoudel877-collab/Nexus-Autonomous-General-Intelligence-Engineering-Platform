@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.session import get_db
-from ..models import Membership, User
+from ..models import Membership, Role, User
 from .security import decode_access_token
 
 bearer = HTTPBearer(auto_error=False)
@@ -34,7 +34,7 @@ async def get_membership(user: User, db: AsyncSession) -> Membership:
 def require_roles(*roles: str):
     async def dependency(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> User:
         membership = await get_membership(user, db)
-        role = await db.scalar(select(Membership.role).where(Membership.id == membership.id))
+        role = await db.scalar(select(Role).where(Role.id == membership.role_id))
         if not role or role.name not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient role")
         return user
