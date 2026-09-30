@@ -28,3 +28,6 @@ line-length = 100
 
 [tool.setuptools.packages.find]
 include = ["services*", "packages*"]
+
+[tool.ruff.lint]
+ignore = ["B008", "UP017"]
