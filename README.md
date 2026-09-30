@@ -1,10 +1,22 @@
 # NEXUS-Ω — Autonomous General Intelligence Engineering Platform
 
-NEXUS-Ω is a long-horizon platform for autonomous AI engineering, research, experimentation, deployment, learning, and multimodal intelligence.
+NEXUS-Ω is a production-oriented, research-driven platform for building autonomous AI systems, AI-assisted software engineering, learning experiences, and intelligent orchestration.
 
-## Vision
+## Product scope
 
-NEXUS-Ω combines an autonomous AI engineering control plane with a production web platform and an integrated Learning Management System (LMS). The platform is designed to evolve through measurable research and engineering loops while keeping humans in control of consequential actions.
+The long-term platform combines:
+
+- AI/ML and multimodal intelligence
+- autonomous research and engineering workflows
+- AI tutoring and intelligent learning
+- Learning Management System (LMS)
+- AI-powered LMS intelligence
+- backend APIs and persistent data
+- identity, tenancy, RBAC and auditability
+- web application and operator control plane
+- testing, observability and deployment infrastructure
+
+The platform is designed to evolve through measurable research and engineering loops while keeping humans in control of consequential actions.
 
 ## Initial architecture
 
@@ -25,4 +37,10 @@ See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and s
 
 ## Status
 
-Phase 2 — LMS foundation implemented. Includes course authoring, modules, lessons, enrollment, progress tracking, assessments, grading, learner dashboard and PostgreSQL migrations.\n\nPhase 1 identity foundation remains the security and tenancy layer.
+Phase 2 — LMS foundation implemented. Includes course authoring, modules, lessons, enrollment, progress tracking, assessments, grading, learner dashboard and PostgreSQL migrations.
+
+Phase 1 identity foundation remains the security and tenancy layer.
+
+## Repository checkpoint
+
+The current Phase 1 and Phase 2 implementation is committed directly to the `main` branch. Future phases will continue from this verified repository state.
