@@ -4,7 +4,7 @@
 Repository structure, contracts, local infrastructure, health APIs and web shell.
 
 ## Phase 1 — Identity & Core Platform
-Authentication, authorization, tenancy, persistence, audit events and base dashboard.
+Authentication, authorization, tenancy, persistence, refresh-session management, audit events, migrations and the authenticated web workspace. **Implemented in v0.2.0.**
 
 ## Phase 2 — LMS
 Course authoring, content ingestion, lessons, assessments, progress, instructor workflows and learner dashboard.
