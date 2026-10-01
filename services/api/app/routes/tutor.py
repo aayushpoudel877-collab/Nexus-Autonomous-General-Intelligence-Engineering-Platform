@@ -1,12 +1,13 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.dependencies import get_current_user, get_membership
 from ..db.session import get_db
-from ..models import Course, Enrollment, Lesson, TutorConversation, TutorMessage, User
+from ..models import Course, CourseModule, Enrollment, Lesson, TutorConversation, TutorMessage, User
 from ..schemas.tutor import TutorConversationCreate, TutorConversationRead, TutorMessageCreate, TutorMessageRead
 from ..services.tutor import LocalTutorProvider, TutorContext, estimate_tokens
+from sqlalchemy.orm import selectinload
 
 router = APIRouter(prefix="/tutor", tags=["ai-tutor"])
 provider = LocalTutorProvider()
@@ -59,7 +60,7 @@ async def create_conversation(payload: TutorConversationCreate, user: User = Dep
 @router.get("/conversations/{conversation_id}", response_model=TutorConversationRead)
 async def get_conversation(conversation_id: UUID, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     membership = await get_membership(user, db)
-    return await _owned_conversation(db, conversation_id, user, membership.organization_id)
+    conversation = await db.scalar(select(TutorConversation).options(selectinload(TutorConversation.messages)).where(\n        TutorConversation.id == conversation_id, TutorConversation.user_id == user.id,\n        TutorConversation.organization_id == membership.organization_id,\n    ))\n    if not conversation:\n        raise HTTPException(status_code=404, detail="Conversation not found")\n    return conversation
 
 @router.post("/conversations/{conversation_id}/messages", response_model=TutorMessageRead, status_code=201)
 async def send_message(
