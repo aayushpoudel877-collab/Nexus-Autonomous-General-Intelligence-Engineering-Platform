@@ -177,7 +177,7 @@ async def update_task(
             ensure_task_transition(task.status, requested_status)
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        if requested_status == "running" and task.depends_on:
+        if requested_status in {"ready", "running"} and task.depends_on:
             dependency_ids = [UUID(value) for value in task.depends_on]
             dependencies = await db.scalars(
                 select(ResearchTask).where(
@@ -189,7 +189,7 @@ async def update_task(
             if not dependencies_succeeded(statuses) or len(statuses) != len(dependency_ids):
                 raise HTTPException(
                     status_code=409,
-                    detail="All task dependencies must succeed before this task can run",
+                    detail="All task dependencies must succeed before this task can become ready or run",
                 )
 
     for key, value in updates.items():
