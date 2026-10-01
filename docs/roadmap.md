@@ -13,7 +13,7 @@ Course authoring, modules, lessons, enrollment, progress tracking, assessments, 
 Authenticated persistent conversations, course-aware lesson context, provider boundary with explicit local fallback, bounded context, ownership/tenant checks and migration. Initial implementation in v0.3.0. Hosted-model adapter, retrieval indexing, evaluation and usage budgets remain future work.
 
 ## Phase 4 — AI Engineering Workbench
-Projects, datasets, experiments, model registry, evaluation and reproducibility.
+Initial implementation: tenant-scoped project creation/listing, dataset metadata, experiment planning/status tracking, validated API schemas, persistence migration, and web workspace. Model registry, artifact storage, evaluation execution and reproducibility bundles remain future work.
 
 ## Phase 5 — Autonomous Research
 Planner, task graph, tool runtime, literature/data workflows and controlled experiment execution.
