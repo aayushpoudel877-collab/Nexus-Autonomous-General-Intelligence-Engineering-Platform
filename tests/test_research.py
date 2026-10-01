@@ -36,7 +36,7 @@ def test_dependency_list_cannot_repeat_ids():
 def test_dependency_readiness_requires_every_dependency_to_succeed():
     assert dependencies_succeeded(["succeeded", "succeeded"])
     assert not dependencies_succeeded(["succeeded", "running"])
-    assert not dependencies_succeeded([]) is False
+    assert dependencies_succeeded([])
 
 
 def test_task_lifecycle_blocks_skipping_required_states():
