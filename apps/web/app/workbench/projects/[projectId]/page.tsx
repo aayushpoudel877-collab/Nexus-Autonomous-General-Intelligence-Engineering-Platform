@@ -45,6 +45,7 @@ export default function WorkbenchProjectPage() {
   const [datasetSource, setDatasetSource] = useState("");
   const [experimentName, setExperimentName] = useState("");
   const [algorithm, setAlgorithm] = useState("baseline");
+  const [datasetId, setDatasetId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -105,6 +106,7 @@ export default function WorkbenchProjectPage() {
         body: JSON.stringify({
           name: experimentName.trim(),
           algorithm: algorithm.trim() || "baseline",
+          dataset_id: datasetId || null,
           parameters: {},
           notes: "",
         }),
@@ -175,6 +177,12 @@ export default function WorkbenchProjectPage() {
               </label>
               <label>Algorithm or approach
                 <input maxLength={120} value={algorithm} onChange={(event) => setAlgorithm(event.target.value)} />
+              </label>
+              <label>Dataset (optional)
+                <select value={datasetId} onChange={(event) => setDatasetId(event.target.value)}>
+                  <option value="">No dataset selected</option>
+                  {datasets.map((dataset) => <option key={dataset.id} value={dataset.id}>{dataset.name}</option>)}
+                </select>
               </label>
               <button type="submit" disabled={saving || experimentName.trim().length < 2}>{saving ? "Saving…" : "Plan experiment"}</button>
             </form>
