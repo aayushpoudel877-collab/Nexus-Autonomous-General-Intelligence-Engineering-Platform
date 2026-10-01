@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from ..core.config import settings
-from ..core.dependencies import get_current_user
+from ..core.dependencies import get_current_user, get_membership
 from ..core.security import create_access_token, create_refresh_token, hash_password, hash_refresh_token, verify_password
 from ..db.session import get_db
 from ..models import Membership, Organization, RefreshSession, Role, User
@@ -56,9 +56,9 @@ async def login(payload: LoginRequest, request: Request, response: Response, db:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="User is inactive")
-    membership = await db.scalar(select(Membership).where(Membership.user_id == user.id))
+    memberships = list((await db.scalars(select(Membership).where(Membership.user_id == user.id))).all())
     ip, agent = _request_meta(request)
-    await record_audit(db, action="identity.login", resource_type="user", actor_user_id=user.id, organization_id=membership.organization_id if membership else None, ip_address=ip, user_agent=agent)
+    await record_audit(db, action="identity.login", resource_type="user", actor_user_id=user.id, organization_id=memberships[0].organization_id if len(memberships) == 1 else None, ip_address=ip, user_agent=agent)
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
@@ -95,8 +95,6 @@ async def logout(request: Request, response: Response, refresh_token: str | None
 
 @router.get("/me", response_model=MeResponse)
 async def me(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    membership = await db.scalar(select(Membership).where(Membership.user_id == user.id))
-    if not membership:
-        raise HTTPException(status_code=403, detail="No organization membership")
+    membership = await get_membership(user, db)
     role = await db.get(Role, membership.role_id)
     return MeResponse(user=UserResponse.model_validate(user), organization_id=membership.organization_id, role=role.name if role else "unknown")
