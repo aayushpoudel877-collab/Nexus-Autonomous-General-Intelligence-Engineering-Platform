@@ -95,7 +95,8 @@ async def enroll(course_id: UUID, user: User = Depends(get_current_user), db: As
 
 @router.put("/lessons/{lesson_id}/progress")
 async def update_progress(lesson_id: UUID, payload: LessonProgressUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    lesson = await db.scalar(select(Lesson).join(CourseModule).join(Course).join(Enrollment, Enrollment.course_id==Course.id).where(Lesson.id==lesson_id, Enrollment.user_id==user.id, Enrollment.status=="active"))
+    membership = await get_membership(user, db)
+    lesson = await db.scalar(select(Lesson).join(CourseModule).join(Course).join(Enrollment, Enrollment.course_id==Course.id).where(Lesson.id==lesson_id, Course.organization_id==membership.organization_id, Enrollment.user_id==user.id, Enrollment.status=="active"))
     if not lesson: raise HTTPException(status_code=404, detail="Enrolled lesson not found")
     progress=await db.scalar(select(LessonProgress).where(LessonProgress.lesson_id==lesson_id,LessonProgress.user_id==user.id))
     if not progress: progress=LessonProgress(lesson_id=lesson_id,user_id=user.id); db.add(progress)
@@ -129,7 +130,8 @@ async def create_choice(question_id: UUID, payload: ChoiceCreate, user: User = D
 
 @router.post("/assessments/{assessment_id}/submit", response_model=AssessmentResult)
 async def submit_assessment(assessment_id: UUID, payload: AssessmentSubmission, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    assessment=await db.get(Assessment,assessment_id)
+    membership = await get_membership(user, db)
+    assessment = await db.scalar(select(Assessment).join(Lesson).join(CourseModule).join(Course).where(Assessment.id==assessment_id, Course.organization_id==membership.organization_id))
     if not assessment: raise HTTPException(status_code=404,detail="Assessment not found")
     enrolled=await db.scalar(select(Enrollment).join(Course).join(CourseModule, CourseModule.course_id==Course.id).join(Lesson, Lesson.module_id==CourseModule.id).where(Lesson.id==assessment.lesson_id,Enrollment.user_id==user.id,Enrollment.status=="active"))
     if not enrolled: raise HTTPException(status_code=403,detail="Enrollment required")
