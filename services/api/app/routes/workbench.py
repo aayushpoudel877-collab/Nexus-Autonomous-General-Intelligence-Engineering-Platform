@@ -12,6 +12,7 @@ from ..models import (
     WorkbenchExperiment,
     WorkbenchProject,
 )
+from ..services.workbench import ensure_status_transition
 from ..schemas.workbench import (
     DatasetCreate,
     DatasetRead,
@@ -176,7 +177,13 @@ async def update_experiment(
     )
     if not experiment:
         raise HTTPException(status_code=404, detail="Experiment not found")
-    for key, value in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    if updates.get("status") is not None:
+        try:
+            ensure_status_transition(experiment.status, updates["status"])
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    for key, value in updates.items():
         setattr(experiment, key, value)
     await db.commit()
     await db.refresh(experiment)
