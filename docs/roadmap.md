@@ -16,7 +16,7 @@ Authenticated persistent conversations, course-aware lesson context, provider bo
 Initial implementation: tenant-scoped project creation/listing, dataset metadata, experiment planning/status tracking, validated API schemas, persistence migration, and web workspace. Model registry, artifact storage, evaluation execution and reproducibility bundles remain future work.
 
 ## Phase 5 — Autonomous Research
-Planner, task graph, tool runtime, literature/data workflows and controlled experiment execution.
+Initial implementation: tenant-scoped research plans, task dependency validation, explicit task lifecycle transitions, prerequisite-aware execution status, output summaries and a research planner UI. Autonomous tool execution, literature retrieval and data-collection integrations remain future work.
 
 ## Phase 6 — Autonomous ML Lifecycle
 Training, model selection, evaluation, deployment, monitoring and rollback.
