@@ -22,3 +22,12 @@ def test_workbench_routes_are_registered():
     assert "/api/v1/workbench/projects/{project_id}/datasets" in paths
     assert "/api/v1/workbench/projects/{project_id}/experiments" in paths
     assert "/api/v1/workbench/experiments/{experiment_id}" in paths
+
+
+def test_research_routes_are_registered():
+    from services.api.app.main import app
+
+    paths = app.openapi()["paths"]
+    assert "/api/v1/research/plans" in paths
+    assert "/api/v1/research/plans/{plan_id}/tasks" in paths
+    assert "/api/v1/research/tasks/{task_id}" in paths
