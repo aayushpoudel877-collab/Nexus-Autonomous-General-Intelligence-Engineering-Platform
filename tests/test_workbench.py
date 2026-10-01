@@ -38,3 +38,19 @@ def test_experiment_status_is_constrained():
     with pytest.raises(ValidationError):
         ExperimentUpdate(status="mystery")
     assert ExperimentUpdate(status="succeeded").status == "succeeded"
+
+
+def test_experiment_lifecycle_allows_forward_progress():
+    from services.api.app.services.workbench import ensure_status_transition
+
+    ensure_status_transition("planned", "queued")
+    ensure_status_transition("queued", "running")
+    ensure_status_transition("running", "succeeded")
+    ensure_status_transition("running", "failed")
+
+
+def test_experiment_lifecycle_rejects_terminal_reopen():
+    from services.api.app.services.workbench import ensure_status_transition
+
+    with pytest.raises(ValueError, match="Cannot change experiment status"):
+        ensure_status_transition("succeeded", "running")
