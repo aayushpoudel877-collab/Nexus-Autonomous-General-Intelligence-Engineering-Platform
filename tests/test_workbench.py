@@ -11,7 +11,7 @@ from services.api.app.schemas.workbench import (
 
 def test_project_schema_accepts_supported_task_type():
     project = ProjectCreate(name="Image quality", task_type="computer_vision")
-    assert project.status if hasattr(project, "status") else project.task_type == "computer_vision"
+    assert project.task_type == "computer_vision"
 
 
 def test_project_schema_rejects_unknown_task_type():
