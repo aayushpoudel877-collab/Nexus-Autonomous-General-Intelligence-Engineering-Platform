@@ -35,12 +35,16 @@ The repository is intentionally structured as a monorepo so the platform can gro
 
 See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and staged delivery plan.
 
-## Status
+## Current implementation status
 
-Phase 2 — LMS foundation implemented. Includes course authoring, modules, lessons, enrollment, progress tracking, assessments, grading, learner dashboard and PostgreSQL migrations.
+- **Phase 1 — Identity:** authentication, refresh sessions, roles, organization membership and audit events. Ambiguous multi-organization membership now fails closed until an explicit organization selector is implemented.
+- **Phase 2 — LMS:** course authoring, modules, lessons, enrollment, progress tracking, assessments, grading and PostgreSQL migrations. Progress updates and assessment submissions are scoped to the active organization.
+- **Phase 3 — AI Tutor:** persisted conversations and course lesson context with a clearly disclosed local fallback. A hosted language-model adapter is not yet connected.
+- **Phase 4 — AI Engineering Workbench:** project and dataset metadata, experiment planning and lifecycle tracking.
+- **Phase 5 — Autonomous Research (initial):** research plans, dependency-aware tasks, lifecycle validation and output summaries.
 
-Phase 1 identity foundation remains the security and tenancy layer.
+The research planner currently tracks plans and tasks; it does not autonomously run external tools, collect data, train models or deploy services. These capabilities require later phases and explicit safety, evaluation and permission controls.
 
 ## Repository checkpoint
 
-The current Phase 1 and Phase 2 implementation is committed directly to the `main` branch. Future phases will continue from this verified repository state.
+Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
