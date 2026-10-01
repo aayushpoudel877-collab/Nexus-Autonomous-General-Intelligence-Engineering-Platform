@@ -4,13 +4,13 @@
 Repository structure, contracts, local infrastructure, health APIs and web shell.
 
 ## Phase 1 — Identity & Core Platform
-Authentication, authorization, tenancy, persistence, refresh-session management, audit events, migrations and the authenticated web workspace. **Implemented in v0.2.0.**
+Authentication, authorization, tenancy, persistence, refresh-session management, audit events, migrations and the authenticated web workspace. Implemented in v0.2.0.
 
 ## Phase 2 — LMS
-Course authoring, content ingestion, lessons, assessments, progress, instructor workflows and learner dashboard.
+Course authoring, modules, lessons, enrollment, progress tracking, assessments, grading, learner dashboard and PostgreSQL migrations. Implemented in v0.2.0.
 
 ## Phase 3 — AI Tutor
-Retrieval, grounded tutoring, learner profiles, recommendations and evaluation.
+Authenticated persistent conversations, course-aware lesson context, provider boundary with explicit local fallback, bounded context, ownership/tenant checks and migration. Initial implementation in v0.3.0. Hosted-model adapter, retrieval indexing, evaluation and usage budgets remain future work.
 
 ## Phase 4 — AI Engineering Workbench
 Projects, datasets, experiments, model registry, evaluation and reproducibility.
