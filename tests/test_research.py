@@ -49,3 +49,8 @@ def test_task_lifecycle_blocks_skipping_required_states():
 def test_task_update_status_is_validated():
     with pytest.raises(ValidationError):
         ResearchTaskUpdate(status="finished-ish")
+
+
+def test_task_update_rejects_empty_payload():
+    with pytest.raises(ValidationError, match="At least one task field"):
+        ResearchTaskUpdate()
