@@ -55,6 +55,13 @@ class ExperimentUpdate(BaseModel):
     metrics: dict[str, float | int | str | None] | None = None
     notes: str | None = Field(default=None, max_length=12000)
 
+    @model_validator(mode="before")
+    @classmethod
+    def reject_null_update_values(cls, values):
+        if isinstance(values, dict) and any(value is None for value in values.values()):
+            raise ValueError("Update fields cannot be null")
+        return values
+
     @model_validator(mode="after")
     def require_an_update(self) -> "ExperimentUpdate":
         if self.status is None and self.metrics is None and self.notes is None:
