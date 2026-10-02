@@ -42,3 +42,11 @@ def test_ml_lifecycle_routes_are_registered():
     assert "/api/v1/ml/projects/{project_id}/models" in paths
     assert "/api/v1/ml/models/{model_id}/evaluations" in paths
     assert "/api/v1/ml/evaluations/{evaluation_id}" in paths
+
+
+def test_multimodal_routes_are_registered():
+    from services.api.app.main import app
+
+    paths = app.openapi()["paths"]
+    assert "/api/v1/multimodal/projects/{project_id}/assets" in paths
+    assert "/api/v1/multimodal/assets/{asset_id}" in paths
