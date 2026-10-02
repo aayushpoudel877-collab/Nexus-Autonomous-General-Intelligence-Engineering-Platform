@@ -18,3 +18,8 @@
 ## ML lifecycle boundary
 
 The Phase 6 API records training-run metadata and state, versioned model records, and evaluation results. It never imports or executes user-supplied code and never dereferences artifact URIs. Model approval is a separate, explicit state transition that requires a passed evaluation and a human review note. A later execution service must add isolated workers, resource budgets, signed artifacts, provenance, policy enforcement, and deployment approval before running training or serving models.
+
+
+## Multimodal asset boundary
+
+The multimodal service stores asset references and bounded descriptive metadata within the owning workbench project's organization. It never dereferences source references or downloads user-provided URLs, so registering a manifest cannot trigger server-side requests. The current phase does not store binary payloads, decode media, or execute inference. A future ingestion worker must use controlled storage adapters, checksum verification, file-size and decoder limits, content-type inspection, and isolation before handling bytes.
