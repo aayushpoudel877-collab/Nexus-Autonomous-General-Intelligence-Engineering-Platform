@@ -128,6 +128,7 @@ async def organizations(
 @router.post("/select-organization/{organization_id}", response_model=MeResponse)
 async def select_organization(
     organization_id: UUID,
+    request: Request,
     response: Response,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
