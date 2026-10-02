@@ -67,3 +67,28 @@ def test_auth_responses_are_marked_no_store():
     )
     assert response.status_code == 401
     assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_oversized_request_is_rejected_before_route_execution():
+    from fastapi.testclient import TestClient
+    from services.api.app.main import app
+
+    response = TestClient(app).post(
+        "/api/v1/auth/login",
+        headers={"Content-Length": str(10_485_761)},
+        content=b"x",
+    )
+    assert response.status_code == 413
+    assert response.json()["detail"] == "Request body is too large"
+
+
+def test_invalid_content_length_is_rejected():
+    from fastapi.testclient import TestClient
+    from services.api.app.main import app
+
+    response = TestClient(app).post(
+        "/api/v1/auth/login",
+        headers={"Content-Length": "not-a-number"},
+        content=b"x",
+    )
+    assert response.status_code == 400

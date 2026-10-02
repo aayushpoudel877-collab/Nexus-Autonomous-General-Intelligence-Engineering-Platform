@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     jwt_refresh_days: int = Field(default=14, ge=1, le=365)
     cors_origins: str = "http://localhost:3000"
     allowed_hosts: str = "localhost,127.0.0.1"
+    max_request_bytes: int = Field(default=10_485_760, ge=1024, le=104_857_600)
 
     @model_validator(mode="after")
     def validate_production_security_settings(self) -> "Settings":

@@ -14,9 +14,18 @@ def _request_id(request: Request) -> str:
 
 
 async def security_middleware(request: Request, call_next) -> Response:
+    from fastapi.responses import JSONResponse
+
+    content_length = request.headers.get("Content-Length")
+    if content_length:
+        try:
+            declared_length = int(content_length)
+        except ValueError:
+            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        if declared_length > settings.max_request_bytes:
+            return JSONResponse(status_code=413, content={"detail": "Request body is too large"})
     origin = request.headers.get("Origin", "").strip()
     if request.method in {"POST", "PUT", "PATCH", "DELETE"} and origin and origin not in settings.cors_origin_list:
-        from fastapi.responses import JSONResponse
         return JSONResponse(status_code=403, content={"detail": "Origin is not allowed"})
     request_id = _request_id(request)
     request.state.request_id = request_id
