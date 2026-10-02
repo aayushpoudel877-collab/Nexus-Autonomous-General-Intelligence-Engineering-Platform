@@ -23,3 +23,8 @@ The Phase 6 API records training-run metadata and state, versioned model records
 ## Multimodal asset boundary
 
 The multimodal service stores asset references and bounded descriptive metadata within the owning workbench project's organization. It never dereferences source references or downloads user-provided URLs, so registering a manifest cannot trigger server-side requests. The current phase does not store binary payloads, decode media, or execute inference. A future ingestion worker must use controlled storage adapters, checksum verification, file-size and decoder limits, content-type inspection, and isolation before handling bytes.
+
+
+## Continuous-improvement boundary
+
+Phase 8 records baseline/candidate comparisons only when both registered models belong to the same authorized workbench project and are not archived. Metric deltas are calculated server-side against explicit maximize/minimize thresholds. Metrics are caller-reported; a passing record means only that the submitted numbers satisfy the recorded criteria, not that a benchmark runner independently produced or verified them. Automated benchmark execution, data split controls, reproducible environment capture, proposal execution, and deployment remain future work.

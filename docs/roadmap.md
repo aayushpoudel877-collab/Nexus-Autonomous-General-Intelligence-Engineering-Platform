@@ -25,7 +25,7 @@ Initial implementation: tenant-scoped training-run metadata and lifecycle transi
 Initial implementation: tenant-scoped asset manifests for text, image, audio, video and structured data; modality-aware MIME and metadata validation; optional SHA-256, size, duration and dimensions; API and catalog UI. This is a metadata-only manifest layer. Upload/storage adapters, content decoding, feature extraction, modality-specific inference, dataset-level split management and automated cross-modal benchmarks remain future work.
 
 ## Phase 8 — Continuous Improvement
-Failure analysis, benchmark generation, experiment prioritization and bounded improvement loops.
+Initial implementation: tenant-scoped baseline/candidate model comparisons, bounded metric payloads, directional improvement thresholds, recorded deltas, regression explanations, comparison history and a project-scoped UI. Submitted metrics are caller-reported evidence: this phase does not execute models, independently verify benchmark results, automatically generate experiments, or apply model changes.
 
 ## Phase 9 — Production Hardening
 Security, reliability, scale, disaster recovery, governance and cost controls.
