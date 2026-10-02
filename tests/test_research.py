@@ -54,3 +54,8 @@ def test_task_update_status_is_validated():
 def test_task_update_rejects_empty_payload():
     with pytest.raises(ValidationError, match="At least one task field"):
         ResearchTaskUpdate()
+
+
+def test_task_update_rejects_null_values():
+    with pytest.raises(ValidationError, match="Update fields cannot be null"):
+        ResearchTaskUpdate(output_summary=None)
