@@ -9,8 +9,9 @@ from .routes.tutor import router as tutor_router
 from .routes.workbench import router as workbench_router
 from .routes.research import router as research_router
 from .routes.ml_lifecycle import router as ml_lifecycle_router
+from .routes.multimodal import router as multimodal_router
 
-app = FastAPI(title="NEXUS-Ω API", version="0.6.0")
+app = FastAPI(title="NEXUS-Ω API", version="0.7.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,3 +28,4 @@ app.include_router(tutor_router, prefix="/api/v1")
 app.include_router(workbench_router, prefix="/api/v1")
 app.include_router(research_router, prefix="/api/v1")
 app.include_router(ml_lifecycle_router, prefix="/api/v1")
+app.include_router(multimodal_router, prefix="/api/v1")
