@@ -16,6 +16,7 @@ from .tutor import TutorConversation, TutorMessage
 from .workbench import WorkbenchProject, WorkbenchDataset, WorkbenchExperiment
 from .research import ResearchPlan, ResearchTask
 from .ml_lifecycle import MLTrainingRun, RegisteredModel, ModelEvaluation
+from .multimodal import MultimodalAsset
 
 __all__ = [
     "Organization",
@@ -44,4 +45,5 @@ __all__ = [
     "MLTrainingRun",
     "RegisteredModel",
     "ModelEvaluation",
+    "MultimodalAsset",
 ]
