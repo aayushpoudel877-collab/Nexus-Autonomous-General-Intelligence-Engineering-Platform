@@ -2,6 +2,7 @@ from datetime import datetime
 from json import dumps
 from math import isfinite
 from typing import Literal
+from urllib.parse import urlsplit
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -25,6 +26,22 @@ class MultimodalAssetCreate(BaseModel):
     metadata: dict[str, str | int | float | bool | None] = Field(
         default_factory=dict, max_length=50
     )
+
+    @field_validator("source_reference")
+    @classmethod
+    def validate_source_reference(cls, value: str) -> str:
+        value = value.strip()
+        parsed = urlsplit(value)
+        allowed_schemes = {"asset", "dataset", "s3", "gs", "azure", "artifact"}
+        if parsed.scheme.lower() not in allowed_schemes or not parsed.netloc:
+            raise ValueError("Source reference must use an approved asset, dataset, or object-store URI")
+        if parsed.username is not None or parsed.password is not None or parsed.query or parsed.fragment:
+            raise ValueError("Source references cannot contain credentials, query strings, or fragments")
+        try:
+            parsed.port
+        except ValueError as exc:
+            raise ValueError("Source reference contains an invalid port") from exc
+        return value
 
     @field_validator("name", "source_reference", "media_type")
     @classmethod

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,6 +32,8 @@ async def _project_in_tenant(
 )
 async def list_assets(
     project_id: UUID,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0, le=10000),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -40,8 +42,9 @@ async def list_assets(
     rows = await db.scalars(
         select(MultimodalAsset)
         .where(MultimodalAsset.project_id == project_id)
-        .order_by(MultimodalAsset.created_at.desc())
-        .limit(200)
+        .order_by(MultimodalAsset.created_at.desc(), MultimodalAsset.id.desc())
+        .offset(offset)
+        .limit(limit)
     )
     return list(rows.all())
 

@@ -111,3 +111,30 @@ def test_asset_read_schema_serializes_metadata_json_attribute():
         metadata_json={"language": "ne"}, created_at=datetime.now(timezone.utc),
     )
     assert MultimodalAssetRead.model_validate(record).metadata == {"language": "ne"}
+
+
+def test_source_reference_rejects_network_and_local_file_urls():
+    for reference in ("https://example.com/asset", "http://127.0.0.1/admin", "file:///etc/passwd"):
+        with pytest.raises(ValidationError, match="approved"):
+            MultimodalAssetCreate(
+                name="Unsafe reference", modality="text", source_reference=reference,
+                media_type="text/plain",
+            )
+
+
+def test_source_reference_rejects_credentials_and_query_strings():
+    for reference in ("s3://user:secret@bucket/object", "asset://catalog/item?token=secret"):
+        with pytest.raises(ValidationError, match="credentials"):
+            MultimodalAssetCreate(
+                name="Unsafe reference", modality="text", source_reference=reference,
+                media_type="text/plain",
+            )
+
+
+def test_source_reference_accepts_logical_asset_and_dataset_uris():
+    for reference in ("asset://images/sample", "dataset://nepali/train/001", "s3://bucket/data/item"):
+        asset = MultimodalAssetCreate(
+            name="Safe reference", modality="text", source_reference=reference,
+            media_type="text/plain",
+        )
+        assert asset.source_reference == reference
