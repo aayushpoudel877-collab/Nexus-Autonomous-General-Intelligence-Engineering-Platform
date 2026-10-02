@@ -42,3 +42,28 @@ def test_security_headers_omit_hsts_in_development():
 
     response = TestClient(app).get("/api/v1/health")
     assert "Strict-Transport-Security" not in response.headers
+
+
+def test_untrusted_cross_origin_state_change_is_rejected():
+    from fastapi.testclient import TestClient
+    from services.api.app.main import app
+
+    response = TestClient(app).post(
+        "/api/v1/auth/login",
+        headers={"Origin": "https://evil.example"},
+        json={"email": "someone@example.com", "password": "not-a-password"},
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Origin is not allowed"
+
+
+def test_auth_responses_are_marked_no_store():
+    from fastapi.testclient import TestClient
+    from services.api.app.main import app
+
+    response = TestClient(app).post(
+        "/api/v1/auth/login",
+        json={"email": "someone@example.com", "password": "not-a-password"},
+    )
+    assert response.status_code == 401
+    assert response.headers["Cache-Control"] == "no-store"
