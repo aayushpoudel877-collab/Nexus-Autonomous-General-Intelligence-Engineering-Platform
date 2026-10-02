@@ -70,7 +70,7 @@ def test_model_lifecycle_is_one_way_and_reviewable():
 
 def test_evaluation_schema_and_lifecycle():
     evaluation = ModelEvaluationCreate(evaluator="held-out validation", criteria={"accuracy": 0.9})
-    assert evaluation.status if hasattr(evaluation, "status") else True
+    assert evaluation.evaluator == "held-out validation"
     with pytest.raises(ValidationError, match="At least one evaluation field"):
         ModelEvaluationUpdate()
     ensure_evaluation_transition("queued", "running")
