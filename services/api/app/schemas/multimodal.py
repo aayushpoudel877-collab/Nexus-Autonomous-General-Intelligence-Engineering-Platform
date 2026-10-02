@@ -69,5 +69,5 @@ class MultimodalAssetRead(BaseModel):
     duration_ms: int | None
     width: int | None
     height: int | None
-    metadata: dict
+    metadata: dict = Field(validation_alias="metadata_json")
     created_at: datetime
