@@ -60,3 +60,4 @@ def test_continuous_improvement_routes_are_registered():
 
     paths = app.openapi()["paths"]
     assert "/api/v1/benchmarks/projects/{project_id}/comparisons" in paths
+    assert "/api/v1/audit/events" in paths
