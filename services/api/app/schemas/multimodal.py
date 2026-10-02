@@ -38,9 +38,11 @@ class MultimodalAssetCreate(BaseModel):
         if parsed.username is not None or parsed.password is not None or parsed.query or parsed.fragment:
             raise ValueError("Source references cannot contain credentials, query strings, or fragments")
         try:
-            parsed.port
+            port = parsed.port
         except ValueError as exc:
             raise ValueError("Source reference contains an invalid port") from exc
+        if port is not None:
+            raise ValueError("Source references must not include network ports")
         return value
 
     @field_validator("name", "source_reference", "media_type")
