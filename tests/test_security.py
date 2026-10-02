@@ -34,3 +34,11 @@ def test_invalid_request_id_is_replaced():
     value = response.headers["X-Request-ID"]
     assert value != "bad\r\nvalue"
     assert 1 <= len(value) <= 64
+
+
+def test_security_headers_omit_hsts_in_development():
+    from fastapi.testclient import TestClient
+    from services.api.app.main import app
+
+    response = TestClient(app).get("/api/v1/health")
+    assert "Strict-Transport-Security" not in response.headers
