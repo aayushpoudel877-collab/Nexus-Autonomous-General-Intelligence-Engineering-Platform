@@ -7,7 +7,14 @@ from ..core.dependencies import get_current_user, get_membership
 from ..core.security import create_access_token, create_refresh_token, hash_password, hash_refresh_token, verify_password
 from ..db.session import get_db
 from ..models import Membership, Organization, RefreshSession, Role, User
-from ..schemas.auth import LoginRequest, MeResponse, RegisterRequest, TokenResponse, UserResponse
+from ..schemas.auth import (
+    LoginRequest,
+    MeResponse,
+    OrganizationResponse,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+)
 from ..services.audit import record_audit
 
 router = APIRouter(tags=["auth"])
@@ -46,6 +53,7 @@ async def register(payload: RegisterRequest, request: Request, response: Respons
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
+    response.set_cookie("nexus_organization_id", str(org.id), httponly=False, secure=settings.is_production, samesite="lax", max_age=30 * 86400, path="/")
     return tokens
 
 @router.post("/login", response_model=TokenResponse)
@@ -62,6 +70,8 @@ async def login(payload: LoginRequest, request: Request, response: Response, db:
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
+    if len(memberships) == 1:
+        response.set_cookie("nexus_organization_id", str(memberships[0].organization_id), httponly=False, secure=settings.is_production, samesite="lax", max_age=30 * 86400, path="/")
     return tokens
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -92,6 +102,51 @@ async def logout(request: Request, response: Response, refresh_token: str | None
             await db.commit()
     response.delete_cookie("nexus_access_token", path="/")
     response.delete_cookie("nexus_refresh_token", path="/api/v1/auth")
+    response.delete_cookie("nexus_organization_id", path="/")
+
+@router.get("/organizations", response_model=list[OrganizationResponse])
+async def organizations(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await db.execute(
+        select(Membership, Organization)
+        .join(Organization, Membership.organization_id == Organization.id)
+        .where(Membership.user_id == user.id)
+        .order_by(Organization.name)
+    )
+    return [
+        OrganizationResponse(
+            id=membership.organization_id,
+            name=organization.name,
+            slug=organization.slug,
+            role_id=membership.role_id,
+        )
+        for membership, organization in rows.all()
+    ]
+
+@router.post("/select-organization/{organization_id}", response_model=MeResponse)
+async def select_organization(
+    organization_id: UUID,
+    response: Response,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await db.scalar(
+        select(Membership).where(
+            Membership.user_id == user.id,
+            Membership.organization_id == organization_id,
+        )
+    )
+    if not membership:
+        raise HTTPException(status_code=403, detail="Organization is not available to this account")
+    response.set_cookie("nexus_organization_id", str(organization_id), httponly=False, secure=settings.is_production, samesite="lax", max_age=30 * 86400, path="/")
+    role = await db.get(Role, membership.role_id)
+    return MeResponse(
+        user=UserResponse.model_validate(user),
+        organization_id=organization_id,
+        role=role.name if role else "unknown",
+    )
 
 @router.get("/me", response_model=MeResponse)
 async def me(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):

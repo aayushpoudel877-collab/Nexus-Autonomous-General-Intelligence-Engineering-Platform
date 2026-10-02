@@ -40,6 +40,27 @@ async def test_membership_rejects_accounts_without_organization():
 
 
 @pytest.mark.asyncio
+async def test_selected_membership_resolves_exact_organization():
+    user = SimpleNamespace(id=uuid4(), _selected_organization_id=None)
+    selected_id = uuid4()
+    memberships = [
+        SimpleNamespace(organization_id=selected_id),
+        SimpleNamespace(organization_id=uuid4()),
+    ]
+    user._selected_organization_id = selected_id
+    resolved = await get_membership(user, FakeSession(memberships))
+    assert resolved.organization_id == selected_id
+
+
+@pytest.mark.asyncio
+async def test_selected_membership_rejects_unavailable_organization():
+    user = SimpleNamespace(id=uuid4(), _selected_organization_id=uuid4())
+    with pytest.raises(HTTPException) as error:
+        await get_membership(user, FakeSession([SimpleNamespace(organization_id=uuid4())]))
+    assert error.value.status_code == 403
+
+
+@pytest.mark.asyncio
 async def test_membership_fails_closed_for_multiple_organizations():
     user = SimpleNamespace(id=uuid4())
     memberships = [

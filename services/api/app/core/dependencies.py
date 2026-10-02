@@ -43,6 +43,12 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
+    selected_org = request.cookies.get("nexus_organization_id")
+    if selected_org:
+        try:
+            setattr(user, "_selected_organization_id", UUID(selected_org))
+        except ValueError:
+            setattr(user, "_selected_organization_id", None)
     return user
 
 
@@ -52,6 +58,21 @@ async def get_membership(user: User, db: AsyncSession) -> Membership:
     Multi-organization selection is intentionally explicit work for a later phase.
     Until then, fail closed rather than accidentally operating in an arbitrary org.
     """
+    selected_id = getattr(user, "_selected_organization_id", None)
+    if selected_id is not None:
+        selected = await db.scalar(
+            select(Membership).where(
+                Membership.user_id == user.id,
+                Membership.organization_id == selected_id,
+            )
+        )
+        if selected is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Selected organization is not available to this account",
+            )
+        return selected
+
     memberships = list(
         (
             await db.scalars(
@@ -69,10 +90,7 @@ async def get_membership(user: User, db: AsyncSession) -> Membership:
     if len(memberships) > 1:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                "This account belongs to multiple organizations; "
-                "explicit organization selection is not configured yet"
-            ),
+            detail="This account belongs to multiple organizations; select an organization first",
         )
     return memberships[0]
 

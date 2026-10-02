@@ -3,6 +3,8 @@ def test_phase_one_imports():
 
     assert app.title == "NEXUS-Ω API"
     assert "/api/v1/auth/login" in app.openapi()["paths"]
+    assert "/api/v1/auth/organizations" in app.openapi()["paths"]
+    assert "/api/v1/auth/select-organization/{organization_id}" in app.openapi()["paths"]
 
 
 def test_ai_tutor_routes_are_registered():

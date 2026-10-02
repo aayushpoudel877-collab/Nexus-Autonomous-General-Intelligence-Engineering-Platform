@@ -11,6 +11,12 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=128)
 
+class OrganizationResponse(BaseModel):
+    id: UUID
+    name: str
+    slug: str
+    role_id: UUID
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
