@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+from .core.middleware import security_middleware
 
 from .core.config import settings
 from .routes.health import router as health_router
@@ -13,6 +16,11 @@ from .routes.multimodal import router as multimodal_router
 from .routes.benchmarks import router as benchmarks_router
 
 app = FastAPI(title="NEXUS-Ω API", version="0.8.0")
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.allowed_host_list if settings.is_production else settings.allowed_host_list + ["testserver"],
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,3 +39,5 @@ app.include_router(research_router, prefix="/api/v1")
 app.include_router(ml_lifecycle_router, prefix="/api/v1")
 app.include_router(multimodal_router, prefix="/api/v1")
 app.include_router(benchmarks_router, prefix="/api/v1")
+
+app.middleware("http")(security_middleware)

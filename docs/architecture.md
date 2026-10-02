@@ -28,3 +28,8 @@ The multimodal service stores asset references and bounded descriptive metadata 
 ## Continuous-improvement boundary
 
 Phase 8 records baseline/candidate comparisons only when both registered models belong to the same authorized workbench project and are not archived. Metric deltas are calculated server-side against explicit maximize/minimize thresholds. Metrics are caller-reported; a passing record means only that the submitted numbers satisfy the recorded criteria, not that a benchmark runner independently produced or verified them. Automated benchmark execution, data split controls, reproducible environment capture, proposal execution, and deployment remain future work.
+
+
+## Phase 9 hardening boundary
+
+The API now adds correlation IDs and baseline response security headers, validates production CORS/host configuration, and exposes a database-backed readiness probe in addition to liveness. This does not by itself provide a reverse proxy, TLS termination, distributed rate limiting, secret rotation service, object-storage disaster recovery, or full tracing backend.
