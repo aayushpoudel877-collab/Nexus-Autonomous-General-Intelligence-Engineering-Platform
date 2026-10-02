@@ -52,6 +52,8 @@ export default function MLLifecyclePage() {
   const [approvalNote, setApprovalNote] = useState("");
   const [evaluator, setEvaluator] = useState("held-out validation");
   const [evaluationSummary, setEvaluationSummary] = useState("");
+  const [evaluationMetrics, setEvaluationMetrics] = useState('{"accuracy": 0.95}');
+  const [evaluationCriteria, setEvaluationCriteria] = useState('{"accuracy": {"min": 0.9}}');
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -141,7 +143,12 @@ export default function MLLifecyclePage() {
     try {
       const item = await request(`/ml/models/${selectedModelId}/evaluations`, {
         method: "POST",
-        body: JSON.stringify({ evaluator: evaluator.trim(), summary: evaluationSummary.trim() }),
+        body: JSON.stringify({
+          evaluator: evaluator.trim(),
+          summary: evaluationSummary.trim(),
+          metrics: JSON.parse(evaluationMetrics),
+          criteria: JSON.parse(evaluationCriteria),
+        }),
       }) as Evaluation;
       setEvaluations((current) => [item, ...current]);
       setEvaluationSummary("");
@@ -244,12 +251,14 @@ export default function MLLifecyclePage() {
         <h2>Evaluations for {selectedModel.name} v{selectedModel.version}</h2>
         <form onSubmit={createEvaluation} style={{ display: "grid", gap: 10, maxWidth: 680 }}>
           <label>Evaluator<input required minLength={2} maxLength={120} value={evaluator} onChange={(event) => setEvaluator(event.target.value)} /></label>
+          <label>Recorded metrics (JSON)<textarea required rows={2} value={evaluationMetrics} onChange={(event) => setEvaluationMetrics(event.target.value)} /></label>
+          <label>Pass criteria (JSON; each metric needs min and/or max)<textarea required rows={2} value={evaluationCriteria} onChange={(event) => setEvaluationCriteria(event.target.value)} /></label>
           <label>Evaluation plan / notes<textarea rows={3} maxLength={12000} value={evaluationSummary} onChange={(event) => setEvaluationSummary(event.target.value)} /></label>
-          <button disabled={saving}>Add evaluation record</button>
+          <button disabled={saving}>Add evaluation evidence</button>
         </form>
         <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
           {evaluations.map((item) => <div key={item.id} style={{ border: "1px solid var(--border, #d8dee8)", borderRadius: 12, padding: 14 }}>
-            <strong>{item.evaluator}</strong><p>{item.status}</p><p>{item.summary || "No summary recorded."}</p>
+            <strong>{item.evaluator}</strong><p>{item.status}</p><p>{item.summary || "No summary recorded."}</p><small>Metrics: {JSON.stringify(item.metrics)} · Criteria: {JSON.stringify(item.criteria)}</small>
             {item.status === "queued" && <button onClick={() => void updateEvaluation(item, "running")}>Start evaluation</button>}
             {item.status === "running" && <><button onClick={() => void updateEvaluation(item, "passed")}>Mark passed</button><button style={{ marginLeft: 8 }} onClick={() => void updateEvaluation(item, "failed")}>Mark failed</button></>}
           </div>)}
