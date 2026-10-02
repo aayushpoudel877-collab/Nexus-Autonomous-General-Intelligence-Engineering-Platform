@@ -12,6 +12,7 @@ from services.api.app.schemas.ml_lifecycle import (
 from services.api.app.services.ml_lifecycle import (
     ensure_evaluation_transition,
     evaluation_criteria_met,
+    evaluate_metrics,
     ensure_model_transition,
     ensure_run_transition,
 )
@@ -121,3 +122,17 @@ def test_evaluation_criteria_require_valid_bounds():
         ModelEvaluationCreate(
             evaluator="validation", criteria={"accuracy": {"min": 0.95, "max": 0.9}}
         )
+
+
+def test_automated_evaluator_returns_terminal_status_and_explanations():
+    status, issues = evaluate_metrics(
+        {"accuracy": 0.96, "loss": 0.08},
+        {"accuracy": {"min": 0.9}, "loss": {"max": 0.1}},
+    )
+    assert status == "passed"
+    assert issues == []
+    status, issues = evaluate_metrics(
+        {"accuracy": 0.8}, {"accuracy": {"min": 0.9}},
+    )
+    assert status == "failed"
+    assert "below its minimum" in issues[0]

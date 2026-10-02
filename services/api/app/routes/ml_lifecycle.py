@@ -16,6 +16,7 @@ from ..models import (
     WorkbenchProject,
 )
 from ..schemas.ml_lifecycle import (
+    AutomatedEvaluationCreate,
     ModelEvaluationCreate,
     ModelEvaluationRead,
     ModelEvaluationUpdate,
@@ -30,6 +31,7 @@ from ..services.ml_lifecycle import (
     ensure_evaluation_transition,
     ensure_model_transition,
     ensure_run_transition,
+    evaluate_metrics,
     evaluation_criteria_met,
     utc_now,
 )
@@ -316,6 +318,40 @@ async def create_evaluation(
     membership = await get_membership(user, db)
     model = await _model_in_tenant(db, model_id, membership.organization_id)
     evaluation = ModelEvaluation(model_id=model.id, **payload.model_dump())
+    db.add(evaluation)
+    await db.commit()
+    await db.refresh(evaluation)
+    return evaluation
+
+
+@router.post(
+    "/models/{model_id}/evaluations/run",
+    response_model=ModelEvaluationRead,
+    status_code=201,
+)
+async def run_automated_evaluation(
+    model_id: UUID,
+    payload: AutomatedEvaluationCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    model = await _model_in_tenant(db, model_id, membership.organization_id)
+    criteria = {name: item.model_dump() for name, item in payload.criteria.items()}
+    status, issues = evaluate_metrics(payload.metrics, criteria)
+    details = "; ".join(issues)
+    summary = payload.summary.strip()
+    if details:
+        summary = (summary + "\n" + details).strip()
+    evaluation = ModelEvaluation(
+        model_id=model.id,
+        evaluator="nexus-threshold-evaluator",
+        status=status,
+        metrics=payload.metrics,
+        criteria=criteria,
+        summary=summary,
+        finished_at=utc_now(),
+    )
     db.add(evaluation)
     await db.commit()
     await db.refresh(evaluation)

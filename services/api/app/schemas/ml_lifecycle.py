@@ -152,3 +152,9 @@ class ModelEvaluationRead(BaseModel):
     summary: str
     created_at: datetime
     finished_at: datetime | None
+
+
+class AutomatedEvaluationCreate(BaseModel):
+    metrics: dict[str, float | int | str | None] = Field(default_factory=dict)
+    criteria: dict[str, MetricCriterion] = Field(min_length=1, max_length=100)
+    summary: str = Field(default="", max_length=12000)

@@ -136,6 +136,24 @@ export default function MLLifecyclePage() {
     finally { setSaving(false); }
   }
 
+  async function runAutomatedEvaluation() {
+    if (!selectedModelId || saving) return;
+    setSaving(true); setError("");
+    try {
+      const item = await request(`/ml/models/${selectedModelId}/evaluations/run`, {
+        method: "POST",
+        body: JSON.stringify({
+          summary: evaluationSummary.trim(),
+          metrics: JSON.parse(evaluationMetrics),
+          criteria: JSON.parse(evaluationCriteria),
+        }),
+      }) as Evaluation;
+      setEvaluations((current) => [item, ...current]);
+      setEvaluationSummary("");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not run automated evaluation."); }
+    finally { setSaving(false); }
+  }
+
   async function createEvaluation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedModelId || saving || evaluator.trim().length < 2) return;
@@ -254,7 +272,11 @@ export default function MLLifecyclePage() {
           <label>Recorded metrics (JSON)<textarea required rows={2} value={evaluationMetrics} onChange={(event) => setEvaluationMetrics(event.target.value)} /></label>
           <label>Pass criteria (JSON; each metric needs min and/or max)<textarea required rows={2} value={evaluationCriteria} onChange={(event) => setEvaluationCriteria(event.target.value)} /></label>
           <label>Evaluation plan / notes<textarea rows={3} maxLength={12000} value={evaluationSummary} onChange={(event) => setEvaluationSummary(event.target.value)} /></label>
-          <button disabled={saving}>Add evaluation evidence</button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button disabled={saving}>Add evaluation evidence</button>
+            <button type="button" disabled={saving} onClick={() => void runAutomatedEvaluation()}>Run deterministic evaluator</button>
+          </div>
+          <small>The deterministic evaluator validates the submitted metrics against the submitted criteria and writes a terminal pass/fail result; it does not execute the model or independently measure it.</small>
         </form>
         <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
           {evaluations.map((item) => <div key={item.id} style={{ border: "1px solid var(--border, #d8dee8)", borderRadius: 12, padding: 14 }}>

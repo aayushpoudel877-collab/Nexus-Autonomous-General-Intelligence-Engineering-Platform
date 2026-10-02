@@ -77,3 +77,9 @@ def evaluation_criteria_met(
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def evaluate_metrics(metrics: dict[str, Any], criteria: dict[str, Any]) -> tuple[str, list[str]]:
+    """Return a terminal evaluation status from explicit recorded evidence."""
+    passed, issues = evaluation_criteria_met(metrics, criteria)
+    return ("passed" if passed else "failed"), issues

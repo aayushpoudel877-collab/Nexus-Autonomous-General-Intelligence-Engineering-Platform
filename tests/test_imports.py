@@ -43,6 +43,7 @@ def test_ml_lifecycle_routes_are_registered():
     assert "/api/v1/ml/training-runs/{run_id}" in paths
     assert "/api/v1/ml/projects/{project_id}/models" in paths
     assert "/api/v1/ml/models/{model_id}/evaluations" in paths
+    assert "/api/v1/ml/models/{model_id}/evaluations/run" in paths
     assert "/api/v1/ml/evaluations/{evaluation_id}" in paths
 
 
