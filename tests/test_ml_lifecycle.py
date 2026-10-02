@@ -11,6 +11,7 @@ from services.api.app.schemas.ml_lifecycle import (
 )
 from services.api.app.services.ml_lifecycle import (
     ensure_evaluation_transition,
+    evaluation_criteria_met,
     ensure_model_transition,
     ensure_run_transition,
 )
@@ -73,8 +74,13 @@ def test_model_lifecycle_is_one_way_and_reviewable():
 
 
 def test_evaluation_schema_and_lifecycle():
-    evaluation = ModelEvaluationCreate(evaluator="held-out validation", criteria={"accuracy": 0.9})
+    evaluation = ModelEvaluationCreate(
+        evaluator="held-out validation",
+        metrics={"accuracy": 0.95, "loss": 0.08},
+        criteria={"accuracy": {"min": 0.9}, "loss": {"max": 0.1}},
+    )
     assert evaluation.evaluator == "held-out validation"
+    assert evaluation.criteria["accuracy"].min == 0.9
     with pytest.raises(ValidationError, match="At least one evaluation field"):
         ModelEvaluationUpdate()
     with pytest.raises(ValidationError, match="Update fields cannot be null"):
@@ -83,3 +89,35 @@ def test_evaluation_schema_and_lifecycle():
     ensure_evaluation_transition("running", "passed")
     with pytest.raises(ValueError):
         ensure_evaluation_transition("passed", "running")
+
+
+def test_evaluation_pass_requires_numeric_metrics_and_explicit_thresholds():
+    passed, issues = evaluation_criteria_met(
+        {"accuracy": 0.95, "loss": 0.08},
+        {"accuracy": {"min": 0.9}, "loss": {"max": 0.1}},
+    )
+    assert passed is True
+    assert issues == []
+
+    passed, issues = evaluation_criteria_met(
+        {"accuracy": 0.84}, {"accuracy": {"min": 0.9}}
+    )
+    assert passed is False
+    assert "below its minimum" in issues[0]
+
+    passed, issues = evaluation_criteria_met({}, {"accuracy": {"min": 0.9}})
+    assert passed is False
+    assert "finite numeric result" in issues[0]
+
+    passed, issues = evaluation_criteria_met({"accuracy": 1.0}, {})
+    assert passed is False
+    assert "criterion is required" in issues[0]
+
+
+def test_evaluation_criteria_require_valid_bounds():
+    with pytest.raises(ValidationError, match="must define min and/or max"):
+        ModelEvaluationCreate(evaluator="validation", criteria={"accuracy": {}})
+    with pytest.raises(ValidationError, match="cannot exceed max"):
+        ModelEvaluationCreate(
+            evaluator="validation", criteria={"accuracy": {"min": 0.95, "max": 0.9}}
+        )
