@@ -1,4 +1,6 @@
 from datetime import datetime
+from json import dumps
+from math import isfinite
 from typing import Literal
 from uuid import UUID
 
@@ -30,6 +32,20 @@ class MultimodalAssetCreate(BaseModel):
         value = value.strip()
         if not value:
             raise ValueError("Value cannot be blank")
+        return value
+
+    @field_validator("metadata")
+    @classmethod
+    def bound_metadata(cls, value: dict[str, str | int | float | bool | None]):
+        if len(dumps(value, ensure_ascii=False).encode("utf-8")) > 16_384:
+            raise ValueError("Metadata must not exceed 16 KiB")
+        for key, item in value.items():
+            if not key.strip() or len(key) > 80:
+                raise ValueError("Metadata keys must be 1 to 80 characters")
+            if isinstance(item, str) and len(item) > 2048:
+                raise ValueError("Metadata string values must not exceed 2048 characters")
+            if isinstance(item, float) and not isfinite(item):
+                raise ValueError("Metadata numbers must be finite")
         return value
 
     @model_validator(mode="after")
