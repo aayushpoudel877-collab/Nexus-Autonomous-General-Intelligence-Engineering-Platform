@@ -28,7 +28,7 @@ Initial implementation: tenant-scoped asset manifests for text, image, audio, vi
 Initial implementation: tenant-scoped baseline/candidate model comparisons, bounded metric payloads, directional improvement thresholds, recorded deltas, regression explanations, comparison history and a project-scoped UI. Submitted metrics are caller-reported evidence: this phase does not execute models, independently verify benchmark results, automatically generate experiments, or apply model changes.
 
 ## Phase 9 — Production Hardening
-Initial implementation: production CORS/host validation, trusted-host enforcement, request correlation IDs, baseline API security headers, and database-backed readiness checks. Distributed rate limiting, secret rotation, full tracing/metrics, disaster recovery automation, governance policies and cost controls remain future work.
+Initial implementation: explicit multi-organization selection, deterministic threshold evaluation, production CORS/host validation, trusted-host enforcement, request correlation IDs, baseline API security headers, database-backed readiness checks, request-correlated audit events and an authorized audit stream UI. Distributed rate limiting, secret rotation, full tracing/metrics, disaster recovery automation, governance policies and cost controls remain future work.
 
 ## Phase 10 — Ecosystem
 SDKs, plugins, integrations and developer APIs.

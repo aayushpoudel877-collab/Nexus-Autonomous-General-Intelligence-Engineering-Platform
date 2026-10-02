@@ -32,4 +32,4 @@ Phase 8 records baseline/candidate comparisons only when both registered models 
 
 ## Phase 9 hardening boundary
 
-The API now adds correlation IDs and baseline response security headers, validates production CORS/host configuration, and exposes a database-backed readiness probe in addition to liveness. This does not by itself provide a reverse proxy, TLS termination, distributed rate limiting, secret rotation service, object-storage disaster recovery, or full tracing backend.
+The API now adds correlation IDs and baseline response security headers, validates production CORS/host configuration, enforces trusted hosts, exposes a database-backed readiness probe, rejects untrusted browser Origins on state-changing requests, marks authentication responses no-store, and provides a tenant-scoped audit stream. This does not by itself provide a reverse proxy, TLS termination, distributed rate limiting, secret rotation service, object-storage disaster recovery, or full tracing backend.
