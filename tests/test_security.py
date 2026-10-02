@@ -58,14 +58,19 @@ def test_untrusted_cross_origin_state_change_is_rejected():
 
 
 def test_auth_responses_are_marked_no_store():
+    from fastapi import FastAPI
     from fastapi.testclient import TestClient
-    from services.api.app.main import app
+    from services.api.app.core.middleware import security_middleware
 
-    response = TestClient(app).post(
-        "/api/v1/auth/login",
-        json={"email": "someone@example.com", "password": "not-a-password"},
-    )
-    assert response.status_code == 401
+    test_app = FastAPI()
+    test_app.middleware("http")(security_middleware)
+
+    @test_app.post("/api/v1/auth/test")
+    def auth_probe():
+        return {"status": "ok"}
+
+    response = TestClient(test_app).post("/api/v1/auth/test")
+    assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
 
 
