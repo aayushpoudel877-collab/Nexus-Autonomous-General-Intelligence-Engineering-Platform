@@ -15,6 +15,7 @@ from .learning import (
 from .tutor import TutorConversation, TutorMessage
 from .workbench import WorkbenchProject, WorkbenchDataset, WorkbenchExperiment
 from .research import ResearchPlan, ResearchTask
+from .ml_lifecycle import MLTrainingRun, RegisteredModel, ModelEvaluation
 
 __all__ = [
     "Organization",
@@ -40,4 +41,7 @@ __all__ = [
     "WorkbenchExperiment",
     "ResearchPlan",
     "ResearchTask",
+    "MLTrainingRun",
+    "RegisteredModel",
+    "ModelEvaluation",
 ]
