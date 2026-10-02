@@ -25,6 +25,8 @@ def test_training_run_schema_has_bounded_parameters():
 def test_training_run_update_rejects_empty_payload():
     with pytest.raises(ValidationError, match="At least one training run field"):
         TrainingRunUpdate()
+    with pytest.raises(ValidationError, match="Update fields cannot be null"):
+        TrainingRunUpdate(status=None)
 
 
 def test_training_run_lifecycle_requires_running_before_completion():
@@ -55,6 +57,8 @@ def test_model_requires_exactly_one_successful_source_reference():
 def test_model_approval_requires_human_note_field():
     with pytest.raises(ValidationError, match="At least one model field"):
         RegisteredModelUpdate()
+    with pytest.raises(ValidationError, match="Update fields cannot be null"):
+        RegisteredModelUpdate(approval_note=None)
     assert RegisteredModelUpdate(status="approved").status == "approved"
 
 
@@ -73,6 +77,8 @@ def test_evaluation_schema_and_lifecycle():
     assert evaluation.evaluator == "held-out validation"
     with pytest.raises(ValidationError, match="At least one evaluation field"):
         ModelEvaluationUpdate()
+    with pytest.raises(ValidationError, match="Update fields cannot be null"):
+        ModelEvaluationUpdate(summary=None)
     ensure_evaluation_transition("queued", "running")
     ensure_evaluation_transition("running", "passed")
     with pytest.raises(ValueError):
