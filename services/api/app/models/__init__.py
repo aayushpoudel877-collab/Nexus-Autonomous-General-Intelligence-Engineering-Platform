@@ -17,6 +17,7 @@ from .workbench import WorkbenchProject, WorkbenchDataset, WorkbenchExperiment
 from .research import ResearchPlan, ResearchTask
 from .ml_lifecycle import MLTrainingRun, RegisteredModel, ModelEvaluation
 from .multimodal import MultimodalAsset
+from .benchmark import BenchmarkComparison
 
 __all__ = [
     "Organization",
@@ -46,4 +47,5 @@ __all__ = [
     "RegisteredModel",
     "ModelEvaluation",
     "MultimodalAsset",
+    "BenchmarkComparison",
 ]

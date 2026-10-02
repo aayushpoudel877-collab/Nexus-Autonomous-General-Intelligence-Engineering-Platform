@@ -50,3 +50,10 @@ def test_multimodal_routes_are_registered():
     paths = app.openapi()["paths"]
     assert "/api/v1/multimodal/projects/{project_id}/assets" in paths
     assert "/api/v1/multimodal/assets/{asset_id}" in paths
+
+
+def test_continuous_improvement_routes_are_registered():
+    from services.api.app.main import app
+
+    paths = app.openapi()["paths"]
+    assert "/api/v1/benchmarks/projects/{project_id}/comparisons" in paths
