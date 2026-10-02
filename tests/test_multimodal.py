@@ -1,7 +1,9 @@
 import pytest
+from types import SimpleNamespace
+
 from pydantic import ValidationError
 
-from services.api.app.schemas.multimodal import MultimodalAssetCreate
+from services.api.app.schemas.multimodal import MultimodalAssetCreate, MultimodalAssetRead
 
 
 def test_text_asset_manifest_accepts_bounded_metadata():
@@ -77,3 +79,35 @@ def test_asset_manifest_limits_metadata_fields():
             media_type="application/json",
             metadata=metadata,
         )
+
+
+def test_asset_metadata_values_are_bounded():
+    with pytest.raises(ValidationError, match="16 KiB"):
+        MultimodalAssetCreate(
+            name="Large metadata",
+            modality="text",
+            source_reference="asset://text/one",
+            media_type="text/plain",
+            metadata={"description": "x" * 17000},
+        )
+    with pytest.raises(ValidationError, match="keys must be"):
+        MultimodalAssetCreate(
+            name="Bad metadata key",
+            modality="text",
+            source_reference="asset://text/one",
+            media_type="text/plain",
+            metadata={"": "value"},
+        )
+
+
+def test_asset_read_schema_serializes_metadata_json_attribute():
+    from datetime import datetime, timezone
+    from uuid import uuid4
+
+    record = SimpleNamespace(
+        id=uuid4(), project_id=uuid4(), owner_id=uuid4(), name="Sample", modality="text",
+        source_reference="asset://text/one", media_type="text/plain", sha256=None,
+        byte_size=None, duration_ms=None, width=None, height=None,
+        metadata_json={"language": "ne"}, created_at=datetime.now(timezone.utc),
+    )
+    assert MultimodalAssetRead.model_validate(record).metadata == {"language": "ne"}
