@@ -40,6 +40,11 @@ def test_experiment_status_is_constrained():
     assert ExperimentUpdate(status="succeeded").status == "succeeded"
 
 
+def test_experiment_update_rejects_empty_payload():
+    with pytest.raises(ValidationError, match="At least one experiment field"):
+        ExperimentUpdate()
+
+
 def test_experiment_lifecycle_allows_forward_progress():
     from services.api.app.services.workbench import ensure_status_transition
 
