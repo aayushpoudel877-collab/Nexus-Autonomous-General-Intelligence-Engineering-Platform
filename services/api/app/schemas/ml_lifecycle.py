@@ -101,10 +101,23 @@ class RegisteredModelRead(BaseModel):
     updated_at: datetime
 
 
+class MetricCriterion(BaseModel):
+    min: float | None = None
+    max: float | None = None
+
+    @model_validator(mode="after")
+    def require_bound(self) -> "MetricCriterion":
+        if self.min is None and self.max is None:
+            raise ValueError("A criterion must define min and/or max")
+        if self.min is not None and self.max is not None and self.min > self.max:
+            raise ValueError("Criterion min cannot exceed max")
+        return self
+
+
 class ModelEvaluationCreate(BaseModel):
     evaluator: str = Field(min_length=2, max_length=120)
     metrics: dict[str, float | int | str | None] = Field(default_factory=dict)
-    criteria: dict[str, float | int | str | bool | None] = Field(default_factory=dict)
+    criteria: dict[str, MetricCriterion] = Field(default_factory=dict)
     summary: str = Field(default="", max_length=12000)
 
 
