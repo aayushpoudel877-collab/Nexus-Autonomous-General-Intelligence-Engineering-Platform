@@ -45,6 +45,11 @@ def test_experiment_update_rejects_empty_payload():
         ExperimentUpdate()
 
 
+def test_experiment_update_rejects_null_values():
+    with pytest.raises(ValidationError, match="Update fields cannot be null"):
+        ExperimentUpdate(metrics=None)
+
+
 def test_experiment_lifecycle_allows_forward_progress():
     from services.api.app.services.workbench import ensure_status_transition
 
