@@ -16,6 +16,13 @@ class TrainingRunUpdate(BaseModel):
     metrics: dict[str, float | int | str | None] | None = None
     error_summary: str | None = Field(default=None, max_length=12000)
 
+    @model_validator(mode="before")
+    @classmethod
+    def reject_null_update_values(cls, values):
+        if isinstance(values, dict) and any(value is None for value in values.values()):
+            raise ValueError("Update fields cannot be null")
+        return values
+
     @model_validator(mode="after")
     def require_an_update(self) -> "TrainingRunUpdate":
         if self.status is None and self.metrics is None and self.error_summary is None:
@@ -62,6 +69,13 @@ class RegisteredModelUpdate(BaseModel):
     status: str | None = Field(default=None, pattern="^(candidate|validated|approved|archived)$")
     approval_note: str | None = Field(default=None, max_length=12000)
 
+    @model_validator(mode="before")
+    @classmethod
+    def reject_null_update_values(cls, values):
+        if isinstance(values, dict) and any(value is None for value in values.values()):
+            raise ValueError("Update fields cannot be null")
+        return values
+
     @model_validator(mode="after")
     def require_an_update(self) -> "RegisteredModelUpdate":
         if self.status is None and self.approval_note is None:
@@ -98,6 +112,13 @@ class ModelEvaluationUpdate(BaseModel):
     status: str | None = Field(default=None, pattern="^(queued|running|passed|failed|cancelled)$")
     metrics: dict[str, float | int | str | None] | None = None
     summary: str | None = Field(default=None, max_length=12000)
+
+    @model_validator(mode="before")
+    @classmethod
+    def reject_null_update_values(cls, values):
+        if isinstance(values, dict) and any(value is None for value in values.values()):
+            raise ValueError("Update fields cannot be null")
+        return values
 
     @model_validator(mode="after")
     def require_an_update(self) -> "ModelEvaluationUpdate":
