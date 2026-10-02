@@ -42,9 +42,10 @@ See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and s
 - **Phase 3 — AI Tutor:** persisted conversations and course lesson context with a clearly disclosed local fallback. A hosted language-model adapter is not yet connected.
 - **Phase 4 — AI Engineering Workbench:** project and dataset metadata, experiment planning and lifecycle tracking.
 - **Phase 5 — Autonomous Research (initial):** research plans, dependency-aware tasks, lifecycle validation and output summaries.
-- **Phase 6 — Autonomous ML Lifecycle (initial):** tenant-scoped training-run tracking, versioned model registry metadata, evaluation records, lifecycle rules, and a passing-evaluation plus human-note gate before model approval.
+- **Phase 6 — Autonomous ML Lifecycle (initial):** tenant-scoped training-run tracking, versioned model registry metadata, numeric evaluation thresholds, terminal-record immutability, and a human-note gate before model approval.
+- **Phase 7 — Multimodal Intelligence (initial):** tenant-scoped asset manifests for text, image, audio, video and structured data, modality-aware metadata validation, optional SHA-256 and size/duration/dimension fields, and a catalog UI.
 
-The research planner currently tracks plans and tasks; it does not autonomously run external tools or collect data. The ML lifecycle currently tracks training-run metadata, model records and evaluation results; it does not execute training code, load artifact URIs, deploy models or monitor live endpoints. These capabilities require later phases and explicit safety, evaluation and permission controls.
+The research planner currently tracks plans and tasks; it does not autonomously run external tools or collect data. The ML lifecycle currently tracks training-run metadata, model records and reported evaluation results; it does not execute training code, load artifact URIs, deploy models or monitor live endpoints. Evaluation pass status checks recorded numeric metrics against explicit thresholds, but metrics are still entered as evidence rather than produced by an automated evaluator. The multimodal catalog records references and metadata only; it does not upload, fetch, decode or infer on asset content. These capabilities require later phases and explicit safety, evaluation and permission controls.
 
 ## Repository checkpoint
 
