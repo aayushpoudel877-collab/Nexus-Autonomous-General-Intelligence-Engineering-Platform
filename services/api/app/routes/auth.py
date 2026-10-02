@@ -1,3 +1,4 @@
+from uuid import UUID
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
