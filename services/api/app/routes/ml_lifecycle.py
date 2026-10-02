@@ -3,7 +3,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from ..core.dependencies import get_current_user, get_membership
 from ..db.session import get_db
@@ -263,7 +262,8 @@ async def update_model(
                     status_code=409,
                     detail="At least one passed evaluation is required before validation or approval",
                 )
-        if requested_status == "approved" and not (updates.get("approval_note") or model.approval_note):
+        approval_note = updates.get("approval_note", model.approval_note)
+        if requested_status == "approved" and not approval_note.strip():
             raise HTTPException(
                 status_code=422,
                 detail="An approval note is required for human review traceability",
