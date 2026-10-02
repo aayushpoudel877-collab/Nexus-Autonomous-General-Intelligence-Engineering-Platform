@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ResearchPlanCreate(BaseModel):
@@ -26,6 +26,12 @@ class ResearchTaskUpdate(BaseModel):
         pattern="^(planned|ready|running|blocked|succeeded|failed|cancelled)$",
     )
     output_summary: str | None = Field(default=None, max_length=12000)
+
+    @model_validator(mode="after")
+    def require_an_update(self) -> "ResearchTaskUpdate":
+        if self.status is None and self.output_summary is None:
+            raise ValueError("At least one task field must be provided")
+        return self
 
 
 class ResearchTaskRead(BaseModel):
