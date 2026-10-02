@@ -31,3 +31,14 @@ def test_research_routes_are_registered():
     assert "/api/v1/research/plans" in paths
     assert "/api/v1/research/plans/{plan_id}/tasks" in paths
     assert "/api/v1/research/tasks/{task_id}" in paths
+
+
+def test_ml_lifecycle_routes_are_registered():
+    from services.api.app.main import app
+
+    paths = app.openapi()["paths"]
+    assert "/api/v1/ml/projects/{project_id}/training-runs" in paths
+    assert "/api/v1/ml/training-runs/{run_id}" in paths
+    assert "/api/v1/ml/projects/{project_id}/models" in paths
+    assert "/api/v1/ml/models/{model_id}/evaluations" in paths
+    assert "/api/v1/ml/evaluations/{evaluation_id}" in paths
