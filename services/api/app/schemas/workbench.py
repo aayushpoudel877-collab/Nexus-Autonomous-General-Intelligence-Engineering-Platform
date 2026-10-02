@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ProjectCreate(BaseModel):
@@ -54,6 +54,12 @@ class ExperimentUpdate(BaseModel):
     status: str | None = Field(default=None, pattern="^(planned|queued|running|succeeded|failed|cancelled)$")
     metrics: dict[str, float | int | str | None] | None = None
     notes: str | None = Field(default=None, max_length=12000)
+
+    @model_validator(mode="after")
+    def require_an_update(self) -> "ExperimentUpdate":
+        if self.status is None and self.metrics is None and self.notes is None:
+            raise ValueError("At least one experiment field must be provided")
+        return self
 
 
 class ExperimentRead(BaseModel):
