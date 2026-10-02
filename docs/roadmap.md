@@ -19,7 +19,7 @@ Initial implementation: tenant-scoped project creation/listing, dataset metadata
 Initial implementation: tenant-scoped research plans, task dependency validation, explicit task lifecycle transitions, prerequisite-aware execution status, output summaries and a research planner UI. Autonomous tool execution, literature retrieval and data-collection integrations remain future work.
 
 ## Phase 6 — Autonomous ML Lifecycle
-Training, model selection, evaluation, deployment, monitoring and rollback.
+Initial implementation: tenant-scoped training-run metadata and lifecycle transitions, model registry records linked only to successful same-project runs or experiments, evaluation records, immutable terminal states, unique model versioning, and a human-review note plus passing-evaluation gate before model approval. This phase tracks lifecycle state; it does not execute training code, load artifact URIs, deploy models, or monitor live endpoints.
 
 ## Phase 7 — Multimodal Intelligence
 Text, image, audio, video and structured-data pipelines with unified evaluation.
