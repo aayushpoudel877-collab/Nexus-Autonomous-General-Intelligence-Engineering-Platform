@@ -27,6 +27,13 @@ class ResearchTaskUpdate(BaseModel):
     )
     output_summary: str | None = Field(default=None, max_length=12000)
 
+    @model_validator(mode="before")
+    @classmethod
+    def reject_null_update_values(cls, values):
+        if isinstance(values, dict) and any(value is None for value in values.values()):
+            raise ValueError("Update fields cannot be null")
+        return values
+
     @model_validator(mode="after")
     def require_an_update(self) -> "ResearchTaskUpdate":
         if self.status is None and self.output_summary is None:
