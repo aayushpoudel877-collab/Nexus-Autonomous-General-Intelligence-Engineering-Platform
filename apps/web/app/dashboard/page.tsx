@@ -75,6 +75,7 @@ export default function DashboardPage() {
       <article><span className="status-dot" /><h2>Identity</h2><p>Your account and selected organization are active.</p></article>
       <article><span className="status-dot" /><h2>LMS</h2><p>Course, lesson and assessment infrastructure is available.</p></article>
       <article><span className="status-dot" /><h2>AI Engineering</h2><p>Projects, experiments and autonomous workflows connect here.</p></article>
+      <article><span className="status-dot" /><h2>Audit</h2><p>Review organization-scoped security and workflow events.</p><p><a href="/audit">Open audit stream</a></p></article>
     </section>
   </main>;
 }

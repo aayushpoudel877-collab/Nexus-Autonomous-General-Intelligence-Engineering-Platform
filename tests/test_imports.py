@@ -61,3 +61,9 @@ def test_continuous_improvement_routes_are_registered():
     paths = app.openapi()["paths"]
     assert "/api/v1/benchmarks/projects/{project_id}/comparisons" in paths
     assert "/api/v1/audit/events" in paths
+
+
+def test_audit_page_is_reachable_in_web_tree():
+    from pathlib import Path
+
+    assert Path("apps/web/app/audit/page.tsx").exists()
