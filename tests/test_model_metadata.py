@@ -8,6 +8,7 @@ from services.api.app.models import (
     MLTrainingRun,
     RegisteredModel,
     ModelEvaluation,
+    MultimodalAsset,
 )
 
 
@@ -21,6 +22,7 @@ def test_workbench_and_research_tables_are_registered():
         "ml_training_runs",
         "registered_models",
         "model_evaluations",
+        "multimodal_assets",
     }
     assert expected.issubset(Base.metadata.tables)
 
@@ -57,3 +59,11 @@ def test_registered_model_source_constraints_are_defined():
         for foreign_key in ModelEvaluation.__table__.c.model_id.foreign_keys
     }
     assert MLTrainingRun.__tablename__ == "ml_training_runs"
+
+
+def test_multimodal_asset_model_has_tenant_and_validation_fields():
+    assert MultimodalAsset.__tablename__ == "multimodal_assets"
+    columns = MultimodalAsset.__table__.columns
+    assert {"project_id", "owner_id", "modality", "source_reference", "media_type", "sha256", "metadata"}.issubset(columns.keys())
+    foreign_keys = {key.target_fullname for key in columns.project_id.foreign_keys}
+    assert "workbench_projects.id" in foreign_keys
