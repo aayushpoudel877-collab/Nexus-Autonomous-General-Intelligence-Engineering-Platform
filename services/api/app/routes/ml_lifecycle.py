@@ -30,6 +30,7 @@ from ..services.ml_lifecycle import (
     ensure_evaluation_transition,
     ensure_model_transition,
     ensure_run_transition,
+    evaluation_criteria_met,
     utc_now,
 )
 
@@ -141,7 +142,10 @@ async def update_training_run(
         raise HTTPException(status_code=404, detail="Training run not found")
     updates = payload.model_dump(exclude_unset=True)
     requested_status = updates.get("status")
-    if requested_status is not None:
+    terminal_run = run.status in {"succeeded", "failed", "cancelled"}
+    if terminal_run and any(key != "status" for key in updates):
+        raise HTTPException(status_code=409, detail="Terminal training runs are immutable")
+    if requested_status is not None and requested_status != run.status:
         try:
             ensure_run_transition(run.status, requested_status)
         except ValueError as exc:
@@ -251,16 +255,22 @@ async def update_model(
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         if requested_status in {"validated", "approved"}:
-            passed = await db.scalar(
-                select(ModelEvaluation.id).where(
+            passed_rows = await db.scalars(
+                select(ModelEvaluation).where(
                     ModelEvaluation.model_id == model.id,
                     ModelEvaluation.status == "passed",
-                ).limit(1)
+                )
             )
-            if not passed:
+            has_valid_evidence = any(
+                evaluation_criteria_met(
+                    evaluation.metrics or {}, evaluation.criteria or {}
+                )[0]
+                for evaluation in passed_rows.all()
+            )
+            if not has_valid_evidence:
                 raise HTTPException(
                     status_code=409,
-                    detail="At least one passed evaluation is required before validation or approval",
+                    detail="A passed evaluation with recorded metrics meeting every criterion is required before validation or approval",
                 )
         approval_note = updates.get("approval_note", model.approval_note)
         if requested_status == "approved" and not approval_note.strip():
@@ -333,11 +343,24 @@ async def update_evaluation(
         raise HTTPException(status_code=404, detail="Model evaluation not found")
     updates = payload.model_dump(exclude_unset=True)
     requested_status = updates.get("status")
-    if requested_status is not None:
+    terminal_evaluation = evaluation.status in {"passed", "failed", "cancelled"}
+    if terminal_evaluation and any(key != "status" for key in updates):
+        raise HTTPException(status_code=409, detail="Terminal evaluations are immutable")
+    if requested_status is not None and requested_status != evaluation.status:
         try:
             ensure_evaluation_transition(evaluation.status, requested_status)
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if requested_status == "passed":
+            candidate_metrics = updates.get("metrics", evaluation.metrics or {})
+            passed, issues = evaluation_criteria_met(
+                candidate_metrics, evaluation.criteria or {}
+            )
+            if not passed:
+                raise HTTPException(
+                    status_code=409,
+                    detail={"message": "Evaluation criteria are not satisfied", "issues": issues},
+                )
         if requested_status in {"passed", "failed", "cancelled"}:
             evaluation.finished_at = utc_now()
     for key, value in updates.items():
