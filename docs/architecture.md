@@ -14,3 +14,7 @@
 - Reproducible experiments and versioned artifacts.
 - Human approval gates for consequential external actions.
 - Security and evaluation are first-class platform concerns.
+
+## ML lifecycle boundary
+
+The Phase 6 API records training-run metadata and state, versioned model records, and evaluation results. It never imports or executes user-supplied code and never dereferences artifact URIs. Model approval is a separate, explicit state transition that requires a passed evaluation and a human review note. A later execution service must add isolated workers, resource budgets, signed artifacts, provenance, policy enforcement, and deployment approval before running training or serving models.
