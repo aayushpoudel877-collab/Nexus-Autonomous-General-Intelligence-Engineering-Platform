@@ -53,25 +53,25 @@ async def get_current_user(
 
 
 async def get_membership(user: User, db: AsyncSession) -> Membership:
-    """Resolve the user's sole membership without silently choosing a tenant.
+    """Resolve the selected membership, failing closed on ambiguity."""
 
-    Multi-organization selection is intentionally explicit work for a later phase.
-    Until then, fail closed rather than accidentally operating in an arbitrary org.
-    """
     selected_id = getattr(user, "_selected_organization_id", None)
     if selected_id is not None:
-        selected = await db.scalar(
-            select(Membership).where(
-                Membership.user_id == user.id,
-                Membership.organization_id == selected_id,
-            )
+        memberships = list(
+            (
+                await db.scalars(
+                    select(Membership)
+                    .where(Membership.user_id == user.id)
+                )
+            ).all()
         )
-        if selected is None:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Selected organization is not available to this account",
-            )
-        return selected
+        for membership in memberships:
+            if membership.organization_id == selected_id:
+                return membership
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Selected organization is not available to this account",
+        )
 
     memberships = list(
         (
