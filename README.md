@@ -42,8 +42,9 @@ See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and s
 - **Phase 3 — AI Tutor:** persisted conversations and course lesson context with a clearly disclosed local fallback. A hosted language-model adapter is not yet connected.
 - **Phase 4 — AI Engineering Workbench:** project and dataset metadata, experiment planning and lifecycle tracking.
 - **Phase 5 — Autonomous Research (initial):** research plans, dependency-aware tasks, lifecycle validation and output summaries.
+- **Phase 6 — Autonomous ML Lifecycle (initial):** tenant-scoped training-run tracking, versioned model registry metadata, evaluation records, lifecycle rules, and a passing-evaluation plus human-note gate before model approval.
 
-The research planner currently tracks plans and tasks; it does not autonomously run external tools, collect data, train models or deploy services. These capabilities require later phases and explicit safety, evaluation and permission controls.
+The research planner currently tracks plans and tasks; it does not autonomously run external tools or collect data. The ML lifecycle currently tracks training-run metadata, model records and evaluation results; it does not execute training code, load artifact URIs, deploy models or monitor live endpoints. These capabilities require later phases and explicit safety, evaluation and permission controls.
 
 ## Repository checkpoint
 
