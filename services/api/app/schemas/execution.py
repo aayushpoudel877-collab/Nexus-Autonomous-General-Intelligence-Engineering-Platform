@@ -1,6 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
+import json
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ..services.execution import (
@@ -12,7 +14,6 @@ from ..services.execution import (
     MAX_TIMEOUT_SECONDS,
     validate_network_allowlist,
 )
-import json
 
 
 class ExecutionRequestCreate(BaseModel):
@@ -84,6 +85,12 @@ class ExecutionRequestRead(BaseModel):
     policy_snapshot: dict
     status: str
     worker_id: str | None
+    attempt_count: int
+    lease_expires_at: datetime | None
+    heartbeat_at: datetime | None
+    result_json: dict
+    output_bytes: int
+    error_code: str | None
     failure_reason: str | None
     created_at: datetime
     started_at: datetime | None
