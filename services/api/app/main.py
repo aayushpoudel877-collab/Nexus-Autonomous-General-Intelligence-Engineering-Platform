@@ -15,6 +15,7 @@ from .routes.ml_lifecycle import router as ml_lifecycle_router
 from .routes.multimodal import router as multimodal_router
 from .routes.benchmarks import router as benchmarks_router
 from .routes.audit import router as audit_router
+from .routes.developer import router as developer_router
 
 app = FastAPI(title="NEXUS-Ω API", version="0.9.0")
 
@@ -41,5 +42,6 @@ app.include_router(ml_lifecycle_router, prefix="/api/v1")
 app.include_router(multimodal_router, prefix="/api/v1")
 app.include_router(benchmarks_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
+app.include_router(developer_router, prefix="/api/v1")
 
 app.middleware("http")(security_middleware)
