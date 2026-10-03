@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from services.api.app.core.config import settings
 from services.api.app.db.base import Base
-from services.api.app.models import AuditEvent, Membership, Organization, RefreshSession, Role, User
+import services.api.app.models as _models  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
