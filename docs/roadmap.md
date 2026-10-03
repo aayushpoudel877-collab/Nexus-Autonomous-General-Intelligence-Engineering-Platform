@@ -38,3 +38,7 @@ Initial implementation: tenant-scoped integration connections that store only no
 
 ## Phase 12 — Controlled Execution Plane
 Initial implementation: tenant-scoped, idempotent execution requests linked to approved plugin installations; capability subset enforcement against the installation and plugin manifest; bounded timeout, memory and output limits; explicit network policy; reproducible policy snapshots; cancellation; and a persistent queue boundary. Arbitrary plugin execution, worker sandboxing, package fetching, secret-manager resolution and outbound network dispatch remain future work.
+
+
+## Phase 13 — Execution Worker & Lease Control
+Initial implementation: a separate execution worker process with PostgreSQL row-lock claiming, bounded leases, heartbeats, retry/recovery for abandoned work, cancellation-safe completion, bounded result records and worker audit events. The worker intentionally fails closed for external plugin entrypoints because artifact retrieval, trust-root verification, secret mediation, egress enforcement and sandboxed plugin execution are not yet activated.
