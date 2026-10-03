@@ -1,0 +1,70 @@
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class DeveloperApiKeyCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    scopes: list[str] = Field(default_factory=list, max_length=4)
+    expires_at: datetime | None = None
+
+    @field_validator("scopes")
+    @classmethod
+    def validate_scopes(cls, value: list[str]) -> list[str]:
+        return list(dict.fromkeys(value))
+
+
+class DeveloperApiKeyRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    key_prefix: str
+    scopes: list[str]
+    expires_at: datetime | None
+    last_used_at: datetime | None
+    revoked_at: datetime | None
+    created_at: datetime
+
+
+class DeveloperApiKeyCreated(DeveloperApiKeyRead):
+    secret: str
+
+
+class PluginCreate(BaseModel):
+    slug: str = Field(min_length=2, max_length=100, pattern=r"^[a-z0-9][a-z0-9-._]*$")
+    name: str = Field(min_length=2, max_length=160)
+    version: str = Field(min_length=1, max_length=40)
+    description: str = Field(default="", max_length=4000)
+    manifest: dict = Field(default_factory=dict)
+
+
+class PluginUpdate(BaseModel):
+    version: str | None = Field(default=None, min_length=1, max_length=40)
+    description: str | None = Field(default=None, max_length=4000)
+    manifest: dict | None = None
+    status: str | None = Field(default=None, pattern=r"^(active|disabled)$")
+
+
+class PluginRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    organization_id: UUID
+    slug: str
+    name: str
+    version: str
+    description: str
+    manifest: dict
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class DeveloperIdentity(BaseModel):
+    organization_id: UUID
+    key_id: UUID
+    key_prefix: str
+    scopes: list[str]
+    expires_at: datetime | None
