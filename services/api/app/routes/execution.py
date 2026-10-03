@@ -107,6 +107,14 @@ async def create_execution_request(
                 max_output_bytes=payload.max_output_bytes,
                 network_policy=payload.network_policy,
                 network_allowlist=payload.network_allowlist,
+                provenance={
+                    "plugin_id": str(plugin.id),
+                    "plugin_release_id": str(release.id),
+                    "plugin_version": release.version,
+                    "package_sha256": release.package_sha256,
+                    "manifest_sha256": release.manifest_sha256,
+                    "signer": release.signer,
+                },
             )
         )
     except ValueError as exc:
