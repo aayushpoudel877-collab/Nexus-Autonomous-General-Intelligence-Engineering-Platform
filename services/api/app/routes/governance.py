@@ -275,8 +275,8 @@ async def request_installation(
     api_key: DeveloperApiKey = Depends(require_api_key_scopes("plugin:install")),
     db: AsyncSession = Depends(get_db),
 ):
-    release = await db.scalar(
-        select(PluginRelease)
+    release_and_plugin = await db.execute(
+        select(PluginRelease, PluginRegistration)
         .join(PluginRegistration, PluginRelease.plugin_id == PluginRegistration.id)
         .where(
             PluginRelease.id == payload.plugin_release_id,
@@ -284,10 +284,24 @@ async def request_installation(
             PluginRegistration.organization_id == api_key.organization_id,
         )
     )
-    if release is None:
+    row = release_and_plugin.first()
+    if row is None:
         raise HTTPException(status_code=404, detail="Plugin release not found")
+    release, plugin = row
     if release.status != "verified":
         raise HTTPException(status_code=409, detail="Only verified plugin releases can be installed")
+
+    declared_capabilities = plugin.manifest.get("capabilities", [])
+    if not isinstance(declared_capabilities, list) or any(
+        not isinstance(capability, str) for capability in declared_capabilities
+    ):
+        raise HTTPException(status_code=409, detail="Plugin manifest has no valid capabilities declaration")
+    requested_scopes = list(dict.fromkeys(payload.requested_scopes))
+    if not set(requested_scopes).issubset(set(declared_capabilities)):
+        raise HTTPException(
+            status_code=422,
+            detail="Requested plugin scopes must be declared by the plugin manifest",
+        )
 
     existing = await db.scalar(
         select(PluginInstallation).where(
@@ -302,7 +316,7 @@ async def request_installation(
         organization_id=api_key.organization_id,
         plugin_release_id=release.id,
         created_by_user_id=api_key.created_by_user_id,
-        requested_scopes=list(dict.fromkeys(payload.requested_scopes)),
+        requested_scopes=requested_scopes,
     )
     db.add(installation)
     await db.flush()
