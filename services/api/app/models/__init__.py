@@ -19,6 +19,7 @@ from .ml_lifecycle import MLTrainingRun, RegisteredModel, ModelEvaluation
 from .multimodal import MultimodalAsset
 from .benchmark import BenchmarkComparison
 from .ecosystem import DeveloperApiKey, PluginRegistration
+from .integration import IntegrationConnection, PluginInstallation, PluginRelease
 
 __all__ = [
     "Organization",
@@ -51,4 +52,7 @@ __all__ = [
     "BenchmarkComparison",
     "DeveloperApiKey",
     "PluginRegistration",
+    "IntegrationConnection",
+    "PluginRelease",
+    "PluginInstallation",
 ]
