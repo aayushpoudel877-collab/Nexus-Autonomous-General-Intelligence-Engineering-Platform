@@ -54,6 +54,7 @@ def build_policy_snapshot(
     max_output_bytes: int,
     network_policy: str,
     network_allowlist: list[str],
+    provenance: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     return {
         "version": 1,
@@ -72,6 +73,7 @@ def build_policy_snapshot(
             "artifact_verification_required": True,
             "secret_access_requires_external_reference": True,
         },
+        "provenance": dict(provenance or {}),
     }
 
 
@@ -83,6 +85,7 @@ def normalize_execution_policy(
     max_output_bytes: int,
     network_policy: str,
     network_allowlist: list[str],
+    provenance: dict[str, str] | None = None,
 ) -> tuple[list[str], list[str], dict[str, Any]]:
     capabilities = list(dict.fromkeys(capabilities))
     if not capabilities or len(capabilities) > MAX_CAPABILITIES:
@@ -111,5 +114,6 @@ def normalize_execution_policy(
         max_output_bytes=max_output_bytes,
         network_policy=network_policy,
         network_allowlist=normalized_allowlist,
+        provenance=provenance,
     )
     return capabilities, normalized_allowlist, snapshot
