@@ -38,3 +38,7 @@ The API now adds correlation IDs and baseline response security headers, validat
 ## Developer ecosystem boundary
 
 Phase 10 introduces tenant-scoped developer API keys, explicit capability scopes, plugin registration metadata, and a lightweight SDK transport boundary. API keys are stored as one-way SHA-256 digests and can expire or be revoked. Plugin registrations are metadata only: the API never downloads, imports, or executes plugin packages. A future integration plane must add signed manifests, package provenance, sandboxed execution, secret management, outbound delivery controls, rate limits and policy enforcement before external plugins can run.
+
+## Phase 11 governance boundary
+
+The ecosystem governance layer introduces three controls before any future plugin or integration execution: external secret references instead of raw credentials, release-level package/manifest digest and signature metadata with explicit review state, and tenant-scoped installation requests with human approval and capability subset approval. Phase 11 does not download artifacts, verify trust roots automatically, execute plugin code, or make outbound network calls.
