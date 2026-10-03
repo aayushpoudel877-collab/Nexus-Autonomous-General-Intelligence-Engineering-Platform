@@ -47,3 +47,10 @@ The ecosystem governance layer introduces three controls before any future plugi
 ## Phase 12 controlled execution boundary
 
 Phase 12 adds a persistent execution control plane between approved plugin installations and any future worker runtime. Execution requests are tenant-scoped and idempotent, require an approved installation tied to a verified release, and can request only capabilities already approved for that installation and declared by the plugin manifest. Resource limits and network policy are captured in a policy snapshot at request time. The API does not execute plugin code; a future worker must run outside the API process with sandboxing, artifact verification, secret mediation, egress restrictions and resource isolation.
+
+
+## Phase 13 execution worker boundary
+
+Phase 13 moves queue ownership outside the API process. Dedicated workers claim queued executions with PostgreSQL row locks and expiring leases, heartbeat active requests, recover abandoned attempts and write bounded terminal results. Cancellation clears the lease so a worker cannot later overwrite a cancelled request. Worker audit events record claims, terminal completion and lease loss without exposing request payloads.
+
+The worker still fails closed for external plugin entrypoints. It does not fetch packages, import plugin code, resolve secrets, open outbound sockets or bypass the request's policy snapshot. The next runtime phase must provide verified artifact retrieval, signed trust roots, process/container sandboxing, resource enforcement and egress mediation before arbitrary plugin code is eligible to run.
