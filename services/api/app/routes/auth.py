@@ -30,8 +30,12 @@ async def _issue_tokens(db: AsyncSession, user: User) -> TokenResponse:
     db.add(RefreshSession(user_id=user.id, token_hash=hash_refresh_token(refresh), expires_at=datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_days)))
     return TokenResponse(access_token=create_access_token(user.id), refresh_token=refresh)
 
-def _request_meta(request: Request) -> tuple[str | None, str | None]:
-    return request.client.host if request.client else None, request.headers.get("user-agent")
+def _request_meta(request: Request) -> tuple[str | None, str | None, str | None]:
+    return (
+        request.client.host if request.client else None,
+        request.headers.get("user-agent"),
+        getattr(request.state, "request_id", None),
+    )
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
@@ -49,8 +53,18 @@ async def register(payload: RegisterRequest, request: Request, response: Respons
     db.add_all([org, user])
     await db.flush()
     db.add(Membership(user_id=user.id, organization_id=org.id, role_id=role.id))
-    ip, agent = _request_meta(request)
-    await record_audit(db, action="identity.registered", resource_type="user", actor_user_id=user.id, organization_id=org.id, detail={"email": email}, ip_address=ip, user_agent=agent)
+    ip, agent, request_id = _request_meta(request)
+    await record_audit(
+        db,
+        action="identity.registered",
+        resource_type="user",
+        actor_user_id=user.id,
+        organization_id=org.id,
+        detail={"email": email},
+        ip_address=ip,
+        user_agent=agent,
+        request_id=request_id,
+    )
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
@@ -66,8 +80,17 @@ async def login(payload: LoginRequest, request: Request, response: Response, db:
     if not user.is_active:
         raise HTTPException(status_code=403, detail="User is inactive")
     memberships = list((await db.scalars(select(Membership).where(Membership.user_id == user.id))).all())
-    ip, agent = _request_meta(request)
-    await record_audit(db, action="identity.login", resource_type="user", actor_user_id=user.id, organization_id=memberships[0].organization_id if len(memberships) == 1 else None, ip_address=ip, user_agent=agent)
+    ip, agent, request_id = _request_meta(request)
+    await record_audit(
+        db,
+        action="identity.login",
+        resource_type="user",
+        actor_user_id=user.id,
+        organization_id=memberships[0].organization_id if len(memberships) == 1 else None,
+        ip_address=ip,
+        user_agent=agent,
+        request_id=request_id,
+    )
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
@@ -88,6 +111,17 @@ async def refresh(request: Request, response: Response, refresh_token: str | Non
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User is unavailable")
     session.revoked_at = now
+    ip, agent, request_id = _request_meta(request)
+    await record_audit(
+        db,
+        action="identity.refresh",
+        resource_type="refresh_session",
+        actor_user_id=user.id,
+        detail={"session_id": str(session.id)},
+        ip_address=ip,
+        user_agent=agent,
+        request_id=request_id,
+    )
     tokens = await _issue_tokens(db, user)
     await db.commit()
     _set_auth_cookies(response, tokens)
@@ -96,11 +130,27 @@ async def refresh(request: Request, response: Response, refresh_token: str | Non
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(request: Request, response: Response, refresh_token: str | None = None, db: AsyncSession = Depends(get_db)):
     token = refresh_token or request.cookies.get("nexus_refresh_token")
+    session = None
     if token:
-        session = await db.scalar(select(RefreshSession).where(RefreshSession.token_hash == hash_refresh_token(token)))
+        session = await db.scalar(
+            select(RefreshSession).where(RefreshSession.token_hash == hash_refresh_token(token))
+        )
         if session and not session.revoked_at:
             session.revoked_at = datetime.now(timezone.utc)
-            await db.commit()
+    if session:
+        ip, agent, request_id = _request_meta(request)
+        user = await db.get(User, session.user_id)
+        await record_audit(
+            db,
+            action="identity.logout",
+            resource_type="refresh_session",
+            actor_user_id=session.user_id,
+            detail={"session_id": str(session.id)},
+            ip_address=ip,
+            user_agent=agent,
+            request_id=request_id,
+        )
+    await db.commit()
     response.delete_cookie("nexus_access_token", path="/")
     response.delete_cookie("nexus_refresh_token", path="/api/v1/auth")
     response.delete_cookie("nexus_organization_id", path="/")
