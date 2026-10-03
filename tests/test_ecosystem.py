@@ -156,3 +156,47 @@ def test_default_developer_key_scopes_include_phase_11_read_access():
     assert "plugin:read" in scopes
     assert "integration:read" in scopes
     assert len(scopes) == 3
+
+
+
+def test_sdk_execution_request_serializes_controls(monkeypatch):
+    from packages.sdk.client import NexusClient
+
+    seen = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b'{"status":"queued"}'
+
+    def fake_urlopen(request, timeout):
+        seen["body"] = request.data.decode("utf-8")
+        seen["path"] = request.full_url
+        return FakeResponse()
+
+    monkeypatch.setattr("packages.sdk.client.urlopen", fake_urlopen)
+
+    result = NexusClient(
+        "http://localhost:8000/api/v1",
+        "nxk_test_secret",
+    ).create_execution_request(
+        installation_id="00000000-0000-0000-0000-000000000001",
+        idempotency_key="execution-123",
+        entrypoint="plugin.run",
+        capabilities=["dataset.read"],
+        timeout_seconds=60,
+        max_memory_mb=256,
+        max_output_bytes=4096,
+        network_policy="allowlist",
+        network_allowlist=["api.example.com:443"],
+    )
+
+    assert result == {"status": "queued"}
+    assert seen["path"].endswith("/execution/requests")
+    assert '"network_policy": "allowlist"' in seen["body"]
+    assert '"timeout_seconds": 60' in seen["body"]
