@@ -113,7 +113,12 @@ async def create_execution_request(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     approved_capabilities = set(installation.approved_scopes or [])
-    declared_capabilities = _manifest_capabilities(plugin.manifest or {})
+    if not isinstance(release.manifest_snapshot, dict):
+        raise HTTPException(
+            status_code=409,
+            detail="Plugin release does not contain a frozen manifest snapshot",
+        )
+    declared_capabilities = _manifest_capabilities(release.manifest_snapshot)
     if not set(requested_capabilities).issubset(approved_capabilities):
         raise HTTPException(
             status_code=422,
@@ -125,7 +130,7 @@ async def create_execution_request(
             detail="Execution capabilities must be declared by the plugin manifest",
         )
 
-    declared_entrypoints = _manifest_entrypoints(plugin.manifest or {})
+    declared_entrypoints = _manifest_entrypoints(release.manifest_snapshot)
     if payload.entrypoint not in declared_entrypoints:
         raise HTTPException(
             status_code=422,
