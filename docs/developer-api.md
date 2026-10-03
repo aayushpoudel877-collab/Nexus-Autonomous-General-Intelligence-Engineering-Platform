@@ -76,3 +76,27 @@ This phase does not:
 - or dispatch outbound webhook events.
 
 Those capabilities require separate isolation, policy, signing, rotation, and delivery controls.
+
+
+## Phase 11 governance APIs
+
+New developer scopes:
+
+- `plugin:release`
+- `plugin:install`
+- `integration:read`
+- `integration:write`
+
+Governance endpoints:
+
+- `GET /api/v1/governance/integrations`
+- `POST /api/v1/governance/integrations`
+- `PATCH /api/v1/governance/integrations/{integration_id}`
+- `GET /api/v1/governance/plugins/{plugin_id}/releases`
+- `POST /api/v1/governance/plugins/{plugin_id}/releases`
+- `POST /api/v1/governance/plugin-releases/{release_id}/verify`
+- `GET /api/v1/governance/plugin-installations`
+- `POST /api/v1/governance/plugin-installations`
+- `POST /api/v1/governance/plugin-installations/{installation_id}/approve`
+
+Integration configuration is explicitly non-secret. The API accepts only external `secret://...` references, and common secret-like config fields are rejected. Plugin releases remain metadata-only and must be explicitly reviewed before installation requests can be created.
