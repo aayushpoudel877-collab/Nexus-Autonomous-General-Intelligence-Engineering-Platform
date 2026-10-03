@@ -6,7 +6,11 @@ from services.api.app.schemas.execution import ExecutionRequestCreate
 from services.api.app.services.execution import (
     build_policy_snapshot,
     ensure_execution_transition,
+    execution_lease_expiry,
     normalize_execution_policy,
+    normalize_execution_result,
+    normalize_failure_reason,
+    should_retry_execution,
     validate_network_allowlist,
 )
 
@@ -128,3 +132,36 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "secret_access_requires_external_reference": True,
         },
     }
+
+
+
+def test_worker_lease_expiry_is_bounded():
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 10, 3, 4, 0, tzinfo=timezone.utc)
+    expiry = execution_lease_expiry(now=now, lease_seconds=30)
+    assert (expiry - now).total_seconds() == 30
+
+
+def test_worker_lease_result_is_bounded():
+    result, size = normalize_execution_result(
+        {"status": "ok", "value": "hello"},
+        max_output_bytes=4096,
+    )
+    assert result["status"] == "ok"
+    assert size > 0
+
+    with pytest.raises(ValueError):
+        normalize_execution_result({"value": "x" * 5000}, max_output_bytes=4096)
+
+
+def test_worker_failures_are_normalized_and_retried_within_limit():
+    assert normalize_failure_reason("  execution failed  ") == "execution failed"
+    assert should_retry_execution(0) is True
+    assert should_retry_execution(2) is True
+    assert should_retry_execution(3) is False
+
+
+def test_worker_lease_rejects_unsafe_duration():
+    with pytest.raises(ValueError):
+        execution_lease_expiry(lease_seconds=4)
