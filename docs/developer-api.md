@@ -100,3 +100,17 @@ Governance endpoints:
 - `POST /api/v1/governance/plugin-installations/{installation_id}/approve`
 
 Integration configuration is explicitly non-secret. The API accepts only external `secret://...` references, and common secret-like config fields are rejected. Plugin releases remain metadata-only and must be explicitly reviewed before installation requests can be created.
+
+
+## Phase 12 execution requests
+
+The `plugin:execute` scope enables the controlled execution queue:
+
+- `GET /api/v1/execution/requests`
+- `POST /api/v1/execution/requests`
+- `GET /api/v1/execution/requests/{request_id}`
+- `POST /api/v1/execution/requests/{request_id}/cancel`
+
+An execution request must reference an approved installation for a verified plugin release. Requested capabilities are checked against both the approved installation scopes and the plugin's declared capabilities and entrypoints.
+
+Requests are idempotent by organization plus `idempotency_key`. They capture bounded timeout, memory, output and network-policy limits in a policy snapshot. The API only queues the request; it does not execute plugin code.
