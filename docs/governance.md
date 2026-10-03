@@ -18,7 +18,7 @@ Phase 11 does not make outbound calls for an integration. Connections are record
 
 ## Plugin releases
 
-A plugin registration may publish immutable release records containing:
+A plugin registration may publish release records containing:
 
 - version
 - artifact URI
@@ -51,3 +51,10 @@ Phase 11 intentionally does not provide:
 - unrestricted integration credentials
 
 A future execution plane should add sandboxing, signed trust roots, package provenance, secret-manager integration, egress policy, resource limits and detailed execution audit trails before activating external code or network actions.
+
+
+### Release manifest freezing
+
+Each new release must supply a manifest SHA-256 that matches the canonical hash of the plugin manifest at release creation time. The canonical manifest is copied into the release as a snapshot. Installation and execution capability checks use that frozen snapshot rather than mutable current plugin metadata.
+
+Legacy releases created before manifest snapshots were introduced remain non-executable until a new release is published with a frozen manifest.
