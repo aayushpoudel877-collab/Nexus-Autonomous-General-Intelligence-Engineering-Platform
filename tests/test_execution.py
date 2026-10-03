@@ -118,7 +118,10 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "max_output_bytes": 4096,
         },
         "network": {"policy": "none", "allowlist": []},
-        "provenance": {},
+        "provenance": {
+            "plugin_release_id": "release-1",
+            "package_sha256": "a" * 64,
+        },
         "execution": {
             "sandbox_required": True,
             "artifact_verification_required": True,
