@@ -14,6 +14,13 @@ class DeveloperApiKeyCreate(BaseModel):
     def validate_scopes(cls, value: list[str]) -> list[str]:
         return list(dict.fromkeys(value))
 
+    @field_validator("expires_at")
+    @classmethod
+    def require_timezone(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("expires_at must include a timezone")
+        return value
+
 
 class DeveloperApiKeyRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
