@@ -150,3 +150,53 @@ class NexusClient:
                 "requested_scopes": requested_scopes or [],
             },
         )
+
+
+
+    def list_execution_requests(self) -> list[dict[str, Any]]:
+        return self.request("GET", "/execution/requests")
+
+    def get_execution_request(self, request_id: str) -> dict[str, Any]:
+        return self.request("GET", f"/execution/requests/{request_id}")
+
+    def create_execution_request(
+        self,
+        *,
+        installation_id: str,
+        idempotency_key: str,
+        entrypoint: str,
+        capabilities: list[str],
+        input_json: dict[str, Any] | None = None,
+        timeout_seconds: int = 300,
+        max_memory_mb: int = 512,
+        max_output_bytes: int = 1_048_576,
+        network_policy: str = "none",
+        network_allowlist: list[str] | None = None,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/execution/requests",
+            {
+                "installation_id": installation_id,
+                "idempotency_key": idempotency_key,
+                "entrypoint": entrypoint,
+                "capabilities": capabilities,
+                "input_json": input_json or {},
+                "timeout_seconds": timeout_seconds,
+                "max_memory_mb": max_memory_mb,
+                "max_output_bytes": max_output_bytes,
+                "network_policy": network_policy,
+                "network_allowlist": network_allowlist or [],
+            },
+        )
+
+    def cancel_execution_request(
+        self,
+        request_id: str,
+        reason: str = "Cancelled by caller",
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            f"/execution/requests/{request_id}/cancel",
+            {"reason": reason},
+        )
