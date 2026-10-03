@@ -145,7 +145,7 @@ def normalize_execution_result(
     max_output_bytes: int,
 ) -> tuple[dict[str, Any], int]:
     if not isinstance(result, dict):
-        raise ValueError("Execution results must be JSON objects")
+        raise TypeError("Execution results must be JSON objects")
     encoded = json.dumps(
         result,
         separators=(",", ":"),
