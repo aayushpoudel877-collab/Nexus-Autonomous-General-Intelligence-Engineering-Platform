@@ -1,6 +1,7 @@
 from functools import lru_cache
 import os
 import socket
+from uuid import uuid4
 
 
 def _positive_float(name: str, default: float, minimum: float, maximum: float) -> float:
@@ -23,7 +24,9 @@ class WorkerSettings:
             "DATABASE_URL",
             "postgresql+asyncpg://nexus:nexus@localhost:5432/nexus",
         )
-        self.worker_id = os.getenv("NEXUS_WORKER_ID", socket.gethostname())[:160]
+        self.worker_id = os.getenv(
+            "NEXUS_WORKER_ID", f"{socket.gethostname()}-{uuid4().hex[:12]}"
+        )[:160]
         self.poll_seconds = _positive_float("NEXUS_WORKER_POLL_SECONDS", 2.0, 0.1, 30.0)
         self.lease_seconds = _bounded_int("NEXUS_WORKER_LEASE_SECONDS", 60, 5, 600)
 
