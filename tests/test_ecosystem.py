@@ -145,3 +145,14 @@ def test_sdk_converts_http_errors_to_nexus_api_errors(monkeypatch):
 
     assert error.value.status_code == 403
     assert error.value.detail == {"detail": "scope denied"}
+
+
+
+def test_default_developer_key_scopes_include_phase_11_read_access():
+    from services.api.app.services.ecosystem import normalize_scopes
+
+    scopes = normalize_scopes([])
+    assert "developer:read" in scopes
+    assert "plugin:read" in scopes
+    assert "integration:read" in scopes
+    assert len(scopes) == 3
