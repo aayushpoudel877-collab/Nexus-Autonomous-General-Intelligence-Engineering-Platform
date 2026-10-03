@@ -67,3 +67,20 @@ def test_installation_approval_schema_is_explicit():
     )
     assert payload.status == "approved"
     assert payload.approved_scopes == ["plugin.read"]
+
+
+
+def test_integration_requires_external_secret_reference():
+    with pytest.raises(ValidationError):
+        IntegrationCreate(
+            provider="github",
+            name="bad-secret-ref",
+            secret_ref="plaintext-secret-value",
+        )
+
+    valid = IntegrationCreate(
+        provider="github",
+        name="valid-secret-ref",
+        secret_ref="secret://vault/nexus/github/token",
+    )
+    assert valid.secret_ref.startswith("secret://")
