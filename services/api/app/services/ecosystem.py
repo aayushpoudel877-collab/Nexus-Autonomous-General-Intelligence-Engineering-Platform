@@ -8,9 +8,13 @@ ALLOWED_API_KEY_SCOPES = frozenset(
         "developer:write",
         "plugin:read",
         "plugin:write",
+        "plugin:release",
+        "plugin:install",
+        "integration:read",
+        "integration:write",
     }
 )
-DEFAULT_API_KEY_SCOPES = ("developer:read", "plugin:read")
+DEFAULT_API_KEY_SCOPES = ("developer:read", "plugin:read", "integration:read")
 
 
 def generate_api_key() -> tuple[str, str, str]:
@@ -33,3 +37,14 @@ def normalize_scopes(scopes: list[str] | tuple[str, ...] | None) -> list[str]:
     if not selected:
         return list(DEFAULT_API_KEY_SCOPES)
     return selected
+
+
+
+def is_sha256(value: str) -> bool:
+    if len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
