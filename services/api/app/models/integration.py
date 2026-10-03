@@ -83,6 +83,7 @@ class PluginRelease(Base):
     artifact_uri: Mapped[str] = mapped_column(String(2048), nullable=False)
     package_sha256: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     manifest_sha256: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    manifest_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     signature: Mapped[str] = mapped_column(Text, nullable=False)
     signer: Mapped[str] = mapped_column(String(160), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
