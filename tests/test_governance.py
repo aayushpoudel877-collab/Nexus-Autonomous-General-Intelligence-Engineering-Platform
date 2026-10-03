@@ -88,7 +88,7 @@ def test_integration_requires_external_secret_reference():
 
 
 def test_plugin_installation_scopes_must_be_declared_by_manifest():
-    from services.api.app.routes.governance import _manifest_capabilities
+    from services.api.app.routes.execution import _manifest_capabilities
 
     capabilities = _manifest_capabilities(
         {
