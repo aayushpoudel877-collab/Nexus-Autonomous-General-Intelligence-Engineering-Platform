@@ -31,8 +31,5 @@ Initial implementation: tenant-scoped baseline/candidate model comparisons, boun
 Initial implementation: explicit multi-organization selection, deterministic threshold evaluation, production CORS/host validation, trusted-host enforcement, request correlation IDs, baseline API security headers, database-backed readiness checks, request-correlated audit events and an authorized audit stream UI. Distributed rate limiting, secret rotation, full tracing/metrics, disaster recovery automation, governance policies and cost controls remain future work.
 
 ## Phase 10 — Ecosystem
-SDKs, plugins, integrations and developer APIs.
+Initial implementation: tenant-scoped API keys with explicit scopes, metadata-only plugin registration, API-key authentication, audit coverage for developer administration, and a lightweight Python SDK. Plugin execution, package retrieval, outbound webhooks, multi-language SDK generation and full integration marketplace controls remain future work.
 
-
-Phase 10 — Ecosystem
-SDKs, plugins, integrations and developer APIs. Initial implementation: tenant-scoped API keys with explicit scopes, metadata-only plugin registration, API-key authentication, audit coverage for developer administration, and a lightweight Python SDK. Plugin execution, package retrieval, outbound webhooks, multi-language SDK generation and full integration marketplace controls remain future work.
