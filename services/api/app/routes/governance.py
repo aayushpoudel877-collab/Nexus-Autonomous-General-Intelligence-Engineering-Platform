@@ -235,6 +235,11 @@ async def verify_release(
 
     if release.status != "pending":
         raise HTTPException(status_code=409, detail="Plugin release has already been reviewed")
+    if payload.status == "verified" and not payload.note.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="A verification note is required when approving a plugin release",
+        )
 
     release.status = payload.status
     release.verification_note = payload.note.strip()
@@ -353,6 +358,12 @@ async def approve_installation(
     release = await db.get(PluginRelease, installation.plugin_release_id)
     if release is None or release.status != "verified":
         raise HTTPException(status_code=409, detail="A verified release is required before approval")
+
+    if payload.status == "approved" and not payload.note.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="An approval note is required when approving a plugin installation",
+        )
 
     approved_scopes = list(dict.fromkeys(payload.approved_scopes))
     requested = set(installation.requested_scopes or [])
