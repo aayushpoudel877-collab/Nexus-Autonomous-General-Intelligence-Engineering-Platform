@@ -98,3 +98,40 @@ def test_plugin_installation_scopes_must_be_declared_by_manifest():
     )
     assert "research.read" in capabilities
     assert "network.admin" not in capabilities
+
+
+
+def test_developer_api_key_schema_accepts_all_supported_scopes():
+    from services.api.app.schemas.ecosystem import DeveloperApiKeyCreate
+
+    payload = DeveloperApiKeyCreate(
+        name="all-scopes",
+        scopes=[
+            "developer:read",
+            "developer:write",
+            "plugin:read",
+            "plugin:write",
+            "plugin:release",
+            "plugin:install",
+            "plugin:execute",
+            "integration:read",
+            "integration:write",
+        ],
+    )
+    assert len(payload.scopes) == 9
+
+
+def test_review_payloads_normalize_notes():
+    from services.api.app.schemas.integrations import (
+        PluginInstallationApproval,
+        PluginReleaseVerification,
+    )
+
+    release = PluginReleaseVerification(status="verified", note="  reviewed  ")
+    installation = PluginInstallationApproval(
+        status="approved",
+        approved_scopes=["dataset.read"],
+        note="  approved  ",
+    )
+    assert release.note == "reviewed"
+    assert installation.note == "approved"
