@@ -30,12 +30,18 @@ class ExecutionRequestCreate(BaseModel):
     @field_validator("idempotency_key")
     @classmethod
     def normalize_idempotency_key(cls, value: str) -> str:
-        return value.strip()
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("idempotency_key cannot be blank")
+        return normalized
 
     @field_validator("entrypoint")
     @classmethod
     def normalize_entrypoint(cls, value: str) -> str:
-        return value.strip()
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("entrypoint cannot be blank")
+        return normalized
 
     @field_validator("input_json")
     @classmethod
