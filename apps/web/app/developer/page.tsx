@@ -9,7 +9,7 @@ export default function DeveloperPage() {
           registration.
         </p>
         <p>
-          <a href="/dashboard">Dashboard</a> · <a href="/audit">Audit</a> · <a href="/">Home</a>
+          <a href="/dashboard">Dashboard</a> · <a href="/governance">Governance</a> · <a href="/audit">Audit</a> · <a href="/">Home</a>
         </p>
       </section>
 
