@@ -42,6 +42,13 @@ def _validate_non_secret_config(value: dict) -> dict:
     return value
 
 
+
+def _validate_secret_ref(value: str | None) -> str | None:
+    if value is not None and not value.startswith("secret://"):
+        raise ValueError("secret_ref must be an external secret reference beginning with secret://")
+    return value
+
+
 class IntegrationCreate(BaseModel):
     provider: str = Field(min_length=2, max_length=100, pattern=r"^[a-z0-9][a-z0-9._-]*$")
     name: str = Field(min_length=2, max_length=160)
@@ -53,6 +60,11 @@ class IntegrationCreate(BaseModel):
     @classmethod
     def validate_config(cls, value: dict) -> dict:
         return _validate_non_secret_config(value)
+
+    @field_validator("secret_ref")
+    @classmethod
+    def validate_secret_ref(cls, value: str | None) -> str | None:
+        return _validate_secret_ref(value)
 
 
 class IntegrationUpdate(BaseModel):
@@ -67,6 +79,11 @@ class IntegrationUpdate(BaseModel):
         if value is None:
             return None
         return _validate_non_secret_config(value)
+
+    @field_validator("secret_ref")
+    @classmethod
+    def validate_secret_ref(cls, value: str | None) -> str | None:
+        return _validate_secret_ref(value)
 
 
 class IntegrationRead(BaseModel):
