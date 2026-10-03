@@ -16,7 +16,7 @@ from .routes.multimodal import router as multimodal_router
 from .routes.benchmarks import router as benchmarks_router
 from .routes.audit import router as audit_router
 
-app = FastAPI(title="NEXUS-Ω API", version="0.8.0")
+app = FastAPI(title="NEXUS-Ω API", version="0.9.0")
 
 app.add_middleware(
     TrustedHostMiddleware,
