@@ -83,3 +83,70 @@ class NexusClient:
                 "manifest": manifest or {},
             },
         )
+
+
+
+    def list_integrations(self) -> list[dict[str, Any]]:
+        return self.request("GET", "/governance/integrations")
+
+    def create_integration(
+        self,
+        *,
+        provider: str,
+        name: str,
+        scopes: list[str] | None = None,
+        config: dict[str, Any] | None = None,
+        secret_ref: str | None = None,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/governance/integrations",
+            {
+                "provider": provider,
+                "name": name,
+                "scopes": scopes or [],
+                "config": config or {},
+                "secret_ref": secret_ref,
+            },
+        )
+
+    def list_plugin_releases(self, plugin_id: str) -> list[dict[str, Any]]:
+        return self.request("GET", f"/governance/plugins/{plugin_id}/releases")
+
+    def publish_plugin_release(
+        self,
+        plugin_id: str,
+        *,
+        version: str,
+        artifact_uri: str,
+        package_sha256: str,
+        manifest_sha256: str,
+        signature: str,
+        signer: str,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            f"/governance/plugins/{plugin_id}/releases",
+            {
+                "version": version,
+                "artifact_uri": artifact_uri,
+                "package_sha256": package_sha256,
+                "manifest_sha256": manifest_sha256,
+                "signature": signature,
+                "signer": signer,
+            },
+        )
+
+    def request_plugin_installation(
+        self,
+        plugin_release_id: str,
+        requested_scopes: list[str] | None = None,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/governance/plugin-installations",
+            {
+                "plugin_release_id": plugin_release_id,
+                "requested_scopes": requested_scopes or [],
+            },
+        )
