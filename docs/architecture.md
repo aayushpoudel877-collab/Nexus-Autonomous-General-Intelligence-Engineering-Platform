@@ -33,3 +33,8 @@ Phase 8 records baseline/candidate comparisons only when both registered models 
 ## Phase 9 hardening boundary
 
 The API now adds correlation IDs and baseline response security headers, validates production CORS/host configuration, enforces trusted hosts, exposes a database-backed readiness probe, rejects untrusted browser Origins on state-changing requests, marks authentication responses no-store, and provides a tenant-scoped audit stream. This does not by itself provide a reverse proxy, TLS termination, distributed rate limiting, secret rotation service, object-storage disaster recovery, or full tracing backend.
+
+
+## Developer ecosystem boundary
+
+Phase 10 introduces tenant-scoped developer API keys, explicit capability scopes, plugin registration metadata, and a lightweight SDK transport boundary. API keys are stored as one-way SHA-256 digests and can expire or be revoked. Plugin registrations are metadata only: the API never downloads, imports, or executes plugin packages. A future integration plane must add signed manifests, package provenance, sandboxed execution, secret management, outbound delivery controls, rate limits and policy enforcement before external plugins can run.
