@@ -139,7 +139,6 @@ async def logout(request: Request, response: Response, refresh_token: str | None
             session.revoked_at = datetime.now(timezone.utc)
     if session:
         ip, agent, request_id = _request_meta(request)
-        user = await db.get(User, session.user_id)
         await record_audit(
             db,
             action="identity.logout",
