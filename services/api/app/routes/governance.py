@@ -31,6 +31,7 @@ from ..schemas.integrations import (
     PluginReleaseVerification,
 )
 from ..services.audit import record_audit
+from ..services.ecosystem import canonical_manifest_sha256
 
 router = APIRouter(prefix="/governance", tags=["ecosystem-governance"])
 
@@ -101,6 +102,7 @@ async def create_integration(
         organization_id=api_key.organization_id,
         created_by_user_id=api_key.created_by_user_id,
         **payload.model_dump(),
+        manifest_snapshot=plugin.manifest or {},
     )
     db.add(integration)
     await db.flush()
@@ -181,6 +183,13 @@ async def create_release(
     plugin = await _plugin_for_release(db, plugin_id, api_key.organization_id)
     if plugin.status != "active":
         raise HTTPException(status_code=409, detail="Disabled plugins cannot publish releases")
+
+    expected_manifest_sha256 = canonical_manifest_sha256(plugin.manifest or {})
+    if payload.manifest_sha256.lower() != expected_manifest_sha256:
+        raise HTTPException(
+            status_code=422,
+            detail="manifest_sha256 must match the plugin manifest currently registered for this release",
+        )
 
     existing = await db.scalar(
         select(PluginRelease).where(
