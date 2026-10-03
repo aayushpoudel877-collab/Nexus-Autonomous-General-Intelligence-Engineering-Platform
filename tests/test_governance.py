@@ -84,3 +84,17 @@ def test_integration_requires_external_secret_reference():
         secret_ref="secret://vault/nexus/github/token",
     )
     assert valid.secret_ref.startswith("secret://")
+
+
+
+def test_plugin_installation_scopes_must_be_declared_by_manifest():
+    from services.api.app.routes.governance import _manifest_capabilities
+
+    capabilities = _manifest_capabilities(
+        {
+            "capabilities": ["research.read", "dataset.read"],
+            "entrypoints": ["research.run"],
+        }
+    )
+    assert "research.read" in capabilities
+    assert "network.admin" not in capabilities
