@@ -135,3 +135,33 @@ def test_review_payloads_normalize_notes():
     )
     assert release.note == "reviewed"
     assert installation.note == "approved"
+
+
+
+def test_plugin_manifest_hash_is_canonical():
+    from services.api.app.services.ecosystem import canonical_manifest_sha256
+
+    manifest = {
+        "entrypoints": ["plugin.run"],
+        "capabilities": ["dataset.read", "model.read"],
+    }
+    first = canonical_manifest_sha256(manifest)
+    reordered = canonical_manifest_sha256(
+        {
+            "capabilities": ["dataset.read", "model.read"],
+            "entrypoints": ["plugin.run"],
+        }
+    )
+    assert first == reordered
+    assert len(first) == 64
+
+
+def test_execution_scope_validation_uses_release_manifest_snapshot():
+    from services.api.app.routes.execution import _manifest_capabilities, _manifest_entrypoints
+
+    snapshot = {
+        "capabilities": ["dataset.read"],
+        "entrypoints": ["plugin.run"],
+    }
+    assert _manifest_capabilities(snapshot) == {"dataset.read"}
+    assert _manifest_entrypoints(snapshot) == {"plugin.run"}
