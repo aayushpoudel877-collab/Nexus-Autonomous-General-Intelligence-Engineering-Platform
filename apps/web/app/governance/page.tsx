@@ -8,7 +8,7 @@ export default function GovernancePage() {
           A human-controlled boundary for integration metadata, plugin releases and installation approvals.
         </p>
         <p>
-          <a href="/developer">Developer</a> · <a href="/audit">Audit</a> · <a href="/dashboard">Dashboard</a>
+          <a href="/developer">Developer</a> · <a href="/execution">Execution</a> · <a href="/audit">Audit</a> · <a href="/dashboard">Dashboard</a>
         </p>
       </section>
 
