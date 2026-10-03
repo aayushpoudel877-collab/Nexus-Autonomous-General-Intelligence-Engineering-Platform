@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.dependencies import require_api_key_scopes
@@ -16,7 +17,7 @@ from ..models import (
 )
 from ..schemas.execution import ExecutionCancel, ExecutionRequestCreate, ExecutionRequestRead
 from ..services.audit import record_audit
-from ..services.execution import normalize_execution_policy
+from ..services.execution import ensure_execution_transition, normalize_execution_policy
 
 router = APIRouter(prefix="/execution", tags=["controlled-execution"])
 
@@ -187,7 +188,36 @@ async def create_execution_request(
         status="queued",
     )
     db.add(request_record)
-    await db.flush()
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        existing = await db.scalar(
+            select(ExecutionRequest).where(
+                ExecutionRequest.organization_id == api_key.organization_id,
+                ExecutionRequest.idempotency_key == payload.idempotency_key,
+            )
+        )
+        if existing is None:
+            raise
+        compatible = (
+            existing.installation_id == installation.id
+            and existing.entrypoint == payload.entrypoint
+            and existing.input_json == payload.input_json
+            and existing.capabilities == requested_capabilities
+            and existing.timeout_seconds == payload.timeout_seconds
+            and existing.max_memory_mb == payload.max_memory_mb
+            and existing.max_output_bytes == payload.max_output_bytes
+            and existing.network_policy == payload.network_policy
+            and existing.network_allowlist == network_allowlist
+        )
+        if not compatible:
+            raise HTTPException(
+                status_code=409,
+                detail="Idempotency key has already been used with a different execution request",
+            )
+        return existing
+
     await record_audit(
         db,
         action="execution.requested",
@@ -243,9 +273,17 @@ async def cancel_execution_request(
     if record is None:
         raise HTTPException(status_code=404, detail="Execution request not found")
     if record.status not in {"queued", "running"}:
-        raise HTTPException(status_code=409, detail="Only queued or running executions can be cancelled")
+        raise HTTPException(
+            status_code=409,
+            detail="Only queued or running executions can be cancelled",
+        )
 
+    ensure_execution_transition(record.status, "cancelled")
     record.status = "cancelled"
+    record.worker_id = None
+    record.lease_expires_at = None
+    record.heartbeat_at = None
+    record.error_code = "cancelled"
     record.failure_reason = payload.reason.strip()
     record.finished_at = datetime.now(timezone.utc)
     await record_audit(
