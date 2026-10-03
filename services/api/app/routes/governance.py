@@ -305,11 +305,17 @@ async def request_installation(
     if release.status != "verified":
         raise HTTPException(status_code=409, detail="Only verified plugin releases can be installed")
 
-    declared_capabilities = plugin.manifest.get("capabilities", [])
+    manifest_snapshot = release.manifest_snapshot
+    if not isinstance(manifest_snapshot, dict):
+        raise HTTPException(
+            status_code=409,
+            detail="Plugin release does not contain a frozen manifest snapshot",
+        )
+    declared_capabilities = manifest_snapshot.get("capabilities", [])
     if not isinstance(declared_capabilities, list) or any(
         not isinstance(capability, str) for capability in declared_capabilities
     ):
-        raise HTTPException(status_code=409, detail="Plugin manifest has no valid capabilities declaration")
+        raise HTTPException(status_code=409, detail="Plugin release manifest has no valid capabilities declaration")
     requested_scopes = list(dict.fromkeys(payload.requested_scopes))
     if not set(requested_scopes).issubset(set(declared_capabilities)):
         raise HTTPException(
