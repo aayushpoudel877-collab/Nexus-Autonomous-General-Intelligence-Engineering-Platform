@@ -80,14 +80,14 @@ async def process_one() -> bool:
     heartbeat_task = asyncio.create_task(_heartbeat_loop(request.id, stop_event))
     try:
         outcome = await FailClosedExecutor().execute(request)
-    except Exception as exc:
+    except Exception:
         logger.exception("execution %s failed inside worker", request.id)
         outcome = ExecutionOutcome(
             success=False,
             result={"status": "failed"},
             output_bytes=0,
             error_code="worker_error",
-            failure_reason=str(exc),
+            failure_reason="Execution backend failed unexpectedly; inspect worker logs for details.",
         )
     finally:
         stop_event.set()
