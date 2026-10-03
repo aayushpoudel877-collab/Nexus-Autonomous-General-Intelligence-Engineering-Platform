@@ -187,11 +187,11 @@ async def create_execution_request(
         policy_snapshot=policy_snapshot,
         status="queued",
     )
-    db.add(request_record)
     try:
-        await db.flush()
+        async with db.begin_nested():
+            db.add(request_record)
+            await db.flush()
     except IntegrityError:
-        await db.rollback()
         existing = await db.scalar(
             select(ExecutionRequest).where(
                 ExecutionRequest.organization_id == api_key.organization_id,
