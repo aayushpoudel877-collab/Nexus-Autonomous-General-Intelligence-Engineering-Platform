@@ -10,6 +10,7 @@ ALLOWED_API_KEY_SCOPES = frozenset(
         "plugin:write",
         "plugin:release",
         "plugin:install",
+        "plugin:execute",
         "integration:read",
         "integration:write",
     }
