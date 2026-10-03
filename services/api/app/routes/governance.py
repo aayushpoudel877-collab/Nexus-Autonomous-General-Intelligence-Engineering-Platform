@@ -102,7 +102,6 @@ async def create_integration(
         organization_id=api_key.organization_id,
         created_by_user_id=api_key.created_by_user_id,
         **payload.model_dump(),
-        manifest_snapshot=plugin.manifest or {},
     )
     db.add(integration)
     await db.flush()
@@ -204,6 +203,7 @@ async def create_release(
         plugin_id=plugin.id,
         created_by_user_id=api_key.created_by_user_id,
         **payload.model_dump(),
+        manifest_snapshot=plugin.manifest or {},
     )
     db.add(release)
     await db.flush()
