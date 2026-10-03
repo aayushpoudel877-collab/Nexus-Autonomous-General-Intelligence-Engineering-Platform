@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    Index,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -33,6 +34,19 @@ class ExecutionRequest(Base):
         CheckConstraint(
             "network_policy IN ('none', 'allowlist')",
             name="ck_execution_request_network_policy",
+        ),
+        CheckConstraint(
+            "attempt_count >= 0",
+            name="ck_execution_request_attempt_count",
+        ),
+        CheckConstraint(
+            "output_bytes >= 0",
+            name="ck_execution_request_output_bytes",
+        ),
+        Index(
+            "ix_execution_requests_claimable_lease",
+            "status",
+            "lease_expires_at",
         ),
     )
 
@@ -58,6 +72,16 @@ class ExecutionRequest(Base):
     policy_snapshot: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued", index=True)
     worker_id: Mapped[str | None] = mapped_column(String(160), nullable=True, index=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    heartbeat_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    result_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    output_bytes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
