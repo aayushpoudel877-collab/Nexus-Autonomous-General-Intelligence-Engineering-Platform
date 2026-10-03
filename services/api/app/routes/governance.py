@@ -301,7 +301,7 @@ async def request_installation(
     row = release_and_plugin.first()
     if row is None:
         raise HTTPException(status_code=404, detail="Plugin release not found")
-    release, plugin = row
+    release, _plugin = row
     if release.status != "verified":
         raise HTTPException(status_code=409, detail="Only verified plugin releases can be installed")
 
