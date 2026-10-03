@@ -42,3 +42,8 @@ Phase 10 introduces tenant-scoped developer API keys, explicit capability scopes
 ## Phase 11 governance boundary
 
 The ecosystem governance layer introduces three controls before any future plugin or integration execution: external secret references instead of raw credentials, release-level package/manifest digest and signature metadata with explicit review state, and tenant-scoped installation requests with human approval and capability subset approval. Phase 11 does not download artifacts, verify trust roots automatically, execute plugin code, or make outbound network calls.
+
+
+## Phase 12 controlled execution boundary
+
+Phase 12 adds a persistent execution control plane between approved plugin installations and any future worker runtime. Execution requests are tenant-scoped and idempotent, require an approved installation tied to a verified release, and can request only capabilities already approved for that installation and declared by the plugin manifest. Resource limits and network policy are captured in a policy snapshot at request time. The API does not execute plugin code; a future worker must run outside the API process with sandboxing, artifact verification, secret mediation, egress restrictions and resource isolation.
