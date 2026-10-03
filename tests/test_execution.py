@@ -104,6 +104,10 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         max_output_bytes=4096,
         network_policy="none",
         network_allowlist=[],
+        provenance={
+            "plugin_release_id": "release-1",
+            "package_sha256": "a" * 64,
+        },
     )
     assert snapshot == {
         "version": 1,
@@ -114,6 +118,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "max_output_bytes": 4096,
         },
         "network": {"policy": "none", "allowlist": []},
+        "provenance": {},
         "execution": {
             "sandbox_required": True,
             "artifact_verification_required": True,
