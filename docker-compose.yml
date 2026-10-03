@@ -34,3 +34,18 @@ services:
         condition: service_started
 volumes:
   nexus_pg:
+
+  worker:
+    build:
+      context: .
+      dockerfile: services/execution/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
+      NEXUS_WORKER_POLL_SECONDS: ${NEXUS_WORKER_POLL_SECONDS:-2}
+      NEXUS_WORKER_LEASE_SECONDS: ${NEXUS_WORKER_LEASE_SECONDS:-60}
+    command: ["python", "-m", "services.execution.worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
