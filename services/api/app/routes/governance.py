@@ -281,6 +281,7 @@ async def request_installation(
         .where(
             PluginRelease.id == payload.plugin_release_id,
             PluginRegistration.status == "active",
+            PluginRegistration.organization_id == api_key.organization_id,
         )
     )
     if release is None:
