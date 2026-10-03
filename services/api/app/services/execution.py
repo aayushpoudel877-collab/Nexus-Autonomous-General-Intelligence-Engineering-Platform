@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import re
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
@@ -20,6 +22,10 @@ MAX_OUTPUT_BYTES = 16 * 1_024 * 1_024
 MAX_CAPABILITIES = 16
 MAX_INPUT_JSON_BYTES = 64 * 1_024
 MAX_ALLOWLIST_ENTRIES = 20
+WORKER_LEASE_SECONDS = 60
+WORKER_POLL_SECONDS = 2
+MAX_WORKER_ATTEMPTS = 3
+MAX_FAILURE_REASON = 1_000
 
 _HOST_PATTERN = re.compile(r"^[A-Za-z0-9.-]{1,253}(?::[0-9]{1,5})?$")
 
@@ -117,3 +123,43 @@ def normalize_execution_policy(
         provenance=provenance,
     )
     return capabilities, normalized_allowlist, snapshot
+
+
+
+def execution_lease_expiry(
+    *,
+    now: datetime | None = None,
+    lease_seconds: int = WORKER_LEASE_SECONDS,
+) -> datetime:
+    if lease_seconds < 5 or lease_seconds > 600:
+        raise ValueError("Worker lease must be between 5 and 600 seconds")
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    return current + timedelta(seconds=lease_seconds)
+
+
+def normalize_execution_result(
+    result: dict[str, Any],
+    *,
+    max_output_bytes: int,
+) -> tuple[dict[str, Any], int]:
+    if not isinstance(result, dict):
+        raise ValueError("Execution results must be JSON objects")
+    encoded = json.dumps(
+        result,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    if len(encoded) > max_output_bytes:
+        raise ValueError("Execution result exceeds the request output limit")
+    return result, len(encoded)
+
+
+def normalize_failure_reason(reason: str) -> str:
+    normalized = reason.strip()
+    return normalized[:MAX_FAILURE_REASON]
+
+
+def should_retry_execution(attempt_count: int) -> bool:
+    return 0 <= attempt_count < MAX_WORKER_ATTEMPTS
