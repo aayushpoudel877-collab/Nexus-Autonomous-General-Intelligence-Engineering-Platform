@@ -50,6 +50,8 @@ See `docs/architecture.md` and `docs/roadmap.md` for the system boundaries and s
 
 The research planner currently tracks plans and tasks; it does not autonomously run external tools or collect data. The ML lifecycle tracks training-run metadata and model records, and now includes a deterministic server-side threshold evaluator; the evaluator validates submitted metrics against explicit criteria but does not execute or independently measure a model. The multimodal catalog records references and metadata only; it does not upload, fetch, decode or infer on asset content. Phase 9 adds explicit organization selection, request correlation, trusted-host/security-header handling, database readiness checks and an authorized audit-event stream. Full distributed rate limiting, tracing, secret rotation, disaster recovery and byte-level multimodal processing remain future work.
 
+- **Phase 13 — Execution Worker & Lease Control:** a separate worker process now claims queued executions with PostgreSQL row locks, bounded leases and heartbeats, recovers abandoned attempts, preserves cancellation races, records bounded results and emits worker audit events. External plugin package execution remains blocked until a verified artifact sandbox is introduced.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
