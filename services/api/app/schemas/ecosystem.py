@@ -1,12 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
+import json
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class DeveloperApiKeyCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
-    scopes: list[str] = Field(default_factory=list, max_length=4)
+    scopes: list[str] = Field(default_factory=list, max_length=8)
     expires_at: datetime | None = None
 
     @field_validator("scopes")
@@ -46,11 +48,28 @@ class PluginCreate(BaseModel):
     description: str = Field(default="", max_length=4000)
     manifest: dict = Field(default_factory=dict)
 
+    @field_validator("manifest")
+    @classmethod
+    def validate_manifest_size(cls, value: dict) -> dict:
+        encoded = json.dumps(value, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+        if len(encoded) > 65_536:
+            raise ValueError("Plugin manifest must be 64 KiB or smaller")
+        return value
+
 
 class PluginUpdate(BaseModel):
     version: str | None = Field(default=None, min_length=1, max_length=40)
     description: str | None = Field(default=None, max_length=4000)
     manifest: dict | None = None
+
+    @field_validator("manifest")
+    @classmethod
+    def validate_update_manifest_size(cls, value: dict | None) -> dict | None:
+        if value is not None:
+            encoded = json.dumps(value, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+            if len(encoded) > 65_536:
+                raise ValueError("Plugin manifest must be 64 KiB or smaller")
+        return value
     status: str | None = Field(default=None, pattern=r"^(active|disabled)$")
 
 
