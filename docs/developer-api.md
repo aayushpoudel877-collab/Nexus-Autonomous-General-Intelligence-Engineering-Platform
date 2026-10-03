@@ -84,6 +84,7 @@ New developer scopes:
 
 - `plugin:release`
 - `plugin:install`
+- `plugin:execute`
 - `integration:read`
 - `integration:write`
 
