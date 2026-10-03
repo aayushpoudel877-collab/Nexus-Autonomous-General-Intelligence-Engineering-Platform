@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.dependencies import get_db, require_api_key_scopes
+from ..core.dependencies import require_api_key_scopes
+from ..db.session import get_db
 from ..models import (
     DeveloperApiKey,
     PluginInstallation,
@@ -97,16 +98,19 @@ async def create_execution_request(
         api_key.organization_id,
     )
 
-    requested_capabilities, network_allowlist, policy_snapshot = (
-        normalize_execution_policy(
-            capabilities=payload.capabilities,
-            timeout_seconds=payload.timeout_seconds,
-            max_memory_mb=payload.max_memory_mb,
-            max_output_bytes=payload.max_output_bytes,
-            network_policy=payload.network_policy,
-            network_allowlist=payload.network_allowlist,
+    try:
+        requested_capabilities, network_allowlist, policy_snapshot = (
+            normalize_execution_policy(
+                capabilities=payload.capabilities,
+                timeout_seconds=payload.timeout_seconds,
+                max_memory_mb=payload.max_memory_mb,
+                max_output_bytes=payload.max_output_bytes,
+                network_policy=payload.network_policy,
+                network_allowlist=payload.network_allowlist,
+            )
         )
-    )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     approved_capabilities = set(installation.approved_scopes or [])
     declared_capabilities = _manifest_capabilities(plugin.manifest or {})
