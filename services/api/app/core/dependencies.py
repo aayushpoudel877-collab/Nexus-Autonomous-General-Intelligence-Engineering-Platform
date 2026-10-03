@@ -1,13 +1,15 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 import jwt
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_db
-from ..models import Membership, Role, User
+from ..models import DeveloperApiKey, Membership, Role, User
+from ..services.ecosystem import hash_api_key
 from .security import decode_access_token
 
 bearer = HTTPBearer(auto_error=False)
@@ -108,5 +110,51 @@ def require_roles(*roles: str):
                 detail="Insufficient role",
             )
         return user
+
+    return dependency
+
+
+
+api_key_header = APIKeyHeader(name="X-Nexus-API-Key", auto_error=False)
+
+
+async def get_developer_api_key(
+    credentials: str | None = Depends(api_key_header),
+    db: AsyncSession = Depends(get_db),
+) -> DeveloperApiKey:
+    if not credentials or not credentials.startswith("nxk_"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Developer API key required",
+        )
+    key = await db.scalar(
+        select(DeveloperApiKey).where(DeveloperApiKey.key_hash == hash_api_key(credentials))
+    )
+    now = datetime.now(timezone.utc)
+    if (
+        not key
+        or key.revoked_at is not None
+        or (key.expires_at is not None and key.expires_at <= now)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired developer API key",
+        )
+    key.last_used_at = now
+    await db.commit()
+    return key
+
+
+def require_api_key_scopes(*scopes: str):
+    async def dependency(
+        api_key: DeveloperApiKey = Depends(get_developer_api_key),
+    ) -> DeveloperApiKey:
+        missing = [scope for scope in scopes if scope not in (api_key.scopes or [])]
+        if missing:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"message": "API key scope is insufficient", "missing": missing},
+            )
+        return api_key
 
     return dependency
