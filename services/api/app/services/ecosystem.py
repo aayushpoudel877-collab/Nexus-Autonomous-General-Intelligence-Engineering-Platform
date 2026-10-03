@@ -1,4 +1,5 @@
 import hashlib
+import json
 import secrets
 
 
@@ -49,3 +50,14 @@ def is_sha256(value: str) -> bool:
     except ValueError:
         return False
     return True
+
+
+
+def canonical_manifest_sha256(manifest: dict) -> str:
+    payload = json.dumps(
+        manifest,
+        separators=(",", ":"),
+        sort_keys=True,
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
