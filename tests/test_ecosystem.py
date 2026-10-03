@@ -94,3 +94,54 @@ async def test_developer_api_key_dependency_rejects_revoked_keys():
         await get_developer_api_key("nxk_test_secret", FakeSession(key))
 
     assert error.value.status_code == 401
+
+
+
+def test_sdk_sends_the_developer_api_key(monkeypatch):
+    from packages.sdk.client import NexusClient
+
+    seen = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b'{"status":"ok"}'
+
+    def fake_urlopen(request, timeout):
+        seen["headers"] = {key.lower(): value for key, value in request.header_items()}
+        seen["timeout"] = timeout
+        return FakeResponse()
+
+    monkeypatch.setattr("packages.sdk.client.urlopen", fake_urlopen)
+    result = NexusClient("http://localhost:8000/api/v1", "nxk_test_secret").whoami()
+
+    assert result == {"status": "ok"}
+    assert seen["headers"]["x-nexus-api-key"] == "nxk_test_secret"
+    assert seen["timeout"] == 20.0
+
+
+def test_sdk_converts_http_errors_to_nexus_api_errors(monkeypatch):
+    from urllib.error import HTTPError
+    from packages.sdk.client import NexusApiError, NexusClient
+
+    def fake_urlopen(request, timeout):
+        raise HTTPError(
+            request.full_url,
+            403,
+            "Forbidden",
+            {},
+            __import__("io").BytesIO(b'{"detail":"scope denied"}'),
+        )
+
+    monkeypatch.setattr("packages.sdk.client.urlopen", fake_urlopen)
+
+    with pytest.raises(NexusApiError) as error:
+        NexusClient("http://localhost:8000/api/v1", "nxk_test_secret").list_plugins()
+
+    assert error.value.status_code == 403
+    assert error.value.detail == {"detail": "scope denied"}
