@@ -127,6 +127,7 @@ class PluginReleaseRead(BaseModel):
     artifact_uri: str
     package_sha256: str
     manifest_sha256: str
+    manifest_snapshot: dict | None
     signature: str
     signer: str
     status: str
