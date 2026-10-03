@@ -2,7 +2,7 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 12</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 13</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
@@ -38,7 +38,7 @@ export default function ExecutionPage() {
           <h2>Queue first, execute later</h2>
           <p>
             The API creates and cancels queue records but intentionally does not execute arbitrary
-            plugin code. A sandboxed worker is a separate future phase.
+            plugin code. A separate worker now claims leases, heartbeats them, records bounded outcomes and fails closed when no isolated artifact executor is available.
           </p>
         </article>
       </section>
