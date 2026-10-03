@@ -20,6 +20,7 @@ from .multimodal import MultimodalAsset
 from .benchmark import BenchmarkComparison
 from .ecosystem import DeveloperApiKey, PluginRegistration
 from .integration import IntegrationConnection, PluginInstallation, PluginRelease
+from .execution import ExecutionRequest
 
 __all__ = [
     "Organization",
@@ -55,4 +56,5 @@ __all__ = [
     "IntegrationConnection",
     "PluginRelease",
     "PluginInstallation",
+    "ExecutionRequest",
 ]
