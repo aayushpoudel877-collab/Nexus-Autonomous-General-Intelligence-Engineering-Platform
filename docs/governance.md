@@ -58,3 +58,10 @@ A future execution plane should add sandboxing, signed trust roots, package prov
 Each new release must supply a manifest SHA-256 that matches the canonical hash of the plugin manifest at release creation time. The canonical manifest is copied into the release as a snapshot. Installation and execution capability checks use that frozen snapshot rather than mutable current plugin metadata.
 
 Legacy releases created before manifest snapshots were introduced remain non-executable until a new release is published with a frozen manifest.
+
+
+## Execution worker controls
+
+Phase 13 adds a separate worker process behind approved execution requests. A worker may claim only queued records, and its lease expires unless heartbeats continue. Completion requires the same worker identity that owns the active lease, so an abandoned or cancelled worker cannot overwrite a newer terminal state.
+
+The worker records only bounded execution results and operational metadata in the audit stream. It remains fail-closed for external plugin packages: no artifact is downloaded, no signature is trusted automatically, no secret value is resolved, and no outbound network request is performed. Those controls remain prerequisites for the next plugin-runtime phase.
