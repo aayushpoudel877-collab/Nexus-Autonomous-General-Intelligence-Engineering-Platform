@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class DeveloperApiKeyCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
-    scopes: list[str] = Field(default_factory=list, max_length=8)
+    scopes: list[str] = Field(default_factory=list, max_length=9)
     expires_at: datetime | None = None
 
     @field_validator("scopes")
