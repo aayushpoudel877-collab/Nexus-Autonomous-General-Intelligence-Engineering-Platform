@@ -34,6 +34,10 @@ class PluginRegistration(Base):
     __tablename__ = "plugin_registrations"
     __table_args__ = (
         UniqueConstraint("organization_id", "slug", name="uq_plugin_org_slug"),
+        CheckConstraint(
+            "status IN ('active', 'disabled')",
+            name="ck_plugin_registration_status",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
