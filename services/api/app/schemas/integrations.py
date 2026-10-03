@@ -140,6 +140,11 @@ class PluginReleaseVerification(BaseModel):
     status: str = Field(pattern=r"^(verified|rejected)$")
     note: str = Field(default="", max_length=4000)
 
+    @field_validator("note")
+    @classmethod
+    def require_review_note(cls, value: str) -> str:
+        return value.strip()
+
 
 class PluginInstallationCreate(BaseModel):
     plugin_release_id: UUID
@@ -166,3 +171,8 @@ class PluginInstallationApproval(BaseModel):
     status: str = Field(pattern=r"^(approved|revoked)$")
     approved_scopes: list[str] = Field(default_factory=list, max_length=16)
     note: str = Field(default="", max_length=4000)
+
+    @field_validator("note")
+    @classmethod
+    def normalize_review_note(cls, value: str) -> str:
+        return value.strip()
