@@ -6,8 +6,8 @@ from services.api.app.services.execution import MAX_FAILURE_REASON
 
 from .config import settings
 from .db import SessionLocal, engine
-from .executor import FailClosedExecutor
-from .repository import claim_next_request, finish_request, requeue_expired_requests
+from .executor import ExecutionOutcome, FailClosedExecutor
+from .repository import claim_next_request, finish_request, heartbeat_request, requeue_expired_requests
 
 
 logging.basicConfig(
@@ -27,8 +27,6 @@ async def _heartbeat_loop(request_id, stop_event: asyncio.Event) -> None:
             pass
 
         async with SessionLocal() as heartbeat_db:
-            from .repository import heartbeat_request
-
             refreshed = await heartbeat_request(
                 heartbeat_db,
                 request_id=request_id,
@@ -84,17 +82,13 @@ async def process_one() -> bool:
         outcome = await FailClosedExecutor().execute(request)
     except Exception as exc:
         logger.exception("execution %s failed inside worker", request.id)
-        outcome = type(
-            "WorkerErrorOutcome",
-            (),
-            {
-                "success": False,
-                "result": {"status": "failed"},
-                "output_bytes": 0,
-                "error_code": "worker_error",
-                "failure_reason": str(exc),
-            },
-        )()
+        outcome = ExecutionOutcome(
+            success=False,
+            result={"status": "failed"},
+            output_bytes=0,
+            error_code="worker_error",
+            failure_reason=str(exc),
+        )
     finally:
         stop_event.set()
         await heartbeat_task
