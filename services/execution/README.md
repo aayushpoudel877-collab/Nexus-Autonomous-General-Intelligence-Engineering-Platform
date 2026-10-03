@@ -1,16 +1,38 @@
-# Controlled Execution Boundary
+# Controlled Execution Worker
 
-Phase 12 introduces a persistent execution control plane without executing arbitrary plugin code inside the API process.
+Phase 13 introduces the first worker process behind the Phase 12 execution queue.
 
-The API creates execution requests only for plugin installations that are:
+## Worker responsibilities
 
-1. active,
-2. tied to a verified plugin release,
-3. approved for the current organization,
-4. granted the requested capabilities.
+- claims queued requests with PostgreSQL row locks so multiple workers do not take the same request;
+- assigns a bounded lease and heartbeats while work is active;
+- requeues abandoned attempts until the retry limit, then records a terminal failure;
+- respects API cancellation by requiring worker ownership before completion;
+- records bounded JSON results and worker audit events.
 
-Each request captures bounded resource limits, network policy, input metadata, idempotency, and an immutable policy snapshot.
+## Runtime safety boundary
 
-A future worker may consume queued requests only after adding process/container isolation, artifact verification, signed trust roots, secret-manager mediation, egress controls, CPU/memory/file-size enforcement, timeout enforcement, and execution telemetry.
+The worker is deliberately fail-closed for external plugin entrypoints. Phase 13 does not:
 
-The current phase intentionally stops before invoking arbitrary code.
+- download or unpack plugin packages;
+- verify package signatures against configured trust roots;
+- import or execute arbitrary plugin code;
+- resolve external secrets;
+- create outbound network connections;
+- provide a container/process sandbox.
+
+An unsupported execution is therefore recorded as `failed` with `executor_unavailable` instead of executing outside the approved boundary.
+
+## Local development
+
+The Docker Compose stack now includes a `worker` service. It waits for PostgreSQL and API startup, then runs:
+
+`python -m services.execution.worker`
+
+Worker tuning is controlled by:
+
+- `NEXUS_WORKER_POLL_SECONDS` (default 2 seconds)
+- `NEXUS_WORKER_LEASE_SECONDS` (default 60 seconds)
+- `NEXUS_WORKER_ID` (defaults to the container hostname)
+
+The next runtime phase can replace the fail-closed executor with a verified artifact adapter and isolated sandbox without changing the queue contract.
