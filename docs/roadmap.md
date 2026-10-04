@@ -46,3 +46,7 @@ Initial implementation: a separate execution worker process with PostgreSQL row-
 
 ## Phase 14 — Cryptographic Artifact Trust
 Initial implementation: tenant-scoped Ed25519 trust roots, signed artifact verification against the release SHA-256, explicit verification metadata, trust-root revocation, and installation/execution gates that require both human release approval and a currently active verification root. Artifact bytes are verified only when explicitly supplied to the verification endpoint; the platform still does not fetch packages from arbitrary URIs, unpack them, execute them, resolve secrets, or bypass the worker sandbox boundary.
+
+
+## Phase 15 — Artifact Staging & Sandbox Admission
+Initial implementation: verified plugin artifacts are durably stored in a content-addressed filesystem, their storage identity and size are frozen into execution provenance, and workers perform integrity-checked artifact admission before runtime launch. A digest-pinned OCI sandbox command builder enforces no network, read-only root filesystem, dropped Linux capabilities, no-new-privileges, process and memory bounds, and read-only artifact mounts. Phase 15 still does not launch arbitrary plugin code; the next runtime phase must add an explicitly enabled isolated launcher and enforce execution timeout, output capture and egress mediation end-to-end.
