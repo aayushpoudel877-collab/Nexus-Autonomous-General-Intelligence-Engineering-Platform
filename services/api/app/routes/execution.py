@@ -43,6 +43,8 @@ async def _approved_installation(
             PluginInstallation.status == "approved",
             PluginRelease.status == "verified",
             PluginRelease.artifact_verified_at.is_not(None),
+            PluginRelease.artifact_staged_at.is_not(None),
+            PluginRelease.artifact_storage_key.is_not(None),
             PluginRelease.verification_key_id == PluginTrustRoot.key_id,
             PluginTrustRoot.status == "active",
             PluginRegistration.status == "active",
@@ -126,6 +128,13 @@ async def create_execution_request(
                     "signer": release.signer,
                     "verification_key_id": release.verification_key_id or "",
                     "verification_method": release.verification_method or "",
+                    "artifact_storage_key": release.artifact_storage_key or "",
+                    "artifact_size_bytes": str(release.artifact_size_bytes or 0),
+                    "artifact_staged_at": (
+                        release.artifact_staged_at.isoformat()
+                        if release.artifact_staged_at
+                        else ""
+                    ),
                 },
                 artifact_verified=bool(release.artifact_verified_at),
             )
