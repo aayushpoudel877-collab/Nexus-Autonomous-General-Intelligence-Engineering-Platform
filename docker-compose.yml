@@ -35,10 +35,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-volumes:
-  nexus_pg:
-  nexus_artifacts:
-
   worker:
     build:
       context: .
@@ -57,3 +53,7 @@ volumes:
         condition: service_healthy
       api:
         condition: service_started
+
+volumes:
+  nexus_pg:
+  nexus_artifacts:
