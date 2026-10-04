@@ -15,7 +15,7 @@ async def test_phase_15_worker_fails_closed_before_external_plugin_execution():
     outcome = await SandboxAdmissionExecutor().execute(request)
 
     assert outcome.success is False
-    assert outcome.error_code == "executor_unavailable"
+    assert outcome.error_code == "artifact_admission_rejected"
     assert outcome.result["status"] == "blocked"
     assert outcome.output_bytes <= request.max_output_bytes
 
