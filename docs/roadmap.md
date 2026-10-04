@@ -42,3 +42,7 @@ Initial implementation: tenant-scoped, idempotent execution requests linked to a
 
 ## Phase 13 — Execution Worker & Lease Control
 Initial implementation: a separate execution worker process with PostgreSQL row-lock claiming, bounded leases, heartbeats, retry/recovery for abandoned work, cancellation-safe completion, bounded result records and worker audit events. The worker intentionally fails closed for external plugin entrypoints because artifact retrieval, trust-root verification, secret mediation, egress enforcement and sandboxed plugin execution are not yet activated.
+
+
+## Phase 14 — Cryptographic Artifact Trust
+Initial implementation: tenant-scoped Ed25519 trust roots, signed artifact verification against the release SHA-256, explicit verification metadata, trust-root revocation, and installation/execution gates that require both human release approval and a currently active verification root. Artifact bytes are verified only when explicitly supplied to the verification endpoint; the platform still does not fetch packages from arbitrary URIs, unpack them, execute them, resolve secrets, or bypass the worker sandbox boundary.
