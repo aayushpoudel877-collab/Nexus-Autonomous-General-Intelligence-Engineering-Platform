@@ -35,6 +35,10 @@ class WorkerSettings:
             "NEXUS_ARTIFACT_ROOT",
             "/var/lib/nexus/artifacts",
         )
+        self.runtime_root = os.getenv(
+            "NEXUS_RUNTIME_ROOT",
+            "/var/lib/nexus/runtime",
+        )
         self.sandbox_image = os.getenv("NEXUS_SANDBOX_IMAGE", "").strip()
         self.docker_binary = os.getenv("NEXUS_DOCKER_BINARY", "docker").strip() or "docker"
         self.sandbox_launch_enabled = _bool_env(
