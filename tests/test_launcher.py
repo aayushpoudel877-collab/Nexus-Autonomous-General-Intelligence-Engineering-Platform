@@ -56,6 +56,7 @@ async def test_launcher_uses_exec_without_shell(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert result.timed_out is False
     assert result.output_limited is False
+    assert result.cancelled is False
     assert calls
     assert calls[0][0][0] == "docker"
     assert calls[0][1]["start_new_session"] is True
@@ -77,3 +78,35 @@ async def test_launcher_rejects_invalid_limits(tmp_path):
 @pytest.mark.asyncio
 async def test_launcher_output_limit_exception_type_is_public():
     assert issubclass(LauncherOutputLimitExceeded, RuntimeError)
+
+
+@pytest.mark.asyncio
+async def test_launcher_terminates_when_cancellation_is_requested(tmp_path, monkeypatch):
+    process = _FakeProcess(stdout=b"", stderr=b"", returncode=-15)
+    calls = []
+
+    async def fake_create(*args, **kwargs):
+        calls.append((args, kwargs))
+        return process
+
+    async def cancelled():
+        return True
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_create)
+    cidfile = new_cidfile(str(tmp_path))
+
+    result = await launch_sandbox(
+        command=["docker", "run", "--network=none", "image@sha256:" + "a" * 64],
+        cidfile=cidfile,
+        timeout_seconds=10,
+        max_output_bytes=4096,
+        stop_grace_seconds=2,
+        cancellation_check=cancelled,
+        cancellation_poll_seconds=0.1,
+    )
+
+    assert result.cancelled is True
+    assert result.timed_out is False
+    assert result.output_limited is False
+    assert result.exit_code == -15
+    assert calls
