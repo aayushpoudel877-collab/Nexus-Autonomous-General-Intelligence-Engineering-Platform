@@ -58,6 +58,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 16 — Opt-in Isolated Sandbox Launcher:** verified executions can optionally invoke a digest-pinned OCI sandbox with no shell, no network, bounded output, hard timeout and container cleanup. Launch remains disabled by default.
 
+- **Phase 17 — Cooperative Runtime Cancellation:** running sandbox executions now terminate on authoritative cancellation and reconcile worker leases safely. Network-enabled execution remains fail-closed pending egress mediation.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
