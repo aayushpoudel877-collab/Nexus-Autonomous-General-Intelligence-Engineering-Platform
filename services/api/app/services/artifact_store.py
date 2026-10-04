@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+from uuid import uuid4
 from pathlib import Path
 
 
@@ -40,11 +41,13 @@ class ArtifactStore:
         destination.parent.mkdir(parents=True, exist_ok=True)
         existing = destination
         if existing.exists():
+            if existing.is_symlink():
+                raise ValueError("Artifact storage entry cannot be a symlink")
             if self.digest_file(existing) != normalized:
                 raise ValueError("Existing artifact storage entry failed integrity verification")
             return normalized
 
-        temp_path = destination.with_name(f".{normalized}.tmp-{os.getpid()}")
+        temp_path = destination.with_name(f".{normalized}.tmp-{os.getpid()}-{uuid4().hex}")
         with open(temp_path, "xb") as handle:
             handle.write(artifact_bytes)
             handle.flush()
@@ -55,6 +58,8 @@ class ArtifactStore:
     def read_verified(self, digest: str) -> bytes:
         normalized = self._validate_digest(digest)
         path = self.path_for(normalized)
+        if path.is_symlink():
+            raise ValueError("Artifact storage entry cannot be a symlink")
         data = path.read_bytes()
         if len(data) > self.max_bytes:
             raise ValueError("Stored artifact exceeds the configured limit")
