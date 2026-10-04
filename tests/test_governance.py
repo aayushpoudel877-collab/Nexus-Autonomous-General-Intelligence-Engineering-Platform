@@ -26,6 +26,9 @@ def test_phase_11_routes_are_registered():
     assert "/api/v1/governance/plugin-releases/{release_id}/verify" in paths
     assert "/api/v1/governance/plugin-installations" in paths
     assert "/api/v1/governance/plugin-installations/{installation_id}/approve" in paths
+    assert "/api/v1/governance/trust-roots" in paths
+    assert "/api/v1/governance/trust-roots/{trust_root_id}/revoke" in paths
+    assert "/api/v1/governance/plugin-releases/{release_id}/verify-artifact" in paths
 
 
 def test_plugin_manifest_size_is_bounded():
@@ -165,3 +168,25 @@ def test_execution_scope_validation_uses_release_manifest_snapshot():
     }
     assert _manifest_capabilities(snapshot) == {"dataset.read"}
     assert _manifest_entrypoints(snapshot) == {"plugin.run"}
+
+
+
+def test_trust_root_schema_requires_ed25519():
+    from services.api.app.schemas.artifacts import PluginTrustRootCreate
+
+    payload = PluginTrustRootCreate(
+        key_id="release-key-1",
+        name="Primary release key",
+        public_key="A" * 44,
+    )
+    assert payload.algorithm == "ed25519"
+
+
+def test_artifact_verification_schema_bounds_payload():
+    from services.api.app.schemas.artifacts import PluginArtifactVerification
+
+    payload = PluginArtifactVerification(
+        trust_root_id="00000000-0000-0000-0000-000000000000",
+        artifact_base64="AAAA",
+    )
+    assert payload.artifact_base64 == "AAAA"
