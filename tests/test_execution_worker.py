@@ -108,6 +108,55 @@ async def test_phase_15_worker_prepares_pinned_sandbox_after_verified_artifact(
     outcome = await SandboxAdmissionExecutor().execute(request)
 
     assert outcome.success is False
-    assert outcome.error_code == "sandbox_launcher_not_enabled"
+    assert outcome.error_code == "sandbox_launcher_disabled"
     assert outcome.result["status"] == "sandbox_prepared"
     assert outcome.result["artifact_digest"] == digest
+
+
+
+@pytest.mark.asyncio
+async def test_phase_16_worker_launches_only_when_explicitly_enabled(
+    tmp_path, monkeypatch
+):
+    from services.api.app.services.artifact_store import ArtifactStore
+    from services.execution.config import settings
+
+    artifact = b"verified-runtime-artifact"
+    digest = hashlib.sha256(artifact).hexdigest()
+    ArtifactStore(str(tmp_path), max_bytes=6 * 1024 * 1024).put_verified(artifact, digest)
+
+    monkeypatch.setattr(settings, "artifact_root", str(tmp_path))
+    monkeypatch.setattr(settings, "runtime_root", str(tmp_path / "runtime"))
+    monkeypatch.setattr(
+        settings,
+        "sandbox_image",
+        "registry.example/nexus-runtime@sha256:" + "a" * 64,
+    )
+    monkeypatch.setattr(settings, "sandbox_launch_enabled", False)
+
+    request = ExecutionRequest(
+        entrypoint="plugin.run",
+        input_json={},
+        max_output_bytes=4096,
+        max_memory_mb=256,
+        policy_snapshot={
+            "version": 2,
+            "execution": {
+                "sandbox_required": True,
+                "artifact_verification_required": True,
+                "artifact_verified": True,
+            },
+            "provenance": {
+                "package_sha256": digest,
+                "artifact_storage_key": digest,
+                "artifact_size_bytes": str(len(artifact)),
+            },
+            "limits": {"max_memory_mb": 256},
+            "network": {"policy": "none", "allowlist": []},
+        },
+    )
+
+    outcome = await SandboxAdmissionExecutor().execute(request)
+
+    assert outcome.success is False
+    assert outcome.error_code == "sandbox_launcher_disabled"
