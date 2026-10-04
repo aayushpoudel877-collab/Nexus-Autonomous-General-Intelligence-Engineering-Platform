@@ -19,7 +19,7 @@ from .routes.developer import router as developer_router
 from .routes.governance import router as governance_router
 from .routes.execution import router as execution_router
 
-app = FastAPI(title="NEXUS-Ω API", version="0.15.0")
+app = FastAPI(title="NEXUS-Ω API", version="0.16.0")
 
 app.add_middleware(
     TrustedHostMiddleware,
