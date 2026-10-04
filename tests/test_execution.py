@@ -42,6 +42,7 @@ def test_execution_policy_is_bounded():
     assert allowlist == ["api.example.com", "api.example.com:443"]
     assert snapshot["execution"]["sandbox_required"] is True
     assert snapshot["execution"]["artifact_verification_required"] is True
+    assert snapshot["execution"]["artifact_verified"] is False
 
 
 def test_execution_policy_rejects_network_without_allowlist_mode():
@@ -165,3 +166,18 @@ def test_worker_failures_are_normalized_and_retried_within_limit():
 def test_worker_lease_rejects_unsafe_duration():
     with pytest.raises(ValueError):
         execution_lease_expiry(lease_seconds=4)
+
+
+
+def test_policy_snapshot_records_verified_artifact_state():
+    snapshot = build_policy_snapshot(
+        capabilities=["dataset.read"],
+        timeout_seconds=60,
+        max_memory_mb=256,
+        max_output_bytes=4096,
+        network_policy="none",
+        network_allowlist=[],
+        artifact_verified=True,
+    )
+    assert snapshot["version"] == 1
+    assert snapshot["execution"]["artifact_verified"] is True
