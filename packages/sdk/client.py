@@ -153,6 +153,46 @@ class NexusClient:
 
 
 
+    def list_trust_roots(self) -> list[dict[str, Any]]:
+        return self.request("GET", "/governance/trust-roots")
+
+    def create_trust_root(
+        self,
+        *,
+        key_id: str,
+        name: str,
+        public_key: str,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            "/governance/trust-roots",
+            {
+                "key_id": key_id,
+                "name": name,
+                "algorithm": "ed25519",
+                "public_key": public_key,
+            },
+        )
+
+    def revoke_trust_root(self, trust_root_id: str) -> dict[str, Any]:
+        return self.request("POST", f"/governance/trust-roots/{trust_root_id}/revoke")
+
+    def verify_plugin_artifact(
+        self,
+        release_id: str,
+        *,
+        trust_root_id: str,
+        artifact_base64: str,
+    ) -> dict[str, Any]:
+        return self.request(
+            "POST",
+            f"/governance/plugin-releases/{release_id}/verify-artifact",
+            {
+                "trust_root_id": trust_root_id,
+                "artifact_base64": artifact_base64,
+            },
+        )
+
     def list_execution_requests(self) -> list[dict[str, Any]]:
         return self.request("GET", "/execution/requests")
 
