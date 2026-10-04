@@ -88,6 +88,14 @@ class PluginRelease(Base):
     signer: Mapped[str] = mapped_column(String(160), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     verification_note: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    artifact_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    artifact_verified_by_user_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    verification_key_id: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    verification_method: Mapped[str | None] = mapped_column(String(32), nullable=True)
     verified_by_user_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
