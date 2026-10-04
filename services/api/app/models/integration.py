@@ -69,6 +69,10 @@ class PluginRelease(Base):
             "status IN ('pending', 'verified', 'rejected')",
             name="ck_plugin_release_status",
         ),
+        CheckConstraint(
+            "artifact_size_bytes IS NULL OR artifact_size_bytes >= 0",
+            name="ck_plugin_releases_artifact_size_bytes",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
