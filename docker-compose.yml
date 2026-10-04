@@ -25,8 +25,11 @@ services:
       NEXUS_SECRET_KEY: ${NEXUS_SECRET_KEY:-replace-with-a-development-secret}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       NEXUS_ALLOWED_HOSTS: ${NEXUS_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      NEXUS_ARTIFACT_ROOT: /var/lib/nexus/artifacts
     command: ["sh", "-c", "alembic upgrade head && uvicorn services.api.app.main:app --host 0.0.0.0 --port 8000"]
     ports: ["8000:8000"]
+    volumes:
+      - nexus_artifacts:/var/lib/nexus/artifacts
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,6 +37,7 @@ services:
         condition: service_started
 volumes:
   nexus_pg:
+  nexus_artifacts:
 
   worker:
     build:
@@ -43,7 +47,11 @@ volumes:
       DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
       NEXUS_WORKER_POLL_SECONDS: ${NEXUS_WORKER_POLL_SECONDS:-2}
       NEXUS_WORKER_LEASE_SECONDS: ${NEXUS_WORKER_LEASE_SECONDS:-60}
+      NEXUS_ARTIFACT_ROOT: /var/lib/nexus/artifacts
+      NEXUS_SANDBOX_IMAGE: ${NEXUS_SANDBOX_IMAGE:-}
     command: ["python", "-m", "services.execution.worker"]
+    volumes:
+      - nexus_artifacts:/var/lib/nexus/artifacts
     depends_on:
       postgres:
         condition: service_healthy
