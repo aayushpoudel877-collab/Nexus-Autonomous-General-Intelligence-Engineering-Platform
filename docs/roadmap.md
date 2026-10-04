@@ -50,3 +50,7 @@ Initial implementation: tenant-scoped Ed25519 trust roots, signed artifact verif
 
 ## Phase 15 — Artifact Staging & Sandbox Admission
 Initial implementation: verified plugin artifacts are durably stored in a content-addressed filesystem, their storage identity and size are frozen into execution provenance, and workers perform integrity-checked artifact admission before runtime launch. A digest-pinned OCI sandbox command builder enforces no network, read-only root filesystem, dropped Linux capabilities, no-new-privileges, process and memory bounds, and read-only artifact mounts. Phase 15 still does not launch arbitrary plugin code; the next runtime phase must add an explicitly enabled isolated launcher and enforce execution timeout, output capture and egress mediation end-to-end.
+
+
+## Phase 16 — Opt-in Isolated Sandbox Launcher
+Initial implementation: a dedicated launcher executes only digest-pinned OCI commands, never through a shell. The launcher uses a new process session, bounded runtime timeout, bounded stdout/stderr capture, explicit process-group termination, container-ID cleanup on timeout/output overflow, and deterministic result classification. Launching remains opt-in and disabled by default; the worker container does not mount the Docker socket, so deployment must explicitly provide an isolated runtime boundary before enabling it.
