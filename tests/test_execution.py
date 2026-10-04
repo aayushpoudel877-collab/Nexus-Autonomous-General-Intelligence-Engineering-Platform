@@ -115,7 +115,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         },
     )
     assert snapshot == {
-        "version": 1,
+        "version": 2,
         "capabilities": ["dataset.read"],
         "limits": {
             "timeout_seconds": 60,
