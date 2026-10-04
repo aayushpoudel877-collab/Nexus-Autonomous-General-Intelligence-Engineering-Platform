@@ -1,6 +1,10 @@
 import pytest
 
-from services.execution.sandbox import build_oci_command, validate_sandbox_image
+from services.execution.sandbox import (
+    build_oci_command,
+    validate_artifact_digest,
+    validate_sandbox_image,
+)
 
 
 def test_sandbox_image_must_be_digest_pinned():
@@ -14,6 +18,7 @@ def test_sandbox_command_is_non_networked_and_read_only():
         artifact_path="/var/lib/nexus/artifacts/aa/bb/" + "b" * 64,
         entrypoint="plugin.run",
         max_memory_mb=512,
+        cidfile="/var/lib/nexus/runtime/cid/test.cid",
     )
 
     command = built.command
@@ -43,3 +48,22 @@ def test_sandbox_command_rejects_embedded_newline_entrypoint():
             entrypoint="plugin.run\nmalicious",
             max_memory_mb=512,
         )
+
+
+
+def test_sandbox_rejects_null_bytes_in_entrypoint():
+    with pytest.raises(ValueError):
+        build_oci_command(
+            image="registry.example/nexus-runtime@sha256:" + "a" * 64,
+            artifact_path="/artifact",
+            entrypoint="plugin\x00.run",
+            max_memory_mb=512,
+            cidfile="/runtime/cid/test",
+        )
+
+
+def test_sandbox_validates_artifact_digest():
+    assert validate_artifact_digest("a" * 64) == "a" * 64
+
+    with pytest.raises(ValueError):
+        validate_artifact_digest("not-a-digest")
