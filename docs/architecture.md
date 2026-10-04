@@ -54,3 +54,10 @@ Phase 12 adds a persistent execution control plane between approved plugin insta
 Phase 13 moves queue ownership outside the API process. Dedicated workers claim queued executions with PostgreSQL row locks and expiring leases, heartbeat active requests, recover abandoned attempts and write bounded terminal results. Cancellation clears the lease so a worker cannot later overwrite a cancelled request. Worker audit events record claims, terminal completion and lease loss without exposing request payloads.
 
 The worker still fails closed for external plugin entrypoints. It does not fetch packages, import plugin code, resolve secrets, open outbound sockets or bypass the request's policy snapshot. The next runtime phase must provide verified artifact retrieval, signed trust roots, process/container sandboxing, resource enforcement and egress mediation before arbitrary plugin code is eligible to run.
+
+
+## Phase 14 artifact trust boundary
+
+Phase 14 adds tenant-owned Ed25519 trust roots and a detached-signature verification gate for plugin artifacts. A release is installable only after the supplied artifact bytes hash to the release package SHA-256 and the digest is validated by the release's declared signer against an active tenant trust root. Human release approval remains a separate gate. Revoking the trust root blocks new installation approval and execution for releases tied to that key.
+
+The verification endpoint accepts bounded artifact bytes for explicit verification but does not unpack or execute them. The platform still does not retrieve arbitrary `artifact_uri` values, dereference remote URLs, resolve secrets, or launch plugin code. Those operations remain the responsibility of a future isolated sandbox runtime with egress enforcement and resource limits.
