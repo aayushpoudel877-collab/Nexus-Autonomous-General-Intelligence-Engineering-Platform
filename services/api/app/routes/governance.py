@@ -435,10 +435,22 @@ async def verify_release(
     if release.status != "pending":
         raise HTTPException(status_code=409, detail="Plugin release has already been reviewed")
     if payload.status == "verified":
-        if not release.artifact_verified_at:
+        if not release.artifact_verified_at or not release.verification_key_id:
             raise HTTPException(
                 status_code=409,
                 detail="Cryptographic artifact verification is required before release approval",
+            )
+        trust_root = await db.scalar(
+            select(PluginTrustRoot).where(
+                PluginTrustRoot.organization_id == membership.organization_id,
+                PluginTrustRoot.key_id == release.verification_key_id,
+                PluginTrustRoot.status == "active",
+            )
+        )
+        if trust_root is None:
+            raise HTTPException(
+                status_code=409,
+                detail="The release verification trust root is no longer active",
             )
         if not payload.note.strip():
             raise HTTPException(
