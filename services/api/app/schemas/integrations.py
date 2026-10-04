@@ -132,6 +132,10 @@ class PluginReleaseRead(BaseModel):
     signer: str
     status: str
     verification_note: str
+    artifact_verified_at: datetime | None
+    artifact_verified_by_user_id: UUID | None
+    verification_key_id: str | None
+    verification_method: str | None
     verified_by_user_id: UUID | None
     verified_at: datetime | None
     created_at: datetime
