@@ -6,7 +6,7 @@ from services.api.app.services.execution import MAX_FAILURE_REASON
 
 from .config import settings
 from .db import SessionLocal, engine
-from .executor import ExecutionOutcome, FailClosedExecutor
+from .executor import ExecutionOutcome, SandboxAdmissionExecutor
 from .repository import claim_next_request, finish_request, heartbeat_request, requeue_expired_requests
 
 
@@ -79,7 +79,7 @@ async def process_one() -> bool:
     stop_event = asyncio.Event()
     heartbeat_task = asyncio.create_task(_heartbeat_loop(request.id, stop_event))
     try:
-        outcome = await FailClosedExecutor().execute(request)
+        outcome = await SandboxAdmissionExecutor().execute(request)
     except Exception:
         logger.exception("execution %s failed inside worker", request.id)
         outcome = ExecutionOutcome(
