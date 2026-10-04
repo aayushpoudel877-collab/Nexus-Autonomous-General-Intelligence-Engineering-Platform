@@ -58,6 +58,13 @@ async def _read_limited(
     return b"".join(chunks)
 
 
+async def _collect_outputs(
+    stdout_task: asyncio.Task[bytes],
+    stderr_task: asyncio.Task[bytes],
+) -> tuple[bytes, bytes]:
+    return await asyncio.gather(stdout_task, stderr_task)
+
+
 async def _wait_for_cancellation(
     check: CancellationCheck,
     *,
@@ -165,9 +172,7 @@ async def launch_sandbox(
     stderr_task = asyncio.create_task(
         _read_limited(process.stderr, limit=per_stream_limit, shared=shared)
     )
-    output_task = asyncio.create_task(
-        asyncio.gather(stdout_task, stderr_task)
-    )  # type: ignore[arg-type]
+    output_task = asyncio.create_task(_collect_outputs(stdout_task, stderr_task))
     cancellation_task = (
         asyncio.create_task(
             _wait_for_cancellation(
@@ -211,7 +216,7 @@ async def launch_sandbox(
             cancellation_task.cancel()
         await _terminate_process(process, stop_grace_seconds)
         await _cleanup_container(docker_binary=command[0], cidfile=cid_path)
-        if not process.returncode:
+        if process.returncode is None:
             await process.wait()
     else:
         if process.returncode is None:
