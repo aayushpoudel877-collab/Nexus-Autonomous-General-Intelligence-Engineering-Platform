@@ -218,3 +218,72 @@ async def test_phase_16_worker_classifies_missing_sandbox_runtime(
 
     assert outcome.success is False
     assert outcome.error_code == "sandbox_runtime_unavailable"
+
+
+@pytest.mark.asyncio
+async def test_phase_16_worker_records_successful_sandbox_result(
+    tmp_path, monkeypatch
+):
+    import services.execution.executor as executor_module
+    from services.api.app.services.artifact_store import ArtifactStore
+    from services.execution.config import settings
+    from services.execution.launcher import LauncherResult
+
+    artifact = b"verified"
+    import hashlib
+
+    digest = hashlib.sha256(artifact).hexdigest()
+    ArtifactStore(str(tmp_path), max_bytes=6 * 1024 * 1024).put_verified(
+        artifact,
+        digest,
+    )
+    monkeypatch.setattr(settings, "artifact_root", str(tmp_path))
+    monkeypatch.setattr(settings, "runtime_root", str(tmp_path / "runtime"))
+    monkeypatch.setattr(settings, "sandbox_launch_enabled", True)
+    monkeypatch.setattr(
+        settings,
+        "sandbox_image",
+        "registry.example/nexus-runtime@sha256:" + "a" * 64,
+    )
+
+    async def successful_runtime(**_kwargs):
+        return LauncherResult(
+            exit_code=0,
+            timed_out=False,
+            output_limited=False,
+            stdout=b"ok",
+            stderr=b"",
+            duration_seconds=0.25,
+        )
+
+    monkeypatch.setattr(executor_module, "launch_sandbox", successful_runtime)
+
+    request = ExecutionRequest(
+        entrypoint="plugin.run",
+        input_json={},
+        max_output_bytes=4096,
+        max_memory_mb=256,
+        timeout_seconds=30,
+        policy_snapshot={
+            "version": 2,
+            "execution": {
+                "sandbox_required": True,
+                "artifact_verification_required": True,
+                "artifact_verified": True,
+            },
+            "provenance": {
+                "package_sha256": digest,
+                "artifact_storage_key": digest,
+                "artifact_size_bytes": str(len(artifact)),
+            },
+            "limits": {"max_memory_mb": 256},
+            "network": {"policy": "none", "allowlist": []},
+        },
+    )
+
+    outcome = await SandboxAdmissionExecutor().execute(request)
+
+    assert outcome.success is True
+    assert outcome.error_code is None
+    assert outcome.result["status"] == "succeeded"
+    assert outcome.result["stdout"] == "ok"
