@@ -7,6 +7,7 @@ from services.api.app.services.execution import normalize_execution_result
 
 from .admission import admit_verified_artifact
 from .config import settings
+from .launcher import launch_sandbox, new_cidfile
 from .sandbox import build_oci_command
 
 
@@ -26,8 +27,48 @@ class ExecutionBackend:
         raise NotImplementedError
 
 
+def _bounded_launch_result(
+    *,
+    status: str,
+    request: ExecutionRequest,
+    artifact_digest: str,
+    sandbox_image: str,
+    exit_code: int | None,
+    duration_seconds: float,
+    timed_out: bool,
+    output_limited: bool,
+    stdout: bytes,
+    stderr: bytes,
+) -> tuple[dict[str, Any], int]:
+    result = {
+        "status": status,
+        "entrypoint": request.entrypoint,
+        "artifact_digest": artifact_digest,
+        "sandbox_image": sandbox_image,
+        "exit_code": exit_code,
+        "duration_seconds": round(duration_seconds, 3),
+        "timed_out": timed_out,
+        "output_limited": output_limited,
+        "stdout": stdout.decode("utf-8", errors="replace"),
+        "stderr": stderr.decode("utf-8", errors="replace"),
+    }
+    try:
+        return normalize_execution_result(
+            result,
+            max_output_bytes=request.max_output_bytes,
+        )
+    except ValueError:
+        compact = dict(result)
+        compact["stdout"] = compact["stdout"][:256]
+        compact["stderr"] = compact["stderr"][:256]
+        return normalize_execution_result(
+            compact,
+            max_output_bytes=request.max_output_bytes,
+        )
+
+
 class SandboxAdmissionExecutor(ExecutionBackend):
-    """Admit only verified artifacts and compile a sandbox command; never run it here."""
+    """Verify, admit and optionally launch plugin code inside the isolated sandbox."""
 
     async def execute(self, request: ExecutionRequest) -> ExecutionOutcome:
         try:
@@ -38,7 +79,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                     max_bytes=6 * 1024 * 1024,
                 ),
             )
-        except (OSError, TypeError, ValueError) as exc:
+        except (OSError, TypeError, ValueError):
             result = {
                 "status": "blocked",
                 "entrypoint": request.entrypoint,
@@ -79,6 +120,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 ),
             )
 
+        cidfile = new_cidfile(settings.runtime_root)
         try:
             command = build_oci_command(
                 image=settings.sandbox_image,
@@ -90,6 +132,8 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 ),
                 entrypoint=request.entrypoint,
                 max_memory_mb=request.max_memory_mb,
+                cidfile=cidfile,
+                docker_binary=settings.docker_binary,
             )
         except ValueError as exc:
             result = {
@@ -109,24 +153,74 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 failure_reason=str(exc)[:1000],
             )
 
-        result = {
-            "status": "sandbox_prepared",
-            "entrypoint": request.entrypoint,
-            "artifact_digest": admission.artifact_digest,
-            "sandbox_image": command.image,
-            "network_policy": admission.network_policy,
-        }
-        normalized, size = normalize_execution_result(
-            result,
+        if not settings.sandbox_launch_enabled:
+            result = {
+                "status": "sandbox_prepared",
+                "entrypoint": request.entrypoint,
+                "artifact_digest": admission.artifact_digest,
+                "sandbox_image": command.image,
+                "network_policy": admission.network_policy,
+            }
+            normalized, size = normalize_execution_result(
+                result,
+                max_output_bytes=request.max_output_bytes,
+            )
+            return ExecutionOutcome(
+                success=False,
+                result=normalized,
+                output_bytes=size,
+                error_code="sandbox_launcher_disabled",
+                failure_reason=(
+                    "The isolated launcher is disabled; Phase 16 requires explicit "
+                    "runtime opt-in before plugin code can execute."
+                ),
+            )
+
+        launch = await launch_sandbox(
+            command=command.command,
+            cidfile=command.cidfile,
+            timeout_seconds=request.timeout_seconds,
             max_output_bytes=request.max_output_bytes,
+            stop_grace_seconds=settings.sandbox_stop_grace_seconds,
+        )
+
+        if launch.timed_out:
+            status = "timeout"
+            success = False
+            error_code = "sandbox_timeout"
+            reason = "Sandbox execution exceeded the request timeout."
+        elif launch.output_limited:
+            status = "output_limit"
+            success = False
+            error_code = "sandbox_output_limit"
+            reason = "Sandbox output exceeded the request output limit."
+        elif launch.exit_code == 0:
+            status = "succeeded"
+            success = True
+            error_code = None
+            reason = None
+        else:
+            status = "failed"
+            success = False
+            error_code = "sandbox_exit"
+            reason = "Sandbox process exited with a non-zero status."
+
+        result, size = _bounded_launch_result(
+            status=status,
+            request=request,
+            artifact_digest=admission.artifact_digest,
+            sandbox_image=command.image,
+            exit_code=launch.exit_code,
+            duration_seconds=launch.duration_seconds,
+            timed_out=launch.timed_out,
+            output_limited=launch.output_limited,
+            stdout=launch.stdout,
+            stderr=launch.stderr,
         )
         return ExecutionOutcome(
-            success=False,
-            result=normalized,
+            success=success,
+            result=result,
             output_bytes=size,
-            error_code="sandbox_launcher_not_enabled",
-            failure_reason=(
-                "The verified artifact passed sandbox admission, but Phase 15 does not "
-                "launch external plugin code yet."
-            ),
+            error_code=error_code,
+            failure_reason=reason,
         )
