@@ -19,6 +19,8 @@ def admit_verified_artifact(
     policy_snapshot: dict[str, Any],
     artifact_store: ArtifactStore,
 ) -> SandboxAdmission:
+    if not isinstance(policy_snapshot, dict):
+        raise TypeError("Execution policy snapshot is missing")
     execution = policy_snapshot.get("execution")
     provenance = policy_snapshot.get("provenance")
     limits = policy_snapshot.get("limits")
