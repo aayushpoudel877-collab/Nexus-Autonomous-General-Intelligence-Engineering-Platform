@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from services.api.app.models import ExecutionRequest
 from services.api.app.services.artifact_store import ArtifactStore
@@ -23,7 +23,11 @@ class ExecutionOutcome:
 class ExecutionBackend:
     """Execution boundary for the isolated runtime."""
 
-    async def execute(self, request: ExecutionRequest) -> ExecutionOutcome:
+    async def execute(
+        self,
+        request: ExecutionRequest,
+        cancellation_check: Callable[[], Awaitable[bool]] | None = None,
+    ) -> ExecutionOutcome:
         raise NotImplementedError
 
 
@@ -70,7 +74,11 @@ def _bounded_launch_result(
 class SandboxAdmissionExecutor(ExecutionBackend):
     """Verify, admit and optionally launch plugin code inside the isolated sandbox."""
 
-    async def execute(self, request: ExecutionRequest) -> ExecutionOutcome:
+    async def execute(
+        self,
+        request: ExecutionRequest,
+        cancellation_check: Callable[[], Awaitable[bool]] | None = None,
+    ) -> ExecutionOutcome:
         try:
             admission = admit_verified_artifact(
                 policy_snapshot=request.policy_snapshot,
@@ -183,6 +191,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 timeout_seconds=request.timeout_seconds,
                 max_output_bytes=request.max_output_bytes,
                 stop_grace_seconds=settings.sandbox_stop_grace_seconds,
+                cancellation_check=cancellation_check,
             )
         except (OSError, ValueError):
             result, size = _bounded_launch_result(
@@ -205,7 +214,12 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 failure_reason="The isolated sandbox runtime could not be started.",
             )
 
-        if launch.timed_out:
+        if launch.cancelled:
+            status = "cancelled"
+            success = False
+            error_code = "sandbox_cancelled"
+            reason = "Sandbox execution was cancelled by the request owner."
+        elif launch.timed_out:
             status = "timeout"
             success = False
             error_code = "sandbox_timeout"
