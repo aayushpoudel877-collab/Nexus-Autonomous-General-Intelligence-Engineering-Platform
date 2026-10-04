@@ -115,3 +115,20 @@ The `plugin:execute` scope enables the controlled execution queue:
 An execution request must reference an approved installation for a verified plugin release. Requested capabilities are checked against both the approved installation scopes and the plugin's declared capabilities and entrypoints.
 
 Requests are idempotent by organization plus `idempotency_key`. They capture bounded timeout, memory, output and network-policy limits in a policy snapshot. The API only queues the request; it does not execute plugin code.
+
+## Phase 14 artifact trust APIs
+
+Trust roots and artifact verification are intentionally human-controlled because they change the cryptographic trust boundary.
+
+Trust-root endpoints:
+
+- `GET /api/v1/governance/trust-roots` — list organization trust roots through a developer API key with `plugin:read`.
+- `POST /api/v1/governance/trust-roots` — create an Ed25519 trust root as an owner/admin.
+- `POST /api/v1/governance/trust-roots/{trust_root_id}/revoke` — revoke an active trust root as an owner/admin.
+
+Release verification:
+
+- `POST /api/v1/governance/plugin-releases/{release_id}/verify-artifact` — supply bounded base64-encoded artifact bytes and a trust-root ID. The platform hashes the bytes, compares the release SHA-256, and verifies the detached Ed25519 signature over that digest.
+- `POST /api/v1/governance/plugin-releases/{release_id}/verify` — human review can mark the release `verified` only after cryptographic artifact verification has succeeded.
+
+A verified release still cannot execute by itself. Installation and execution require the verification trust root to remain active and the other Phase 11/12 approval gates to pass.
