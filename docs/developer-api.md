@@ -145,3 +145,12 @@ Successful artifact verification now durably stages the exact verified bytes und
 Execution requests freeze that storage identity in their provenance snapshot. The worker re-hashes the staged bytes before runtime admission.
 
 The sandbox adapter currently compiles a digest-pinned OCI command but does not launch it. This keeps arbitrary plugin code outside the worker process until the isolated launcher phase is enabled.
+
+
+## Phase 17 execution cancellation
+
+The execution API keeps the existing cancellation endpoint:
+
+POST /api/v1/execution/requests/{request_id}/cancel
+
+Cancelling a running request now propagates to the worker runtime. The worker observes the authoritative cancelled state, terminates the isolated sandbox, and refuses to overwrite the cancelled record with a late runtime result. Cancellation is recorded in the organization audit stream.
