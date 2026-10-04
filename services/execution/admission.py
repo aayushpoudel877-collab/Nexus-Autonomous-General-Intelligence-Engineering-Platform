@@ -1,0 +1,61 @@
+"""Fail-closed admission checks for the isolated plugin runtime."""
+
+from dataclasses import dataclass
+from typing import Any
+
+from services.api.app.services.artifact_store import ArtifactStore
+
+
+@dataclass(frozen=True)
+class SandboxAdmission:
+    artifact_digest: str
+    artifact_size_bytes: int
+    network_policy: str
+    sandbox_required: bool
+
+
+def admit_verified_artifact(
+    *,
+    policy_snapshot: dict[str, Any],
+    artifact_store: ArtifactStore,
+) -> SandboxAdmission:
+    execution = policy_snapshot.get("execution")
+    provenance = policy_snapshot.get("provenance")
+    limits = policy_snapshot.get("limits")
+
+    if not isinstance(execution, dict) or execution.get("sandbox_required") is not True:
+        raise ValueError("Execution policy does not require sandboxing")
+    if execution.get("artifact_verification_required") is not True:
+        raise ValueError("Execution policy does not require artifact verification")
+    if execution.get("artifact_verified") is not True:
+        raise ValueError("Execution artifact has not been cryptographically verified")
+    if not isinstance(provenance, dict):
+        raise ValueError("Execution policy provenance is missing")
+    if not isinstance(limits, dict):
+        raise ValueError("Execution policy limits are missing")
+
+    artifact_digest = provenance.get("package_sha256", "")
+    storage_key = provenance.get("artifact_storage_key", "")
+    if artifact_digest != storage_key or len(artifact_digest) != 64:
+        raise ValueError("Execution artifact storage identity does not match its digest")
+
+    artifact = artifact_store.read_verified(storage_key)
+    expected_size = int(provenance.get("artifact_size_bytes", "0"))
+    if expected_size <= 0 or len(artifact) != expected_size:
+        raise ValueError("Stored artifact size does not match frozen execution provenance")
+
+    network = policy_snapshot.get("network")
+    if not isinstance(network, dict):
+        raise ValueError("Execution network policy is missing")
+    network_policy = network.get("policy")
+    if network_policy != "none":
+        raise ValueError(
+            "The Phase 15 sandbox adapter fails closed for network-enabled executions"
+        )
+
+    return SandboxAdmission(
+        artifact_digest=artifact_digest,
+        artifact_size_bytes=len(artifact),
+        network_policy=network_policy,
+        sandbox_required=True,
+    )
