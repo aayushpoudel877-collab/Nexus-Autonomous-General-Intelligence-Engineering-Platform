@@ -56,6 +56,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 15 — Artifact Staging & Sandbox Admission:** verified releases are stored by immutable SHA-256 identity, worker provenance freezes the staged artifact, and the worker compiles a digest-pinned, no-network OCI sandbox policy without launching arbitrary plugin code.
 
+- **Phase 16 — Opt-in Isolated Sandbox Launcher:** verified executions can optionally invoke a digest-pinned OCI sandbox with no shell, no network, bounded output, hard timeout and container cleanup. Launch remains disabled by default.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
