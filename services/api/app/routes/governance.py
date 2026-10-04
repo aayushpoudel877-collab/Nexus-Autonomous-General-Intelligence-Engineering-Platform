@@ -570,8 +570,11 @@ async def approve_installation(
         raise HTTPException(status_code=409, detail="Only requested installations can be reviewed")
 
     release = await db.get(PluginRelease, installation.plugin_release_id)
-    if release is None or release.status != "verified":
-        raise HTTPException(status_code=409, detail="A verified release is required before approval")
+    if release is None or release.status != "verified" or not release.artifact_verified_at:
+        raise HTTPException(
+            status_code=409,
+            detail="A cryptographically verified release is required before approval",
+        )
 
     if payload.status == "approved" and not payload.note.strip():
         raise HTTPException(
