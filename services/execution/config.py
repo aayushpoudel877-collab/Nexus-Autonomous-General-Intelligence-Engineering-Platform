@@ -18,6 +18,13 @@ def _bounded_int(name: str, default: int, minimum: int, maximum: int) -> int:
     return value
 
 
+def _bool_env(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name, "true" if default else "false").strip().lower()
+    if raw not in {"true", "false", "1", "0", "yes", "no"}:
+        raise ValueError(f"{name} must be a boolean")
+    return raw in {"true", "1", "yes"}
+
+
 class WorkerSettings:
     def __init__(self) -> None:
         self.database_url = os.getenv(
@@ -29,6 +36,17 @@ class WorkerSettings:
             "/var/lib/nexus/artifacts",
         )
         self.sandbox_image = os.getenv("NEXUS_SANDBOX_IMAGE", "").strip()
+        self.docker_binary = os.getenv("NEXUS_DOCKER_BINARY", "docker").strip() or "docker"
+        self.sandbox_launch_enabled = _bool_env(
+            "NEXUS_SANDBOX_LAUNCH_ENABLED",
+            False,
+        )
+        self.sandbox_stop_grace_seconds = _bounded_int(
+            "NEXUS_SANDBOX_STOP_GRACE_SECONDS",
+            3,
+            1,
+            30,
+        )
         self.worker_id = os.getenv(
             "NEXUS_WORKER_ID", f"{socket.gethostname()}-{uuid4().hex[:12]}"
         )[:160]
