@@ -38,7 +38,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                     max_bytes=6 * 1024 * 1024,
                 ),
             )
-        except (OSError, ValueError) as exc:
+        except (OSError, TypeError, ValueError) as exc:
             result = {
                 "status": "blocked",
                 "entrypoint": request.entrypoint,
