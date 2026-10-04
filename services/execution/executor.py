@@ -52,7 +52,10 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 result=normalized,
                 output_bytes=size,
                 error_code="artifact_admission_rejected",
-                failure_reason=str(exc)[:1000],
+                failure_reason=(
+                    "The verified artifact could not pass sandbox admission; "
+                    "the worker did not execute plugin code."
+                ),
             )
 
         if not settings.sandbox_image:
