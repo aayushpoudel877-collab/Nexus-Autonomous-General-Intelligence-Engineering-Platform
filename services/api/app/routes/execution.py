@@ -13,6 +13,7 @@ from ..models import (
     PluginInstallation,
     PluginRegistration,
     PluginRelease,
+    PluginTrustRoot,
     ExecutionRequest,
 )
 from ..schemas.execution import ExecutionCancel, ExecutionRequestCreate, ExecutionRequestRead
@@ -31,12 +32,18 @@ async def _approved_installation(
         select(PluginInstallation, PluginRelease, PluginRegistration)
         .join(PluginRelease, PluginInstallation.plugin_release_id == PluginRelease.id)
         .join(PluginRegistration, PluginRelease.plugin_id == PluginRegistration.id)
+        .join(
+            PluginTrustRoot,
+            PluginTrustRoot.organization_id == PluginRegistration.organization_id,
+        )
         .where(
             PluginInstallation.id == installation_id,
             PluginInstallation.organization_id == organization_id,
             PluginInstallation.status == "approved",
             PluginRelease.status == "verified",
             PluginRelease.artifact_verified_at.is_not(None),
+            PluginRelease.verification_key_id == PluginTrustRoot.key_id,
+            PluginTrustRoot.status == "active",
             PluginRegistration.status == "active",
         )
     )
