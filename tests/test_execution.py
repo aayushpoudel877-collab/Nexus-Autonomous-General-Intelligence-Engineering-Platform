@@ -131,6 +131,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "sandbox_required": True,
             "artifact_verification_required": True,
             "secret_access_requires_external_reference": True,
+            "artifact_verified": False,
         },
     }
 
