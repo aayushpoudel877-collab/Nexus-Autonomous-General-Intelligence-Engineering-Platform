@@ -91,7 +91,7 @@ async def _cleanup_container(
     if not container_id:
         return
     try:
-        await asyncio.wait_for(
+        cleanup = await asyncio.wait_for(
             asyncio.create_subprocess_exec(
                 docker_binary,
                 "rm",
@@ -102,6 +102,7 @@ async def _cleanup_container(
             ),
             timeout=timeout_seconds,
         )
+        await asyncio.wait_for(cleanup.wait(), timeout=timeout_seconds)
     except (OSError, asyncio.TimeoutError):
         return
 
