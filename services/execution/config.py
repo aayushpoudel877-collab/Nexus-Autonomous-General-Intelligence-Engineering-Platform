@@ -51,6 +51,12 @@ class WorkerSettings:
             1,
             30,
         )
+        self.sandbox_cancellation_poll_seconds = _positive_float(
+            "NEXUS_SANDBOX_CANCELLATION_POLL_SECONDS",
+            0.5,
+            0.1,
+            10.0,
+        )
         self.worker_id = os.getenv(
             "NEXUS_WORKER_ID", f"{socket.gethostname()}-{uuid4().hex[:12]}"
         )[:160]
