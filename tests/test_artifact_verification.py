@@ -2,6 +2,7 @@ import base64
 import hashlib
 
 import pytest
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from services.api.app.services.artifact_verification import (
@@ -15,7 +16,10 @@ def _signed_artifact() -> tuple[bytes, str, str]:
     artifact = b"nexus-plugin-artifact"
     digest = hashlib.sha256(artifact).hexdigest()
     private_key = Ed25519PrivateKey.generate()
-    public_key = private_key.public_key().public_bytes_raw()
+    public_key = private_key.public_key().public_bytes(
+        serialization.Encoding.Raw,
+        serialization.PublicFormat.Raw,
+    )
     signature = private_key.sign(digest.encode("ascii"))
     return (
         artifact,
