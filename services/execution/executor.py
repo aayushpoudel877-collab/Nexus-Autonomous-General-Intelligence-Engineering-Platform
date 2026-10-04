@@ -176,13 +176,34 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 ),
             )
 
-        launch = await launch_sandbox(
-            command=command.command,
-            cidfile=command.cidfile,
-            timeout_seconds=request.timeout_seconds,
-            max_output_bytes=request.max_output_bytes,
-            stop_grace_seconds=settings.sandbox_stop_grace_seconds,
-        )
+        try:
+            launch = await launch_sandbox(
+                command=command.command,
+                cidfile=command.cidfile,
+                timeout_seconds=request.timeout_seconds,
+                max_output_bytes=request.max_output_bytes,
+                stop_grace_seconds=settings.sandbox_stop_grace_seconds,
+            )
+        except OSError:
+            result, size = _bounded_launch_result(
+                status="runtime_unavailable",
+                request=request,
+                artifact_digest=admission.artifact_digest,
+                sandbox_image=command.image,
+                exit_code=None,
+                duration_seconds=0.0,
+                timed_out=False,
+                output_limited=False,
+                stdout=b"",
+                stderr=b"",
+            )
+            return ExecutionOutcome(
+                success=False,
+                result=result,
+                output_bytes=size,
+                error_code="sandbox_runtime_unavailable",
+                failure_reason="The isolated sandbox runtime could not be started.",
+            )
 
         if launch.timed_out:
             status = "timeout"
