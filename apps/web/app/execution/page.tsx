@@ -2,7 +2,7 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 16</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 17</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
@@ -39,6 +39,15 @@ export default function ExecutionPage() {
           <p>
             The API creates and cancels queue records but intentionally does not execute arbitrary
             plugin code. A separate worker now claims leases, heartbeats them, records bounded outcomes and fails closed when no isolated artifact executor is available.
+          </p>
+        </article>
+
+        <article>
+          <p className="eyebrow">CANCELLATION</p>
+          <h2>Stop the runtime, not just the record</h2>
+          <p>
+            Cancellation is checked against the authoritative execution state. The worker terminates
+            the sandbox process group and reconciles the database state before writing its final audit event.
           </p>
         </article>
       </section>
