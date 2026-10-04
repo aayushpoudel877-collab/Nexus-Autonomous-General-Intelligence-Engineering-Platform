@@ -136,6 +136,9 @@ class PluginReleaseRead(BaseModel):
     artifact_verified_by_user_id: UUID | None
     verification_key_id: str | None
     verification_method: str | None
+    artifact_storage_key: str | None
+    artifact_size_bytes: int | None
+    artifact_staged_at: datetime | None
     verified_by_user_id: UUID | None
     verified_at: datetime | None
     created_at: datetime
