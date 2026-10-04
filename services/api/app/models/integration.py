@@ -5,6 +5,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Integer,
     JSON,
     String,
     Text,
@@ -96,6 +97,11 @@ class PluginRelease(Base):
     )
     verification_key_id: Mapped[str | None] = mapped_column(String(160), nullable=True)
     verification_method: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    artifact_storage_key: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    artifact_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    artifact_staged_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     verified_by_user_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
