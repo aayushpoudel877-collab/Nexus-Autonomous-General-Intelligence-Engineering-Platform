@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.config import settings
 from ..core.dependencies import (
     get_membership,
     require_api_key_scopes,
@@ -39,6 +40,7 @@ from ..schemas.artifacts import (
     PluginTrustRootRead,
 )
 from ..services.artifact_verification import MAX_ARTIFACT_BYTES, verify_artifact_bytes
+from ..services.artifact_store import ArtifactStore
 from ..services.audit import record_audit
 from ..services.ecosystem import canonical_manifest_sha256
 
@@ -390,10 +392,22 @@ async def verify_release_artifact(
     except (ValueError, binascii.Error) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    store = ArtifactStore(settings.artifact_root, max_bytes=MAX_ARTIFACT_BYTES)
+    try:
+        storage_key = store.put_verified(artifact, release.package_sha256)
+    except (OSError, ValueError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Verified artifact could not be durably staged",
+        ) from exc
+
     release.artifact_verified_at = datetime.now(timezone.utc)
     release.artifact_verified_by_user_id = user.id
     release.verification_key_id = root.key_id
     release.verification_method = "ed25519-sha256"
+    release.artifact_storage_key = storage_key
+    release.artifact_size_bytes = len(artifact)
+    release.artifact_staged_at = datetime.now(timezone.utc)
     await record_audit(
         db,
         action="developer.plugin_release.artifact_verified",
@@ -405,6 +419,8 @@ async def verify_release_artifact(
             "version": release.version,
             "key_id": root.key_id,
             "method": release.verification_method,
+            "storage_key": release.artifact_storage_key,
+            "size_bytes": release.artifact_size_bytes,
         },
         request_id=getattr(request.state, "request_id", None),
     )
