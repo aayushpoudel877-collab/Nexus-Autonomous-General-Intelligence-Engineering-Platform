@@ -1,6 +1,9 @@
 import asyncio
 import logging
 
+from sqlalchemy import select
+
+from services.api.app.models import ExecutionRequest
 from services.api.app.services.audit import record_audit
 from services.api.app.services.execution import MAX_FAILURE_REASON
 
@@ -42,6 +45,21 @@ async def _heartbeat_loop(request_id, stop_event: asyncio.Event) -> None:
                 return
 
 
+async def _is_execution_cancelled(request_id) -> bool:
+    try:
+        async with SessionLocal() as db:
+            status = await db.scalar(
+                select(ExecutionRequest.status).where(ExecutionRequest.id == request_id)
+            )
+            return status == "cancelled"
+    except Exception:
+        logger.exception(
+            "could not check cancellation state for execution %s; failing closed",
+            request_id,
+        )
+        return True
+
+
 async def process_one() -> bool:
     async with SessionLocal() as db:
         requeued = await requeue_expired_requests(db)
@@ -79,7 +97,10 @@ async def process_one() -> bool:
     stop_event = asyncio.Event()
     heartbeat_task = asyncio.create_task(_heartbeat_loop(request.id, stop_event))
     try:
-        outcome = await SandboxAdmissionExecutor().execute(request)
+        outcome = await SandboxAdmissionExecutor().execute(
+            request,
+            cancellation_check=lambda: _is_execution_cancelled(request.id),
+        )
     except Exception:
         logger.exception("execution %s failed inside worker", request.id)
         outcome = ExecutionOutcome(
@@ -104,17 +125,30 @@ async def process_one() -> bool:
             error_code=outcome.error_code,
             failure_reason=(outcome.failure_reason or "")[:MAX_FAILURE_REASON],
         )
+        current_status = await finish_db.scalar(
+            select(ExecutionRequest.status).where(ExecutionRequest.id == request.id)
+        )
+        audit_action = (
+            "execution.worker_finished"
+            if finished
+            else (
+                "execution.worker_cancelled"
+                if current_status == "cancelled"
+                else "execution.worker_lease_lost"
+            )
+        )
         await record_audit(
             finish_db,
-            action="execution.worker_finished" if finished else "execution.worker_lease_lost",
+            action=audit_action,
             resource_type="execution_request",
             organization_id=request.organization_id,
             resource_id=str(request.id),
             detail={
                 "worker_id": settings.worker_id,
-                "status": "succeeded" if outcome.success else "failed",
+                "status": current_status or ("succeeded" if outcome.success else "failed"),
                 "error_code": outcome.error_code,
                 "lease_owned": finished,
+                "sandbox_cancelled": outcome.result.get("status") == "cancelled",
             },
         )
         await finish_db.commit()
