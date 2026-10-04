@@ -503,6 +503,18 @@ async def request_installation(
             status_code=409,
             detail="Only cryptographically verified plugin releases can be installed",
         )
+    trust_root = await db.scalar(
+        select(PluginTrustRoot).where(
+            PluginTrustRoot.organization_id == api_key.organization_id,
+            PluginTrustRoot.key_id == release.verification_key_id,
+            PluginTrustRoot.status == "active",
+        )
+    )
+    if trust_root is None:
+        raise HTTPException(
+            status_code=409,
+            detail="The release verification trust root is no longer active",
+        )
 
     manifest_snapshot = release.manifest_snapshot
     if not isinstance(manifest_snapshot, dict):
@@ -574,6 +586,18 @@ async def approve_installation(
         raise HTTPException(
             status_code=409,
             detail="A cryptographically verified release is required before approval",
+        )
+    trust_root = await db.scalar(
+        select(PluginTrustRoot).where(
+            PluginTrustRoot.organization_id == membership.organization_id,
+            PluginTrustRoot.key_id == release.verification_key_id,
+            PluginTrustRoot.status == "active",
+        )
+    )
+    if trust_root is None:
+        raise HTTPException(
+            status_code=409,
+            detail="The release verification trust root is no longer active",
         )
 
     if payload.status == "approved" and not payload.note.strip():
