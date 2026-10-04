@@ -58,10 +58,10 @@ async def _terminate_process(process: asyncio.subprocess.Process, grace_seconds:
         return
     try:
         os.killpg(process.pid, signal.SIGTERM)
-    except (ProcessLookupError, PermissionError):
+    except (OSError, PermissionError):
         try:
             process.terminate()
-        except ProcessLookupError:
+        except OSError:
             return
     try:
         await asyncio.wait_for(process.wait(), timeout=grace_seconds)
