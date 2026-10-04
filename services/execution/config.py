@@ -24,6 +24,10 @@ class WorkerSettings:
             "DATABASE_URL",
             "postgresql+asyncpg://nexus:nexus@localhost:5432/nexus",
         )
+        self.artifact_root = os.getenv(
+            "NEXUS_ARTIFACT_ROOT",
+            "/var/lib/nexus/artifacts",
+        )
         self.worker_id = os.getenv(
             "NEXUS_WORKER_ID", f"{socket.gethostname()}-{uuid4().hex[:12]}"
         )[:160]
