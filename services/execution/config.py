@@ -28,6 +28,7 @@ class WorkerSettings:
             "NEXUS_ARTIFACT_ROOT",
             "/var/lib/nexus/artifacts",
         )
+        self.sandbox_image = os.getenv("NEXUS_SANDBOX_IMAGE", "").strip()
         self.worker_id = os.getenv(
             "NEXUS_WORKER_ID", f"{socket.gethostname()}-{uuid4().hex[:12]}"
         )[:160]
