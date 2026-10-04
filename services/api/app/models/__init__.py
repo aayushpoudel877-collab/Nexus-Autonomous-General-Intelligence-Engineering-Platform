@@ -21,6 +21,7 @@ from .benchmark import BenchmarkComparison
 from .ecosystem import DeveloperApiKey, PluginRegistration
 from .integration import IntegrationConnection, PluginInstallation, PluginRelease
 from .execution import ExecutionRequest
+from .trust import PluginTrustRoot
 
 __all__ = [
     "Organization",
@@ -57,4 +58,5 @@ __all__ = [
     "PluginRelease",
     "PluginInstallation",
     "ExecutionRequest",
+    "PluginTrustRoot",
 ]
