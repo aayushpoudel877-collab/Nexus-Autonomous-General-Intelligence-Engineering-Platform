@@ -2,7 +2,7 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 15</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 16</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
