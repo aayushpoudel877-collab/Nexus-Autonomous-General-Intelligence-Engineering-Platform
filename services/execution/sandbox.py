@@ -37,7 +37,7 @@ def build_oci_command(
     artifact_path: str,
     entrypoint: str,
     max_memory_mb: int,
-    cidfile: str,
+    cidfile: str = "/tmp/nexus-sandbox.cid",
     docker_binary: str = "docker",
 ) -> SandboxCommand:
     if max_memory_mb < 64 or max_memory_mb > 4096:
