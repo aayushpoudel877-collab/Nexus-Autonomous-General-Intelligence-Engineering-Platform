@@ -54,6 +54,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 14 — Cryptographic Artifact Trust:** tenant-owned Ed25519 trust roots, bounded detached-signature verification against release SHA-256, human release approval after cryptographic verification, and revocation-aware installation/execution gates. The platform still does not fetch or execute arbitrary plugin packages.
 
+- **Phase 15 — Artifact Staging & Sandbox Admission:** verified releases are stored by immutable SHA-256 identity, worker provenance freezes the staged artifact, and the worker compiles a digest-pinned, no-network OCI sandbox policy without launching arbitrary plugin code.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
