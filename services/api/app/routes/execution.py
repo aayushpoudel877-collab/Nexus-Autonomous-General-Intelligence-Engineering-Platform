@@ -34,7 +34,8 @@ async def _approved_installation(
         .join(PluginRegistration, PluginRelease.plugin_id == PluginRegistration.id)
         .join(
             PluginTrustRoot,
-            PluginTrustRoot.organization_id == PluginRegistration.organization_id,
+            (PluginTrustRoot.organization_id == PluginRegistration.organization_id)
+            & (PluginTrustRoot.key_id == PluginRelease.verification_key_id),
         )
         .where(
             PluginInstallation.id == installation_id,
