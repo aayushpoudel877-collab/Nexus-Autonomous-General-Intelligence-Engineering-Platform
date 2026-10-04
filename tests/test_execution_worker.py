@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 
 from services.api.app.models import ExecutionRequest
@@ -59,3 +61,53 @@ async def test_phase_15_worker_requires_staged_verified_artifact(tmp_path, monke
 
     assert outcome.success is False
     assert outcome.error_code == "artifact_admission_rejected"
+
+
+
+@pytest.mark.asyncio
+async def test_phase_15_worker_prepares_pinned_sandbox_after_verified_artifact(
+    tmp_path, monkeypatch
+):
+    from services.api.app.services.artifact_store import ArtifactStore
+    from services.execution.config import settings
+
+    artifact = b"verified-runtime-artifact"
+    digest = hashlib.sha256(artifact).hexdigest()
+    store = ArtifactStore(str(tmp_path), max_bytes=6 * 1024 * 1024)
+    store.put_verified(artifact, digest)
+
+    monkeypatch.setattr(settings, "artifact_root", str(tmp_path))
+    monkeypatch.setattr(
+        settings,
+        "sandbox_image",
+        "registry.example/nexus-runtime@sha256:" + "a" * 64,
+    )
+
+    request = ExecutionRequest(
+        entrypoint="plugin.run",
+        input_json={},
+        max_output_bytes=4096,
+        max_memory_mb=256,
+        policy_snapshot={
+            "version": 2,
+            "execution": {
+                "sandbox_required": True,
+                "artifact_verification_required": True,
+                "artifact_verified": True,
+            },
+            "provenance": {
+                "package_sha256": digest,
+                "artifact_storage_key": digest,
+                "artifact_size_bytes": str(len(artifact)),
+            },
+            "limits": {"max_memory_mb": 256},
+            "network": {"policy": "none", "allowlist": []},
+        },
+    )
+
+    outcome = await SandboxAdmissionExecutor().execute(request)
+
+    assert outcome.success is False
+    assert outcome.error_code == "sandbox_launcher_not_enabled"
+    assert outcome.result["status"] == "sandbox_prepared"
+    assert outcome.result["artifact_digest"] == digest
