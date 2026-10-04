@@ -1,3 +1,5 @@
+import base64
+import binascii
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -18,6 +20,7 @@ from ..models import (
     PluginRelease,
     User,
     DeveloperApiKey,
+    PluginTrustRoot,
 )
 from ..schemas.integrations import (
     IntegrationCreate,
@@ -30,6 +33,12 @@ from ..schemas.integrations import (
     PluginReleaseRead,
     PluginReleaseVerification,
 )
+from ..schemas.artifacts import (
+    PluginArtifactVerification,
+    PluginTrustRootCreate,
+    PluginTrustRootRead,
+)
+from ..services.artifact_verification import MAX_ARTIFACT_BYTES, verify_artifact_bytes
 from ..services.audit import record_audit
 from ..services.ecosystem import canonical_manifest_sha256
 
@@ -66,6 +75,104 @@ async def _installation_for_org(
     if installation is None:
         raise HTTPException(status_code=404, detail="Plugin installation not found")
     return installation
+
+
+
+
+@router.get("/trust-roots", response_model=list[PluginTrustRootRead])
+async def list_trust_roots(
+    api_key: DeveloperApiKey = Depends(require_api_key_scopes("plugin:read")),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await db.scalars(
+        select(PluginTrustRoot)
+        .where(PluginTrustRoot.organization_id == api_key.organization_id)
+        .order_by(PluginTrustRoot.created_at.desc())
+    )
+    return list(rows.all())
+
+
+@router.post("/trust-roots", response_model=PluginTrustRootRead, status_code=201)
+async def create_trust_root(
+    payload: PluginTrustRootCreate,
+    request: Request,
+    user: User = Depends(require_roles("owner", "admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    existing = await db.scalar(
+        select(PluginTrustRoot).where(
+            PluginTrustRoot.organization_id == membership.organization_id,
+            PluginTrustRoot.key_id == payload.key_id,
+        )
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="A trust root with this key_id already exists")
+
+    try:
+        from ..services.artifact_verification import decode_public_key
+
+        decode_public_key(payload.public_key)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    root = PluginTrustRoot(
+        organization_id=membership.organization_id,
+        created_by_user_id=user.id,
+        **payload.model_dump(),
+    )
+    db.add(root)
+    await db.flush()
+    await record_audit(
+        db,
+        action="developer.plugin_trust_root.created",
+        resource_type="plugin_trust_root",
+        actor_user_id=user.id,
+        organization_id=membership.organization_id,
+        resource_id=str(root.id),
+        detail={"key_id": root.key_id, "algorithm": root.algorithm},
+        request_id=getattr(request.state, "request_id", None),
+    )
+    await db.commit()
+    await db.refresh(root)
+    return root
+
+
+@router.post("/trust-roots/{trust_root_id}/revoke", response_model=PluginTrustRootRead)
+async def revoke_trust_root(
+    trust_root_id: UUID,
+    request: Request,
+    user: User = Depends(require_roles("owner", "admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    root = await db.scalar(
+        select(PluginTrustRoot).where(
+            PluginTrustRoot.id == trust_root_id,
+            PluginTrustRoot.organization_id == membership.organization_id,
+        )
+    )
+    if root is None:
+        raise HTTPException(status_code=404, detail="Trust root not found")
+    if root.status != "active":
+        raise HTTPException(status_code=409, detail="Trust root has already been revoked")
+
+    root.status = "revoked"
+    root.revoked_by_user_id = user.id
+    root.revoked_at = datetime.now(timezone.utc)
+    await record_audit(
+        db,
+        action="developer.plugin_trust_root.revoked",
+        resource_type="plugin_trust_root",
+        actor_user_id=user.id,
+        organization_id=membership.organization_id,
+        resource_id=str(root.id),
+        detail={"key_id": root.key_id},
+        request_id=getattr(request.state, "request_id", None),
+    )
+    await db.commit()
+    await db.refresh(root)
+    return root
 
 
 @router.get("/integrations", response_model=list[IntegrationRead])
@@ -222,6 +329,89 @@ async def create_release(
     return release
 
 
+
+
+@router.post(
+    "/plugin-releases/{release_id}/verify-artifact",
+    response_model=PluginReleaseRead,
+)
+async def verify_release_artifact(
+    release_id: UUID,
+    payload: PluginArtifactVerification,
+    request: Request,
+    user: User = Depends(require_roles("owner", "admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    release = await db.scalar(
+        select(PluginRelease)
+        .join(PluginRegistration, PluginRelease.plugin_id == PluginRegistration.id)
+        .where(
+            PluginRelease.id == release_id,
+            PluginRegistration.organization_id == membership.organization_id,
+        )
+    )
+    if release is None:
+        raise HTTPException(status_code=404, detail="Plugin release not found")
+    if release.status != "pending":
+        raise HTTPException(
+            status_code=409,
+            detail="Artifact verification is only allowed before release review",
+        )
+
+    root = await db.scalar(
+        select(PluginTrustRoot).where(
+            PluginTrustRoot.id == payload.trust_root_id,
+            PluginTrustRoot.organization_id == membership.organization_id,
+        )
+    )
+    if root is None:
+        raise HTTPException(status_code=404, detail="Trust root not found")
+    if root.status != "active":
+        raise HTTPException(status_code=409, detail="Trust root is revoked")
+    if release.signer != root.key_id:
+        raise HTTPException(
+            status_code=422,
+            detail="Release signer does not match the selected trust root",
+        )
+
+    try:
+        artifact = base64.b64decode(payload.artifact_base64, validate=True)
+        if len(artifact) > MAX_ARTIFACT_BYTES:
+            raise ValueError(
+                f"Artifact verification input cannot exceed {MAX_ARTIFACT_BYTES} bytes"
+            )
+        verify_artifact_bytes(
+            artifact_bytes=artifact,
+            expected_sha256=release.package_sha256,
+            signature=release.signature,
+            public_key=root.public_key,
+        )
+    except (ValueError, binascii.Error) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    release.artifact_verified_at = datetime.now(timezone.utc)
+    release.artifact_verified_by_user_id = user.id
+    release.verification_key_id = root.key_id
+    release.verification_method = "ed25519-sha256"
+    await record_audit(
+        db,
+        action="developer.plugin_release.artifact_verified",
+        resource_type="plugin_release",
+        actor_user_id=user.id,
+        organization_id=membership.organization_id,
+        resource_id=str(release.id),
+        detail={
+            "version": release.version,
+            "key_id": root.key_id,
+            "method": release.verification_method,
+        },
+        request_id=getattr(request.state, "request_id", None),
+    )
+    await db.commit()
+    await db.refresh(release)
+    return release
+
 @router.post("/plugin-releases/{release_id}/verify", response_model=PluginReleaseRead)
 async def verify_release(
     release_id: UUID,
@@ -244,11 +434,17 @@ async def verify_release(
 
     if release.status != "pending":
         raise HTTPException(status_code=409, detail="Plugin release has already been reviewed")
-    if payload.status == "verified" and not payload.note.strip():
-        raise HTTPException(
-            status_code=422,
-            detail="A verification note is required when approving a plugin release",
-        )
+    if payload.status == "verified":
+        if not release.artifact_verified_at:
+            raise HTTPException(
+                status_code=409,
+                detail="Cryptographic artifact verification is required before release approval",
+            )
+        if not payload.note.strip():
+            raise HTTPException(
+                status_code=422,
+                detail="A verification note is required when approving a plugin release",
+            )
 
     release.status = payload.status
     release.verification_note = payload.note.strip()
@@ -302,8 +498,11 @@ async def request_installation(
     if row is None:
         raise HTTPException(status_code=404, detail="Plugin release not found")
     release, _plugin = row
-    if release.status != "verified":
-        raise HTTPException(status_code=409, detail="Only verified plugin releases can be installed")
+    if release.status != "verified" or not release.artifact_verified_at:
+        raise HTTPException(
+            status_code=409,
+            detail="Only cryptographically verified plugin releases can be installed",
+        )
 
     manifest_snapshot = release.manifest_snapshot
     if not isinstance(manifest_snapshot, dict):
