@@ -61,3 +61,10 @@ The worker still fails closed for external plugin entrypoints. It does not fetch
 Phase 14 adds tenant-owned Ed25519 trust roots and a detached-signature verification gate for plugin artifacts. A release is installable only after the supplied artifact bytes hash to the release package SHA-256 and the digest is validated by the release's declared signer against an active tenant trust root. Human release approval remains a separate gate. Revoking the trust root blocks new installation approval and execution for releases tied to that key.
 
 The verification endpoint accepts bounded artifact bytes for explicit verification but does not unpack or execute them. The platform still does not retrieve arbitrary `artifact_uri` values, dereference remote URLs, resolve secrets, or launch plugin code. Those operations remain the responsibility of a future isolated sandbox runtime with egress enforcement and resource limits.
+
+
+## Phase 15 runtime admission boundary
+
+Phase 15 adds a shared, content-addressed artifact store. A cryptographically verified release is staged under its SHA-256 digest; the storage key, byte size and staging timestamp are frozen into execution provenance. Workers re-read and re-hash the artifact before admission, preventing a mutable file from silently replacing the verified payload.
+
+The sandbox adapter compiles an OCI command only when the runtime image is pinned by SHA-256. The compiled policy requires no network, a read-only root filesystem, all Linux capabilities dropped, no-new-privileges, bounded memory and process count, a read-only artifact mount, and an isolated temporary filesystem. The adapter does not invoke the command yet, keeping plugin code outside the current worker process until end-to-end runtime controls are available.
