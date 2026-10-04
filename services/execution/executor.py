@@ -184,7 +184,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 max_output_bytes=request.max_output_bytes,
                 stop_grace_seconds=settings.sandbox_stop_grace_seconds,
             )
-        except OSError:
+        except (OSError, ValueError):
             result, size = _bounded_launch_result(
                 status="runtime_unavailable",
                 request=request,
