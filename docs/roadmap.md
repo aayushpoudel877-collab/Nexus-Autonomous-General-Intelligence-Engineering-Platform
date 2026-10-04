@@ -54,3 +54,7 @@ Initial implementation: verified plugin artifacts are durably stored in a conten
 
 ## Phase 16 — Opt-in Isolated Sandbox Launcher
 Initial implementation: a dedicated launcher executes only digest-pinned OCI commands, never through a shell. The launcher uses a new process session, bounded runtime timeout, bounded stdout/stderr capture, explicit process-group termination, container-ID cleanup on timeout/output overflow, and deterministic result classification. Launching remains opt-in and disabled by default; the worker container does not mount the Docker socket, so deployment must explicitly provide an isolated runtime boundary before enabling it.
+
+
+## Phase 17 — Cooperative Runtime Cancellation & Reconciliation
+Initial implementation: running sandbox executions now poll the authoritative execution record for cancellation, terminate the sandbox process group, remove the active container when possible, and classify cancellation separately from timeout and output-limit failures. Worker completion reconciles against the current database state so a request cancelled by the API cannot be overwritten by a late runtime result. Cancellation polling is bounded and configurable. Network-enabled execution remains fail-closed pending a dedicated egress mediation phase.
