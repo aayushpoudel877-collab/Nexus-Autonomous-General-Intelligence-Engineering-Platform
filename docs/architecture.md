@@ -77,3 +77,12 @@ Phase 16 adds an opt-in isolated launcher behind the Phase 15 admission contract
 The launcher treats the execution policy as authoritative: the image is digest-pinned, the artifact is read-only, networking remains disabled, and the request timeout becomes the runtime deadline. The launcher returns structured terminal classification rather than exposing raw process internals to the API.
 
 Launch is disabled by default. The repository's local Compose worker deliberately does not mount the Docker socket or enable launch. A deployment that enables it must supply an isolated runtime host boundary and ensure the configured artifact path is visible to that runtime.
+
+
+## Phase 17 runtime cancellation boundary
+
+Phase 17 closes the cancellation gap between the API control plane and the sandbox runtime. When an execution is marked cancelled, the worker polls the authoritative execution row during sandbox execution and terminates the sandbox process group rather than waiting for the original runtime timeout.
+
+The launcher treats cancellation as a first-class terminal control signal and attempts container cleanup using the existing CID file. The worker then reconciles the final database state before emitting its completion audit event, so a cancelled request cannot be overwritten by a late sandbox result or lease completion.
+
+Network-enabled execution remains blocked by the Phase 15 admission policy; the dedicated egress mediation phase must establish a controlled network boundary before allowlisted network requests can execute.
