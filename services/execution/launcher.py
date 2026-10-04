@@ -6,6 +6,7 @@ import asyncio
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Awaitable, Callable
 import signal
 import uuid
 
@@ -14,11 +15,15 @@ class LauncherOutputLimitExceeded(RuntimeError):
     pass
 
 
+CancellationCheck = Callable[[], Awaitable[bool]]
+
+
 @dataclass(frozen=True)
 class LauncherResult:
     exit_code: int | None
     timed_out: bool
     output_limited: bool
+    cancelled: bool
     stdout: bytes
     stderr: bytes
     duration_seconds: float
@@ -51,6 +56,17 @@ async def _read_limited(
         if shared["used"] > limit:
             raise LauncherOutputLimitExceeded("Sandbox output exceeded the execution limit")
     return b"".join(chunks)
+
+
+async def _wait_for_cancellation(
+    check: CancellationCheck,
+    *,
+    poll_seconds: float,
+) -> bool:
+    while True:
+        if await check():
+            return True
+        await asyncio.sleep(poll_seconds)
 
 
 async def _terminate_process(process: asyncio.subprocess.Process, grace_seconds: int) -> None:
@@ -114,6 +130,8 @@ async def launch_sandbox(
     timeout_seconds: int,
     max_output_bytes: int,
     stop_grace_seconds: int,
+    cancellation_check: CancellationCheck | None = None,
+    cancellation_poll_seconds: float = 0.5,
 ) -> LauncherResult:
     if not command:
         raise ValueError("Sandbox command cannot be empty")
@@ -123,6 +141,8 @@ async def launch_sandbox(
         raise ValueError("Sandbox output limit is outside the supported range")
     if stop_grace_seconds < 1 or stop_grace_seconds > 30:
         raise ValueError("Sandbox stop grace period is outside the supported range")
+    if not 0.1 <= cancellation_poll_seconds <= 10:
+        raise ValueError("Cancellation polling interval is outside the supported range")
 
     cid_path = Path(cidfile)
     cid_path.parent.mkdir(parents=True, exist_ok=True)
@@ -145,47 +165,76 @@ async def launch_sandbox(
     stderr_task = asyncio.create_task(
         _read_limited(process.stderr, limit=per_stream_limit, shared=shared)
     )
+    output_task = asyncio.create_task(
+        asyncio.gather(stdout_task, stderr_task)
+    )  # type: ignore[arg-type]
+    cancellation_task = (
+        asyncio.create_task(
+            _wait_for_cancellation(
+                cancellation_check,
+                poll_seconds=cancellation_poll_seconds,
+            )
+        )
+        if cancellation_check is not None
+        else None
+    )
 
     timed_out = False
     output_limited = False
+    cancelled = False
+    stdout = b""
+    stderr = b""
     try:
-        stdout, stderr = await asyncio.wait_for(
-            asyncio.gather(stdout_task, stderr_task),
+        wait_set = {output_task}
+        if cancellation_task is not None:
+            wait_set.add(cancellation_task)
+        done, _ = await asyncio.wait(
+            wait_set,
             timeout=timeout_seconds,
+            return_when=asyncio.FIRST_COMPLETED,
         )
-    except asyncio.TimeoutError:
-        timed_out = True
-        stdout_task.cancel()
-        stderr_task.cancel()
-        await _terminate_process(process, stop_grace_seconds)
-        await _cleanup_container(docker_binary=command[0], cidfile=cid_path)
-        stdout = b""
-        stderr = b""
+        if not done:
+            timed_out = True
+        elif cancellation_task is not None and cancellation_task in done:
+            cancelled = True
+        else:
+            stdout, stderr = await output_task
+            await process.wait()
     except LauncherOutputLimitExceeded:
         output_limited = True
+
+    if timed_out or output_limited or cancelled:
         stdout_task.cancel()
         stderr_task.cancel()
+        output_task.cancel()
+        if cancellation_task is not None:
+            cancellation_task.cancel()
         await _terminate_process(process, stop_grace_seconds)
         await _cleanup_container(docker_binary=command[0], cidfile=cid_path)
-        stdout = b""
-        stderr = b""
+        if not process.returncode:
+            await process.wait()
     else:
-        await process.wait()
-        cid_path.unlink(missing_ok=True)
+        if process.returncode is None:
+            await process.wait()
 
-    stdout_task.cancel()
-    stderr_task.cancel()
-    for task in (stdout_task, stderr_task):
+    for task in (stdout_task, stderr_task, output_task, cancellation_task):
+        if task is None:
+            continue
+        task.cancel()
         try:
             await task
         except (asyncio.CancelledError, LauncherOutputLimitExceeded):
             pass
+
+    if process.returncode is not None and not (timed_out or output_limited or cancelled):
+        cid_path.unlink(missing_ok=True)
 
     duration = asyncio.get_running_loop().time() - started
     return LauncherResult(
         exit_code=process.returncode,
         timed_out=timed_out,
         output_limited=output_limited,
+        cancelled=cancelled,
         stdout=stdout,
         stderr=stderr,
         duration_seconds=duration,
