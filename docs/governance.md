@@ -74,3 +74,12 @@ Each organization can register Ed25519 trust roots identified by a stable `key_i
 A release cannot move to `verified` until cryptographic artifact verification succeeds and an owner/admin records a human review note. Installation approval and execution additionally require that the verification trust root remains active. Revoking a trust root therefore prevents subsequent activation of releases tied to that key without rewriting historical release records.
 
 Phase 14 intentionally does not fetch `artifact_uri` values or unpack packages. The verification endpoint uses a bounded artifact payload so signature checks can be performed without introducing an arbitrary URL fetch or code-execution primitive.
+
+
+## Phase 15 verified artifact staging
+
+After cryptographic verification succeeds, the release bytes are written to shared content-addressed storage keyed by the release SHA-256. The storage key, byte count and staging timestamp are recorded on the release and copied into execution provenance.
+
+Workers re-hash the staged bytes before sandbox admission. This prevents a later filesystem mutation from being treated as the originally verified artifact.
+
+The sandbox policy itself is fail-closed: only digest-pinned OCI images are accepted, networking is disabled, the container root is read-only, Linux capabilities are dropped, and the artifact is mounted read-only. The generated command is not launched in Phase 15.
