@@ -18,12 +18,11 @@ async def test_phase_15_worker_fails_closed_before_external_plugin_execution():
 
     assert outcome.success is False
     assert outcome.error_code == "artifact_admission_rejected"
-    assert outcome.success is False
     assert outcome.result["status"] == "blocked"
     assert outcome.output_bytes <= request.max_output_bytes
 
 
-def test_phase_13_worker_package_is_importable():
+def test_phase_15_worker_package_is_importable():
     from services.execution.config import settings
 
     assert settings.worker_id
