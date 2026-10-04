@@ -48,6 +48,7 @@ services:
       NEXUS_RUNTIME_ROOT: /var/lib/nexus/runtime
       NEXUS_SANDBOX_LAUNCH_ENABLED: ${NEXUS_SANDBOX_LAUNCH_ENABLED:-false}
       NEXUS_DOCKER_BINARY: ${NEXUS_DOCKER_BINARY:-docker}
+      NEXUS_SANDBOX_STOP_GRACE_SECONDS: ${NEXUS_SANDBOX_STOP_GRACE_SECONDS:-3}
       NEXUS_SANDBOX_IMAGE: ${NEXUS_SANDBOX_IMAGE:-}
     command: ["python", "-m", "services.execution.worker"]
     volumes:
