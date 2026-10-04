@@ -30,9 +30,9 @@ def admit_verified_artifact(
     if execution.get("artifact_verified") is not True:
         raise ValueError("Execution artifact has not been cryptographically verified")
     if not isinstance(provenance, dict):
-        raise ValueError("Execution policy provenance is missing")
+        raise TypeError("Execution policy provenance is missing")
     if not isinstance(limits, dict):
-        raise ValueError("Execution policy limits are missing")
+        raise TypeError("Execution policy limits are missing")
 
     artifact_digest = provenance.get("package_sha256", "")
     storage_key = provenance.get("artifact_storage_key", "")
@@ -46,7 +46,7 @@ def admit_verified_artifact(
 
     network = policy_snapshot.get("network")
     if not isinstance(network, dict):
-        raise ValueError("Execution network policy is missing")
+        raise TypeError("Execution network policy is missing")
     network_policy = network.get("policy")
     if network_policy != "none":
         raise ValueError(
