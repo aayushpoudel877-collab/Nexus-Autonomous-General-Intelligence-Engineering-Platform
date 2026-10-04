@@ -65,3 +65,12 @@ Legacy releases created before manifest snapshots were introduced remain non-exe
 Phase 13 adds a separate worker process behind approved execution requests. A worker may claim only queued records, and its lease expires unless heartbeats continue. Completion requires the same worker identity that owns the active lease, so an abandoned or cancelled worker cannot overwrite a newer terminal state.
 
 The worker records only bounded execution results and operational metadata in the audit stream. It remains fail-closed for external plugin packages: no artifact is downloaded, no signature is trusted automatically, no secret value is resolved, and no outbound network request is performed. Those controls remain prerequisites for the next plugin-runtime phase.
+
+
+## Phase 14 artifact verification
+
+Each organization can register Ed25519 trust roots identified by a stable `key_id`. Plugin release signatures are verified over the canonical ASCII SHA-256 digest of the supplied artifact bytes. The computed digest must exactly match the release's declared `package_sha256`, and the release signer must match the selected trust-root key ID.
+
+A release cannot move to `verified` until cryptographic artifact verification succeeds and an owner/admin records a human review note. Installation approval and execution additionally require that the verification trust root remains active. Revoking a trust root therefore prevents subsequent activation of releases tied to that key without rewriting historical release records.
+
+Phase 14 intentionally does not fetch `artifact_uri` values or unpack packages. The verification endpoint uses a bounded artifact payload so signature checks can be performed without introducing an arbitrary URL fetch or code-execution primitive.
