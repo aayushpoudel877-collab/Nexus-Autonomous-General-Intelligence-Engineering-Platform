@@ -23,10 +23,10 @@ class LauncherResult:
     exit_code: int | None
     timed_out: bool
     output_limited: bool
-    cancelled: bool = False
     stdout: bytes
     stderr: bytes
     duration_seconds: float
+    cancelled: bool = False
 
 
 async def _read_limited(
