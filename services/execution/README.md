@@ -35,4 +35,26 @@ Worker tuning is controlled by:
 - `NEXUS_WORKER_LEASE_SECONDS` (default 60 seconds)
 - `NEXUS_WORKER_ID` (defaults to the container hostname)
 
-The next runtime phase can replace the fail-closed executor with a verified artifact adapter and isolated sandbox without changing the queue contract.
+Phase 15 now adds shared content-addressed artifact staging and sandbox admission. The worker re-hashes staged bytes before admission and compiles a digest-pinned OCI policy without launching external plugin code. The next runtime phase can enable a dedicated launcher while keeping the queue contract unchanged.
+
+
+## Phase 15 runtime admission
+
+Verified artifacts are stored at:
+
+`<artifact_root>/<sha256[0:2]>/<sha256[2:4]>/<sha256>`
+
+The API and worker share the same storage volume in the local Compose stack. The worker treats the execution policy's frozen package digest and storage key as the authoritative identity and re-verifies bytes before any sandbox admission.
+
+The sandbox command builder requires:
+
+- an OCI image pinned by `@sha256:<digest>`;
+- `--network=none`;
+- read-only root filesystem;
+- all Linux capabilities dropped;
+- `no-new-privileges`;
+- bounded memory and process count;
+- a read-only artifact bind mount;
+- an isolated, non-executable temporary filesystem.
+
+Phase 15 intentionally stops at admission/command construction. The worker does not invoke the generated Docker command.
