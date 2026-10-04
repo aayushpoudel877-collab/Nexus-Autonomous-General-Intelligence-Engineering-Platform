@@ -36,6 +36,7 @@ async def _approved_installation(
             PluginInstallation.organization_id == organization_id,
             PluginInstallation.status == "approved",
             PluginRelease.status == "verified",
+            PluginRelease.artifact_verified_at.is_not(None),
             PluginRegistration.status == "active",
         )
     )
@@ -115,7 +116,10 @@ async def create_execution_request(
                     "package_sha256": release.package_sha256,
                     "manifest_sha256": release.manifest_sha256,
                     "signer": release.signer,
+                    "verification_key_id": release.verification_key_id or "",
+                    "verification_method": release.verification_method or "",
                 },
+                artifact_verified=bool(release.artifact_verified_at),
             )
         )
     except ValueError as exc:
