@@ -146,6 +146,36 @@ class SandboxAdmissionExecutor(ExecutionBackend):
         cidfile = new_cidfile(settings.runtime_root)
         try:
             command = build_oci_command(
+                image=settings.sandbox_image,
+                artifact_path=(
+                    f"{settings.artifact_root}/"
+                    f"{admission.artifact_digest[:2]}/"
+                    f"{admission.artifact_digest[2:4]}/"
+                    f"{admission.artifact_digest}"
+                ),
+                entrypoint=request.entrypoint,
+                max_memory_mb=request.max_memory_mb,
+                cidfile=cidfile,
+                docker_binary=settings.docker_binary,
+            )
+        except ValueError as exc:
+            result = {
+                "status": "blocked",
+                "entrypoint": request.entrypoint,
+                "artifact_digest": admission.artifact_digest,
+            }
+            normalized, size = normalize_execution_result(
+                result,
+                max_output_bytes=request.max_output_bytes,
+            )
+            return ExecutionOutcome(
+                success=False,
+                result=normalized,
+                output_bytes=size,
+                error_code="sandbox_policy_rejected",
+                failure_reason=str(exc)[:1000],
+            )
+
         try:
             launch = await launch_sandbox(
                 command=command.command,
