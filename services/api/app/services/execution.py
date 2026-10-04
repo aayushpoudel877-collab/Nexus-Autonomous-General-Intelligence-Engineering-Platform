@@ -64,7 +64,7 @@ def build_policy_snapshot(
     artifact_verified: bool = False,
 ) -> dict[str, Any]:
     return {
-        "version": 1,
+        "version": 2,
         "capabilities": list(capabilities),
         "limits": {
             "timeout_seconds": timeout_seconds,
