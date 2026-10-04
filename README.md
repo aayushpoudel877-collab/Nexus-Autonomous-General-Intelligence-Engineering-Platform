@@ -52,6 +52,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 13 — Execution Worker & Lease Control:** a separate worker process now claims queued executions with PostgreSQL row locks, bounded leases and heartbeats, recovers abandoned attempts, preserves cancellation races, records bounded results and emits worker audit events. External plugin package execution remains blocked until a verified artifact sandbox is introduced.
 
+- **Phase 14 — Cryptographic Artifact Trust:** tenant-owned Ed25519 trust roots, bounded detached-signature verification against release SHA-256, human release approval after cryptographic verification, and revocation-aware installation/execution gates. The platform still does not fetch or execute arbitrary plugin packages.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
