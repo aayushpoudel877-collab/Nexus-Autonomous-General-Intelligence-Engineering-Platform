@@ -132,3 +132,16 @@ Release verification:
 - `POST /api/v1/governance/plugin-releases/{release_id}/verify` — human review can mark the release `verified` only after cryptographic artifact verification has succeeded.
 
 A verified release still cannot execute by itself. Installation and execution require the verification trust root to remain active and the other Phase 11/12 approval gates to pass.
+
+
+## Phase 15 artifact staging and sandbox admission
+
+Successful artifact verification now durably stages the exact verified bytes under a content-addressed SHA-256 storage key. Release reads expose:
+
+- `artifact_storage_key`
+- `artifact_size_bytes`
+- `artifact_staged_at`
+
+Execution requests freeze that storage identity in their provenance snapshot. The worker re-hashes the staged bytes before runtime admission.
+
+The sandbox adapter currently compiles a digest-pinned OCI command but does not launch it. This keeps arbitrary plugin code outside the worker process until the isolated launcher phase is enabled.
