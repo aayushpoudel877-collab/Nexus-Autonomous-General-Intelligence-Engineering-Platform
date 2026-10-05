@@ -358,3 +358,102 @@ async def test_phase_17_executor_classifies_cancelled_sandbox(
     assert outcome.success is False
     assert outcome.error_code == "sandbox_cancelled"
     assert outcome.result["status"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_phase_18_allowlisted_execution_uses_only_egress_broker_mounts(
+    tmp_path, monkeypatch
+):
+    from pathlib import Path
+    import services.execution.executor as executor_module
+    from services.api.app.services.artifact_store import ArtifactStore
+    from services.execution.config import settings
+    from services.execution.launcher import LauncherResult
+
+    artifact = b"network-enabled"
+    digest = hashlib.sha256(artifact).hexdigest()
+    ArtifactStore(str(tmp_path), max_bytes=6 * 1024 * 1024).put_verified(
+        artifact, digest
+    )
+    monkeypatch.setattr(settings, "artifact_root", str(tmp_path))
+    monkeypatch.setattr(settings, "runtime_root", str(tmp_path / "runtime"))
+    monkeypatch.setattr(settings, "sandbox_launch_enabled", True)
+    monkeypatch.setattr(
+        settings,
+        "sandbox_image",
+        "registry.example/nexus-runtime@sha256:" + "a" * 64,
+    )
+
+    class FakeBroker:
+        socket_path = str(tmp_path / "egress.sock")
+
+        async def stop(self):
+            Path(self.socket_path).unlink(missing_ok=True)
+
+    broker = FakeBroker()
+    token_path = str(tmp_path / "egress.token")
+    Path(token_path).write_text("token", encoding="ascii")
+
+    async def fake_broker(**_kwargs):
+        Path(broker.socket_path).touch()
+        return broker, token_path
+
+    captured = {}
+
+    async def fake_launch(**kwargs):
+        captured.update(kwargs)
+        return LauncherResult(
+            exit_code=0,
+            timed_out=False,
+            output_limited=False,
+            cancelled=False,
+            stdout=b"ok",
+            stderr=b"",
+            duration_seconds=0.1,
+        )
+
+    monkeypatch.setattr(executor_module, "create_egress_broker", fake_broker)
+    monkeypatch.setattr(executor_module, "launch_sandbox", fake_launch)
+
+    request = ExecutionRequest(
+        entrypoint="plugin.run",
+        input_json={},
+        max_output_bytes=4096,
+        max_memory_mb=256,
+        timeout_seconds=30,
+        policy_snapshot={
+            "version": 3,
+            "execution": {
+                "sandbox_required": True,
+                "artifact_verification_required": True,
+                "artifact_verified": True,
+                "network_mediation_required": True,
+            },
+            "provenance": {
+                "package_sha256": digest,
+                "artifact_storage_key": digest,
+                "artifact_size_bytes": str(len(artifact)),
+            },
+            "limits": {"max_memory_mb": 256},
+            "network": {
+                "policy": "allowlist",
+                "allowlist": ["api.example.com:443"],
+            },
+            "egress": {
+                "mode": "unix_socket_broker",
+                "max_request_bytes": 131072,
+                "max_response_bytes": 4194304,
+                "timeout_seconds": 15,
+                "max_redirects": 0,
+            },
+        },
+    )
+
+    outcome = await SandboxAdmissionExecutor().execute(request)
+
+    assert outcome.success is True
+    command = captured["command"]
+    assert "--network=none" in command
+    assert "dst=/nexus/egress.sock,readonly" in " ".join(command)
+    assert "dst=/nexus/egress.token,readonly" in " ".join(command)
+    assert not Path(token_path).exists()
