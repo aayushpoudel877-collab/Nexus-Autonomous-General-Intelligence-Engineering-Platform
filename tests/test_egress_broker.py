@@ -119,7 +119,7 @@ def test_non_global_address_is_rejected():
 
 @pytest.mark.asyncio
 async def test_private_dns_result_is_rejected(monkeypatch):
-    async def fake_getaddrinfo(*_args, **_kwargs):
+    def fake_getaddrinfo(*_args, **_kwargs):
         return [
             (
                 2,
