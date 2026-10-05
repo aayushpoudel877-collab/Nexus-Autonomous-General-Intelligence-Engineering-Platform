@@ -118,7 +118,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         },
     )
     assert snapshot == {
-        "version": 3,
+        "version": 4,
         "capabilities": ["dataset.read"],
         "limits": {
             "timeout_seconds": 60,
@@ -181,6 +181,48 @@ def test_worker_lease_rejects_unsafe_duration():
 
 
 
+
+
+def test_secret_policy_requires_explicit_grants():
+    with pytest.raises(ValueError):
+        normalize_execution_policy(
+            capabilities=["secret.read"],
+            timeout_seconds=60,
+            max_memory_mb=256,
+            max_output_bytes=4096,
+            network_policy="none",
+            network_allowlist=[],
+            secret_grant_ids=[],
+        )
+
+    _, _, snapshot = normalize_execution_policy(
+        capabilities=["secret.read"],
+        timeout_seconds=60,
+        max_memory_mb=256,
+        max_output_bytes=4096,
+        network_policy="none",
+        network_allowlist=[],
+        secret_grant_ids=["grant-1", "grant-2"],
+    )
+    assert snapshot["version"] == 4
+    assert snapshot["execution"]["secret_mediation_required"] is True
+    assert snapshot["secrets"]["mode"] == "unix_socket_broker"
+    assert snapshot["secrets"]["grant_ids"] == ["grant-1", "grant-2"]
+    assert snapshot["secrets"]["cache"] == "none"
+
+
+def test_secret_grants_are_bounded():
+    with pytest.raises(ValueError):
+        normalize_execution_policy(
+            capabilities=["secret.read"],
+            timeout_seconds=60,
+            max_memory_mb=256,
+            max_output_bytes=4096,
+            network_policy="none",
+            network_allowlist=[],
+            secret_grant_ids=[f"grant-{i}" for i in range(9)],
+        )
+
 def test_policy_snapshot_records_verified_artifact_state():
     snapshot = build_policy_snapshot(
         capabilities=["dataset.read"],
@@ -191,7 +233,7 @@ def test_policy_snapshot_records_verified_artifact_state():
         network_allowlist=[],
         artifact_verified=True,
     )
-    assert snapshot["version"] == 3
+    assert snapshot["version"] == 4
     assert snapshot["execution"]["artifact_verified"] is True
 
 
