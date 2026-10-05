@@ -67,3 +67,31 @@ def test_sandbox_validates_artifact_digest():
 
     with pytest.raises(ValueError):
         validate_artifact_digest("not-a-digest")
+
+
+def test_sandbox_can_mount_mediated_egress_socket_and_token():
+    built = build_oci_command(
+        image="registry.example/nexus-runtime@sha256:" + "a" * 64,
+        artifact_path="/var/lib/nexus/artifacts/aa/bb/" + "b" * 64,
+        entrypoint="plugin.run",
+        max_memory_mb=512,
+        cidfile="/var/lib/nexus/runtime/cid/test.cid",
+        egress_socket_path="/var/lib/nexus/runtime/egress/test.sock",
+        egress_token_path="/var/lib/nexus/runtime/egress/test.token",
+    )
+    assert "--network=none" in built.command
+    assert "type=bind,src=/var/lib/nexus/runtime/egress/test.sock,dst=/nexus/egress.sock,readonly" in built.command
+    assert "type=bind,src=/var/lib/nexus/runtime/egress/test.token,dst=/nexus/egress.token,readonly" in built.command
+    assert "--env=NEXUS_EGRESS_SOCKET=/nexus/egress.sock" in built.command
+    assert "--env=NEXUS_EGRESS_TOKEN_FILE=/nexus/egress.token" in built.command
+
+
+def test_sandbox_requires_egress_socket_and_token_together():
+    with pytest.raises(ValueError):
+        build_oci_command(
+            image="registry.example/nexus-runtime@sha256:" + "a" * 64,
+            artifact_path="/artifact",
+            entrypoint="plugin.run",
+            max_memory_mb=512,
+            egress_socket_path="/tmp/egress.sock",
+        )
