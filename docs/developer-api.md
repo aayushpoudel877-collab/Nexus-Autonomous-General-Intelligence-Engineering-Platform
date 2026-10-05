@@ -1,16 +1,15 @@
 [object Object]
 
-## Phase 18 controlled egress
+## Phase 19 secret grants
 
-Execution requests may use `network_policy=allowlist` only when the request also includes the `network.http` capability. The API freezes the following egress policy with the request:
+The governance API introduces:
 
-- exact hostname/port allowlist;
-- Unix-socket broker mode;
-- 128 KiB request limit;
-- 4 MiB response limit;
-- 15-second maximum broker request timeout;
-- zero redirects.
+- `GET /api/v1/governance/secret-grants`
+- `POST /api/v1/governance/secret-grants`
+- `POST /api/v1/governance/secret-grants/{grant_id}/approve`
 
-The plugin runtime remains on `--network=none`. Network traffic is performed by a short-lived egress broker subprocess through an authenticated per-execution Unix socket. The broker subprocess is started without the API/worker database and secret environment variables. Plugin code does not receive a raw network namespace.
+A grant request binds an approved plugin installation to one active integration that contains an external `secret://...` reference. The API never returns that underlying reference in the grant response.
 
-The runtime broker protocol is intentionally narrow: HTTP(S) GET, HEAD and POST requests with bounded headers/body, no credential-bearing URLs and no redirect following.
+Execution requests can include `secret_grant_ids` together with the `secret.read` capability. The API verifies that every grant is approved for the same installation, the integration is active, and the grant belongs to the tenant.
+
+At runtime, secrets are delivered through a per-execution Unix-socket broker subprocess. They are not injected into plugin environment variables and are excluded from result JSON and audit detail.
