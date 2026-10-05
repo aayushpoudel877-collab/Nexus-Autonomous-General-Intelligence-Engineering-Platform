@@ -136,6 +136,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "secret_access_requires_external_reference": True,
             "artifact_verified": False,
             "network_mediation_required": False,
+            "secret_mediation_required": False,
         },
         "egress": {
             "mode": "disabled",
@@ -271,7 +272,7 @@ def test_execution_policy_records_mediated_egress_contract():
         network_allowlist=["api.example.com:443"],
     )
     assert allowlist == ["api.example.com:443"]
-    assert snapshot["version"] == 3
+    assert snapshot["version"] == 4
     assert snapshot["execution"]["network_mediation_required"] is True
     assert snapshot["egress"]["mode"] == "unix_socket_broker"
     assert snapshot["egress"]["timeout_seconds"] == 15
