@@ -14,6 +14,8 @@ class SandboxAdmission:
     network_allowlist: list[str]
     sandbox_required: bool
     egress_required: bool
+    secret_grant_ids: list[str]
+    secret_required: bool
 
 
 def admit_verified_artifact(
@@ -24,7 +26,7 @@ def admit_verified_artifact(
     if not isinstance(policy_snapshot, dict):
         raise TypeError("Execution policy snapshot is missing")
     version = policy_snapshot.get("version")
-    if version not in {2, 3}:
+    if version not in {2, 3, 4}:
         raise ValueError("Execution policy snapshot version is unsupported")
     execution = policy_snapshot.get("execution")
     provenance = policy_snapshot.get("provenance")
@@ -74,6 +76,26 @@ def admit_verified_artifact(
         if not isinstance(egress, dict) or egress.get("mode") != "disabled":
             raise ValueError("Network-disabled execution has an invalid egress mode")
 
+    secret_grant_ids: list[str] = []
+    secret_required = False
+    if version >= 4:
+        secrets = policy_snapshot.get("secrets")
+        if not isinstance(secrets, dict):
+            raise ValueError("Execution secret policy is missing")
+        mode = secrets.get("mode")
+        grant_ids = secrets.get("grant_ids")
+        if not isinstance(grant_ids, list) or any(not isinstance(item, str) for item in grant_ids):
+            raise TypeError("Execution secret grant IDs are invalid")
+        if len(grant_ids) > 8:
+            raise ValueError("Execution requests cannot use more than 8 secret grants")
+        if mode == "unix_socket_broker":
+            if not grant_ids:
+                raise ValueError("Secret broker mode requires at least one grant")
+            secret_required = True
+            secret_grant_ids = list(dict.fromkeys(grant_ids))
+        elif mode != "disabled" or grant_ids:
+            raise ValueError("Execution secret policy is invalid")
+
     return SandboxAdmission(
         artifact_digest=artifact_digest,
         artifact_size_bytes=len(artifact),
@@ -81,4 +103,6 @@ def admit_verified_artifact(
         network_allowlist=list(allowlist),
         sandbox_required=True,
         egress_required=egress_required,
+        secret_grant_ids=secret_grant_ids,
+        secret_required=secret_required,
     )
