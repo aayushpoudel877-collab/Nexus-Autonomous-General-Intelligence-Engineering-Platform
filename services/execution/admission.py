@@ -11,7 +11,9 @@ class SandboxAdmission:
     artifact_digest: str
     artifact_size_bytes: int
     network_policy: str
+    network_allowlist: list[str]
     sandbox_required: bool
+    egress_required: bool
 
 
 def admit_verified_artifact(
@@ -21,6 +23,9 @@ def admit_verified_artifact(
 ) -> SandboxAdmission:
     if not isinstance(policy_snapshot, dict):
         raise TypeError("Execution policy snapshot is missing")
+    version = policy_snapshot.get("version")
+    if version not in {2, 3}:
+        raise ValueError("Execution policy snapshot version is unsupported")
     execution = policy_snapshot.get("execution")
     provenance = policy_snapshot.get("provenance")
     limits = policy_snapshot.get("limits")
@@ -50,14 +55,30 @@ def admit_verified_artifact(
     if not isinstance(network, dict):
         raise TypeError("Execution network policy is missing")
     network_policy = network.get("policy")
-    if network_policy != "none":
-        raise ValueError(
-            "The Phase 15 sandbox adapter fails closed for network-enabled executions"
-        )
+    allowlist = network.get("allowlist")
+    if not isinstance(allowlist, list) or any(not isinstance(item, str) for item in allowlist):
+        raise TypeError("Execution network allowlist is invalid")
+    if network_policy not in {"none", "allowlist"}:
+        raise ValueError("Execution network policy is unsupported")
+    egress_required = network_policy == "allowlist"
+    if egress_required:
+        if version < 3:
+            raise ValueError("Network-enabled execution requires a Phase 18 policy snapshot")
+        egress = policy_snapshot.get("egress")
+        if not isinstance(egress, dict) or egress.get("mode") != "unix_socket_broker":
+            raise ValueError("Network-enabled execution requires mediated egress")
+        if not allowlist:
+            raise ValueError("Network-enabled execution requires a non-empty allowlist")
+    elif version >= 3:
+        egress = policy_snapshot.get("egress")
+        if not isinstance(egress, dict) or egress.get("mode") != "disabled":
+            raise ValueError("Network-disabled execution has an invalid egress mode")
 
     return SandboxAdmission(
         artifact_digest=artifact_digest,
         artifact_size_bytes=len(artifact),
         network_policy=network_policy,
+        network_allowlist=list(allowlist),
         sandbox_required=True,
+        egress_required=egress_required,
     )
