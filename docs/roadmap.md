@@ -58,3 +58,7 @@ Initial implementation: a dedicated launcher executes only digest-pinned OCI com
 
 ## Phase 17 — Cooperative Runtime Cancellation & Reconciliation
 Initial implementation: running sandbox executions now poll the authoritative execution record for cancellation, terminate the sandbox process group, remove the active container when possible, and classify cancellation separately from timeout and output-limit failures. Worker completion reconciles against the current database state so a request cancelled by the API cannot be overwritten by a late runtime result. Cancellation polling is bounded and configurable. Network-enabled execution remains fail-closed pending a dedicated egress mediation phase.
+
+
+## Phase 18 — Controlled Egress Mediation
+Initial implementation: allowlisted HTTP(S) execution is mediated through a per-execution authenticated Unix-socket broker while the plugin sandbox remains on `--network=none`. The broker validates exact host/port allowlists, resolves destinations and rejects non-public addresses, pins connections to the resolved IP with TLS hostname verification, disables redirects, bounds request/response sizes and request concurrency, and cleans up its socket/token at execution end. Network-enabled execution also requires the explicit `network.http` capability. Direct network access from the sandbox remains impossible by design.
