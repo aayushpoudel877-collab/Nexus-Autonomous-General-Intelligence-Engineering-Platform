@@ -97,3 +97,14 @@ The worker launches a short-lived egress broker subprocess with a scrubbed envir
 The broker is short-lived and is stopped together with the sandbox. Token and socket cleanup happens on normal completion and broker startup failures. The sandbox has no route to the worker's network namespace other than the explicit Unix socket mount, so direct TCP/UDP access remains unavailable.
 
 Phase 18 deliberately does not add arbitrary protocols, DNS control, raw sockets, HTTP proxy tunneling, or direct network namespace access.
+
+
+## Phase 19 secret mediation boundary
+
+Integration records continue to store only an external `secret://...` reference, never a credential value. Phase 19 adds a tenant-scoped `SecretGrant` bound to a specific approved plugin installation and integration. Grant reads intentionally omit the underlying secret reference. A grant must be approved by an owner/admin before an execution can request it.
+
+Execution policy version 4 freezes opaque secret grant IDs and a no-cache secret broker contract. Before runtime launch the worker re-queries the database and requires every requested grant to remain approved, belong to the same installation and organization, and reference an active integration with a configured external secret reference. Revoking a grant or disabling its integration therefore blocks the next runtime lookup.
+
+The secret broker is a short-lived subprocess with a scrubbed environment. It receives only the grant-to-reference mapping, a temporary socket/token, and the external provider command configuration. It never writes secret values to files or logs. The plugin sandbox receives only the broker socket and token as read-only mounts and environment paths; it never receives the resolved credential in its environment. The broker resolves values through an operator-supplied provider command using stdin/stdout JSON and no shell interpolation.
+
+The default deployment has no secret provider configured, so secret-enabled execution fails closed until a dedicated secret manager adapter is supplied.
