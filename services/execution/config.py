@@ -41,6 +41,10 @@ class WorkerSettings:
         )
         self.sandbox_image = os.getenv("NEXUS_SANDBOX_IMAGE", "").strip()
         self.docker_binary = os.getenv("NEXUS_DOCKER_BINARY", "docker").strip() or "docker"
+        self.secret_provider_command = os.getenv(
+            "NEXUS_SECRET_PROVIDER_COMMAND",
+            "",
+        ).strip()
         self.sandbox_launch_enabled = _bool_env(
             "NEXUS_SANDBOX_LAUNCH_ENABLED",
             False,
