@@ -14,6 +14,7 @@ def test_phase_11_tables_are_registered():
     assert "integration_connections" in Base.metadata.tables
     assert "plugin_releases" in Base.metadata.tables
     assert "plugin_installations" in Base.metadata.tables
+    assert "secret_grants" in Base.metadata.tables
 
 
 def test_phase_11_routes_are_registered():
@@ -29,6 +30,8 @@ def test_phase_11_routes_are_registered():
     assert "/api/v1/governance/trust-roots" in paths
     assert "/api/v1/governance/trust-roots/{trust_root_id}/revoke" in paths
     assert "/api/v1/governance/plugin-releases/{release_id}/verify-artifact" in paths
+    assert "/api/v1/governance/secret-grants" in paths
+    assert "/api/v1/governance/secret-grants/{grant_id}/approve" in paths
 
 
 def test_plugin_manifest_size_is_bounded():
@@ -190,3 +193,16 @@ def test_artifact_verification_schema_bounds_payload():
         artifact_base64="AAAA",
     )
     assert payload.artifact_base64 == "AAAA"
+
+
+def test_secret_grant_schemas_are_opaque():
+    from services.api.app.schemas.secrets import SecretGrantApproval, SecretGrantCreate
+
+    request = SecretGrantCreate(
+        installation_id="00000000-0000-0000-0000-000000000001",
+        integration_id="00000000-0000-0000-0000-000000000002",
+    )
+    approval = SecretGrantApproval(status="approved", note="  reviewed  ")
+    assert request.installation_id
+    assert approval.note == "reviewed"
+    assert not hasattr(request, "secret_ref")
