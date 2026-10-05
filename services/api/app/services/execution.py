@@ -20,12 +20,14 @@ MAX_TIMEOUT_SECONDS = 3_600
 MAX_MEMORY_MB = 4_096
 MAX_OUTPUT_BYTES = 16 * 1_024 * 1_024
 MAX_CAPABILITIES = 16
+MAX_SECRET_GRANTS = 8
 MAX_INPUT_JSON_BYTES = 64 * 1_024
 MAX_ALLOWLIST_ENTRIES = 20
 MAX_EGRESS_REQUEST_BYTES = 128 * 1_024
 MAX_EGRESS_RESPONSE_BYTES = 4 * 1_024 * 1_024
 MAX_EGRESS_TIMEOUT_SECONDS = 15
 NETWORK_CAPABILITY = "network.http"
+SECRET_CAPABILITY = "secret.read"
 WORKER_LEASE_SECONDS = 60
 WORKER_POLL_SECONDS = 2
 MAX_WORKER_ATTEMPTS = 3
@@ -74,6 +76,7 @@ def build_policy_snapshot(
     network_allowlist: list[str],
     provenance: dict[str, str] | None = None,
     artifact_verified: bool = False,
+    secret_grant_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "version": 3,
@@ -93,6 +96,7 @@ def build_policy_snapshot(
             "secret_access_requires_external_reference": True,
             "artifact_verified": artifact_verified,
             "network_mediation_required": network_policy == "allowlist",
+            "secret_mediation_required": bool(secret_grant_ids),
         },
         "egress": {
             "mode": "unix_socket_broker" if network_policy == "allowlist" else "disabled",
@@ -100,6 +104,13 @@ def build_policy_snapshot(
             "max_response_bytes": MAX_EGRESS_RESPONSE_BYTES,
             "timeout_seconds": min(timeout_seconds, MAX_EGRESS_TIMEOUT_SECONDS),
             "max_redirects": 0,
+        },
+        "secrets": {
+            "mode": "unix_socket_broker" if secret_grant_ids else "disabled",
+            "grant_ids": list(secret_grant_ids or []),
+            "max_grants": MAX_SECRET_GRANTS,
+            "max_value_bytes": 64 * 1024,
+            "cache": "none",
         },
         "provenance": dict(provenance or {}),
     }
@@ -115,8 +126,16 @@ def normalize_execution_policy(
     network_allowlist: list[str],
     provenance: dict[str, str] | None = None,
     artifact_verified: bool = False,
+    secret_grant_ids: list[str] | None = None,
 ) -> tuple[list[str], list[str], dict[str, Any]]:
     capabilities = list(dict.fromkeys(capabilities))
+    secret_grant_ids = list(dict.fromkeys(secret_grant_ids or []))
+    if len(secret_grant_ids) > MAX_SECRET_GRANTS:
+        raise ValueError(f"Execution requests cannot use more than {MAX_SECRET_GRANTS} secret grants")
+    if secret_grant_ids and SECRET_CAPABILITY not in capabilities:
+        raise ValueError(f"Secret-enabled executions require the '{SECRET_CAPABILITY}' capability")
+    if SECRET_CAPABILITY in capabilities and not secret_grant_ids:
+        raise ValueError(f"The '{SECRET_CAPABILITY}' capability requires at least one approved secret grant")
     if not capabilities or len(capabilities) > MAX_CAPABILITIES:
         raise ValueError(
             f"Execution requests require 1-{MAX_CAPABILITIES} capabilities"
@@ -151,6 +170,7 @@ def normalize_execution_policy(
         network_allowlist=normalized_allowlist,
         provenance=provenance,
         artifact_verified=artifact_verified,
+        secret_grant_ids=secret_grant_ids,
     )
     return capabilities, normalized_allowlist, snapshot
 
