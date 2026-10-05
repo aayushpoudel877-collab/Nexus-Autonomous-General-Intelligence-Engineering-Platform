@@ -144,6 +144,13 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "timeout_seconds": 15,
             "max_redirects": 0,
         },
+        "secrets": {
+            "mode": "disabled",
+            "grant_ids": [],
+            "max_grants": 8,
+            "max_value_bytes": 65536,
+            "cache": "none",
+        },
     }
 
 
