@@ -30,7 +30,7 @@ def test_phase_12_routes_are_registered():
 
 def test_execution_policy_is_bounded():
     capabilities, allowlist, snapshot = normalize_execution_policy(
-        capabilities=["dataset.read", "model.read", "dataset.read"],
+        capabilities=["network.http", "model.read", "network.http"],
         timeout_seconds=300,
         max_memory_mb=512,
         max_output_bytes=1_048_576,
@@ -38,7 +38,7 @@ def test_execution_policy_is_bounded():
         network_allowlist=["api.example.com", "api.example.com:443"],
     )
 
-    assert capabilities == ["dataset.read", "model.read"]
+    assert capabilities == ["network.http", "model.read"]
     assert allowlist == ["api.example.com", "api.example.com:443"]
     assert snapshot["execution"]["sandbox_required"] is True
     assert snapshot["execution"]["artifact_verification_required"] is True
@@ -226,3 +226,15 @@ def test_execution_policy_records_mediated_egress_contract():
     assert snapshot["execution"]["network_mediation_required"] is True
     assert snapshot["egress"]["mode"] == "unix_socket_broker"
     assert snapshot["egress"]["timeout_seconds"] == 15
+
+
+def test_execution_policy_rejects_network_without_explicit_capability():
+    with pytest.raises(ValueError):
+        normalize_execution_policy(
+            capabilities=["dataset.read"],
+            timeout_seconds=300,
+            max_memory_mb=512,
+            max_output_bytes=1_048_576,
+            network_policy="allowlist",
+            network_allowlist=["api.example.com:443"],
+        )
