@@ -62,3 +62,7 @@ Initial implementation: running sandbox executions now poll the authoritative ex
 
 ## Phase 18 — Controlled Egress Mediation
 Initial implementation: allowlisted HTTP(S) execution is mediated through a per-execution authenticated Unix-socket broker while the plugin sandbox remains on `--network=none`. The broker validates exact host/port allowlists, resolves destinations and rejects non-public addresses, pins connections to the resolved IP with TLS hostname verification, disables redirects, bounds request/response sizes and request concurrency, and cleans up its socket/token at execution end. Network-enabled execution also requires the explicit `network.http` capability. Direct network access from the sandbox remains impossible by design.
+
+
+## Phase 19 — Secrets Mediation & Credential Isolation
+Initial implementation: integrations expose only opaque secret grants to plugin executions. Owners/admins explicitly approve per-installation grants, execution policies freeze only grant IDs, and workers revalidate grant status against active integrations immediately before execution. Secrets are delivered only through a per-execution Unix-socket broker running in a scrubbed subprocess; the plugin never receives secrets through environment variables, artifacts, audit events, result JSON or direct filesystem access. The broker uses an external provider command configured by the deployment and fails closed when no provider is configured. Secret values are not cached.
