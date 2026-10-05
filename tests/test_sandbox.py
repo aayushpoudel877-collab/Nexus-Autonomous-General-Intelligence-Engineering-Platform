@@ -95,3 +95,21 @@ def test_sandbox_requires_egress_socket_and_token_together():
             max_memory_mb=512,
             egress_socket_path="/tmp/egress.sock",
         )
+
+
+def test_sandbox_can_mount_mediated_secret_socket_and_token():
+    built = build_oci_command(
+        image="registry.example/nexus-runtime@sha256:" + "a" * 64,
+        artifact_path="/var/lib/nexus/artifacts/aa/bb/" + "b" * 64,
+        entrypoint="plugin.run",
+        max_memory_mb=512,
+        cidfile="/var/lib/nexus/runtime/cid/test.cid",
+        secret_socket_path="/var/lib/nexus/runtime/secrets/test.sock",
+        secret_token_path="/var/lib/nexus/runtime/secrets/test.token",
+    )
+    joined = " ".join(built.command)
+    assert "--network=none" in built.command
+    assert "dst=/nexus/secrets.sock,readonly" in joined
+    assert "dst=/nexus/secrets.token,readonly" in joined
+    assert "--env=NEXUS_SECRET_SOCKET=/nexus/secrets.sock" in built.command
+    assert "--env=NEXUS_SECRET_TOKEN_FILE=/nexus/secrets.token" in built.command
