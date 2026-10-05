@@ -16,7 +16,6 @@ import socket
 import ssl
 from typing import Any
 from urllib.parse import urlsplit
-import uuid
 
 
 MAX_PROTOCOL_LINE_BYTES = 256 * 1024
@@ -506,37 +505,3 @@ class EgressBroker:
         writer.write((json.dumps(response, separators=(",", ":")) + "\n").encode("utf-8"))
         await writer.drain()
 
-
-async def create_egress_broker(
-    *,
-    runtime_root: str,
-    execution_id: str | None,
-    allowlist: list[str],
-    request_timeout_seconds: float,
-    max_request_bytes: int,
-    max_response_bytes: int,
-) -> tuple[EgressBroker, str]:
-    token = uuid.uuid4().hex + uuid.uuid4().hex
-    execution_token = execution_id or uuid.uuid4().hex
-    root = Path(runtime_root).resolve() / "egress"
-    root.mkdir(parents=True, exist_ok=True)
-    root.chmod(0o700)
-    socket_path = root / f"{execution_token}.sock"
-    token_path = root / f"{execution_token}.token"
-    token_path.write_text(token, encoding="ascii")
-    token_path.chmod(0o644)
-    broker = EgressBroker(
-        allowlist=allowlist,
-        token=token,
-        socket_path=str(socket_path),
-        request_timeout_seconds=request_timeout_seconds,
-        max_request_bytes=max_request_bytes,
-        max_response_bytes=max_response_bytes,
-    )
-    try:
-        await broker.start()
-    except (OSError, ValueError):
-        token_path.unlink(missing_ok=True)
-        socket_path.unlink(missing_ok=True)
-        raise
-    return broker, str(token_path)
