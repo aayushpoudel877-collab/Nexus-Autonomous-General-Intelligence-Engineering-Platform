@@ -8,7 +8,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from ..services.execution import (
     MAX_ALLOWLIST_ENTRIES,
     MAX_CAPABILITIES,
+    MAX_SECRET_GRANTS,
     MAX_INPUT_JSON_BYTES,
+
     MAX_MEMORY_MB,
     MAX_OUTPUT_BYTES,
     MAX_TIMEOUT_SECONDS,
@@ -27,6 +29,7 @@ class ExecutionRequestCreate(BaseModel):
     max_output_bytes: int = Field(default=1_048_576, ge=4_096, le=MAX_OUTPUT_BYTES)
     network_policy: str = Field(default="none", pattern=r"^(none|allowlist)$")
     network_allowlist: list[str] = Field(default_factory=list, max_length=MAX_ALLOWLIST_ENTRIES)
+    secret_grant_ids: list[UUID] = Field(default_factory=list, max_length=MAX_SECRET_GRANTS)
 
     @field_validator("idempotency_key")
     @classmethod
@@ -82,6 +85,7 @@ class ExecutionRequestRead(BaseModel):
     max_output_bytes: int
     network_policy: str
     network_allowlist: list[str]
+    secret_grant_ids: list[UUID]
     policy_snapshot: dict
     status: str
     worker_id: str | None
