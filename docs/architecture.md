@@ -92,7 +92,7 @@ Network-enabled execution remains blocked by the Phase 15 admission policy; the 
 
 Phase 18 enables allowlisted HTTP(S) access without attaching the plugin sandbox to a network. The sandbox continues to run with `--network=none` and receives only two read-only runtime mounts: an authenticated Unix-domain socket and a per-execution token file.
 
-The worker owns a per-execution egress broker. The broker accepts a bounded JSON-lines protocol, authenticates the request token, permits only GET/HEAD/POST HTTP(S), enforces the frozen host/port allowlist, rejects destinations resolving to private/local/reserved addresses, connects directly to the selected resolved public IP while preserving TLS hostname verification, disables redirects, limits request and response sizes, and caps concurrent requests.
+The worker launches a short-lived egress broker subprocess with a scrubbed environment. That subprocess accepts a bounded JSON-lines protocol, authenticates the request token, permits only GET/HEAD/POST HTTP(S), enforces the frozen host/port allowlist, rejects destinations resolving to private/local/reserved addresses, connects directly to the selected resolved public IP while preserving TLS hostname verification, disables redirects, limits request and response sizes, and caps concurrent requests.
 
 The broker is short-lived and is stopped together with the sandbox. Token and socket cleanup happens on normal completion and broker startup failures. The sandbox has no route to the worker's network namespace other than the explicit Unix socket mount, so direct TCP/UDP access remains unavailable.
 
