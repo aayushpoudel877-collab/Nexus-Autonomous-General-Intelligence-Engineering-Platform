@@ -93,7 +93,7 @@ The plugin container still uses `--network=none`. For an allowlisted execution t
 
 - a short-lived Unix socket at the execution runtime path;
 - a random per-execution token file;
-- a broker that performs the actual outbound HTTP(S) request.
+- a short-lived broker subprocess, started without control-plane environment secrets, that performs the actual outbound HTTP(S) request.
 
 The sandbox receives the socket and token as read-only mounts plus:
 
