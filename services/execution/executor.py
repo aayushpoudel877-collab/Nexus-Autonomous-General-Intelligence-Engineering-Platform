@@ -8,6 +8,7 @@ from services.api.app.services.execution import normalize_execution_result
 from .admission import admit_verified_artifact
 from .config import settings
 from .launcher import launch_sandbox, new_cidfile
+from services.egress.broker import create_egress_broker
 from .sandbox import build_oci_command
 
 
@@ -151,8 +152,42 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 ),
             )
 
+        broker = None
+        token_path = None
         cidfile = new_cidfile(settings.runtime_root)
         try:
+            if admission.egress_required:
+                try:
+                    broker, token_path = await create_egress_broker(
+                        runtime_root=settings.runtime_root,
+                        execution_id=str(request.id),
+                        allowlist=admission.network_allowlist,
+                        request_timeout_seconds=min(
+                            request.timeout_seconds,
+                            request.policy_snapshot["egress"]["timeout_seconds"],
+                        ),
+                        max_request_bytes=request.policy_snapshot["egress"]["max_request_bytes"],
+                        max_response_bytes=request.policy_snapshot["egress"]["max_response_bytes"],
+                    )
+                except (OSError, TypeError, ValueError) as exc:
+                    result = {
+                        "status": "blocked",
+                        "entrypoint": request.entrypoint,
+                        "artifact_digest": admission.artifact_digest,
+                        "network_policy": admission.network_policy,
+                    }
+                    normalized, size = normalize_execution_result(
+                        result,
+                        max_output_bytes=request.max_output_bytes,
+                    )
+                    return ExecutionOutcome(
+                        success=False,
+                        result=normalized,
+                        output_bytes=size,
+                        error_code="egress_broker_unavailable",
+                        failure_reason=str(exc)[:500],
+                    )
+
             command = build_oci_command(
                 image=settings.sandbox_image,
                 artifact_path=(
@@ -165,7 +200,40 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 max_memory_mb=request.max_memory_mb,
                 cidfile=cidfile,
                 docker_binary=settings.docker_binary,
+                egress_socket_path=broker.socket_path if broker else None,
+                egress_token_path=token_path,
             )
+
+            try:
+                launch = await launch_sandbox(
+                    command=command.command,
+                    cidfile=command.cidfile,
+                    timeout_seconds=request.timeout_seconds,
+                    max_output_bytes=request.max_output_bytes,
+                    stop_grace_seconds=settings.sandbox_stop_grace_seconds,
+                    cancellation_check=cancellation_check,
+                    cancellation_poll_seconds=settings.sandbox_cancellation_poll_seconds,
+                )
+            except (OSError, ValueError):
+                result, size = _bounded_launch_result(
+                    status="runtime_unavailable",
+                    request=request,
+                    artifact_digest=admission.artifact_digest,
+                    sandbox_image=command.image,
+                    exit_code=None,
+                    duration_seconds=0.0,
+                    timed_out=False,
+                    output_limited=False,
+                    stdout=b"",
+                    stderr=b"",
+                )
+                return ExecutionOutcome(
+                    success=False,
+                    result=result,
+                    output_bytes=size,
+                    error_code="sandbox_runtime_unavailable",
+                    failure_reason="The isolated sandbox runtime could not be started.",
+                )
         except ValueError as exc:
             result = {
                 "status": "blocked",
@@ -183,37 +251,15 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 error_code="sandbox_policy_rejected",
                 failure_reason=str(exc)[:1000],
             )
-
-        try:
-            launch = await launch_sandbox(
-                command=command.command,
-                cidfile=command.cidfile,
-                timeout_seconds=request.timeout_seconds,
-                max_output_bytes=request.max_output_bytes,
-                stop_grace_seconds=settings.sandbox_stop_grace_seconds,
-                cancellation_check=cancellation_check,
-                cancellation_poll_seconds=settings.sandbox_cancellation_poll_seconds,
-            )
-        except (OSError, ValueError):
-            result, size = _bounded_launch_result(
-                status="runtime_unavailable",
-                request=request,
-                artifact_digest=admission.artifact_digest,
-                sandbox_image=command.image,
-                exit_code=None,
-                duration_seconds=0.0,
-                timed_out=False,
-                output_limited=False,
-                stdout=b"",
-                stderr=b"",
-            )
-            return ExecutionOutcome(
-                success=False,
-                result=result,
-                output_bytes=size,
-                error_code="sandbox_runtime_unavailable",
-                failure_reason="The isolated sandbox runtime could not be started.",
-            )
+        finally:
+            if broker is not None:
+                await broker.stop()
+            if token_path:
+                try:
+                    from pathlib import Path
+                    Path(token_path).unlink(missing_ok=True)
+                except OSError:
+                    pass
 
         if launch.cancelled:
             status = "cancelled"
