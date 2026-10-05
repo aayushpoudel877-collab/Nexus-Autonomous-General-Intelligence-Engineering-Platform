@@ -3,7 +3,7 @@ import logging
 
 from sqlalchemy import select
 
-from services.api.app.models import ExecutionRequest
+from services.api.app.models import ExecutionRequest, IntegrationConnection, SecretGrant
 from services.api.app.services.audit import record_audit
 from services.api.app.services.execution import MAX_FAILURE_REASON
 
@@ -11,6 +11,7 @@ from .config import settings
 from .db import SessionLocal, engine
 from .executor import ExecutionOutcome, SandboxAdmissionExecutor
 from .repository import claim_next_request, finish_request, heartbeat_request, requeue_expired_requests
+from services.secrets.broker import SecretGrantSpec
 
 
 logging.basicConfig(
@@ -44,6 +45,40 @@ async def _heartbeat_loop(request_id, stop_event: asyncio.Event) -> None:
                 )
                 return
 
+
+async def _load_secret_grants(request_id) -> list[SecretGrantSpec]:
+    async with SessionLocal() as db:
+        request = await db.get(ExecutionRequest, request_id)
+        if request is None:
+            return []
+        grant_ids = list(dict.fromkeys(request.secret_grant_ids or []))
+        if not grant_ids:
+            return []
+        rows = await db.execute(
+            select(SecretGrant, IntegrationConnection)
+            .join(
+                IntegrationConnection,
+                SecretGrant.integration_id == IntegrationConnection.id,
+            )
+            .where(
+                SecretGrant.organization_id == request.organization_id,
+                SecretGrant.installation_id == request.installation_id,
+                SecretGrant.id.in_(grant_ids),
+                SecretGrant.status == "approved",
+                IntegrationConnection.organization_id == request.organization_id,
+                IntegrationConnection.status == "active",
+            )
+        )
+        grants = rows.all()
+        specs = [
+            SecretGrantSpec(
+                grant_id=str(grant.id),
+                secret_ref=integration.secret_ref,
+            )
+            for grant, integration in grants
+            if integration.secret_ref
+        ]
+        return specs
 
 async def _is_execution_cancelled(request_id) -> bool:
     try:
@@ -97,9 +132,11 @@ async def process_one() -> bool:
     stop_event = asyncio.Event()
     heartbeat_task = asyncio.create_task(_heartbeat_loop(request.id, stop_event))
     try:
+        secret_grants = await _load_secret_grants(request.id)
         outcome = await SandboxAdmissionExecutor().execute(
             request,
             cancellation_check=lambda: _is_execution_cancelled(request.id),
+            secret_grants=secret_grants,
         )
     except Exception:
         logger.exception("execution %s failed inside worker", request.id)
