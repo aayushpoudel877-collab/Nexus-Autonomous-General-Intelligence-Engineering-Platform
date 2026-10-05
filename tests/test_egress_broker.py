@@ -230,7 +230,7 @@ async def test_egress_broker_subprocess_lifecycle(tmp_path):
                     {
                         "token": token,
                         "method": "GET",
-                        "url": "https://api.example.com/data",
+                        "url": "http://127.0.0.1:80/data",
                     }
                 )
                 + "\n"
@@ -241,7 +241,7 @@ async def test_egress_broker_subprocess_lifecycle(tmp_path):
         writer.close()
         await writer.wait_closed()
         assert response["ok"] is False
-        assert "Egress destination could not be reached" in response["error"]
+        assert "Egress destination is not present in the execution allowlist" in response["error"]
     finally:
         await broker.stop()
 
