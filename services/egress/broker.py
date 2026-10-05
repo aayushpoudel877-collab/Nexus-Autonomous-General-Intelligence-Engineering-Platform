@@ -20,6 +20,7 @@ import uuid
 
 
 MAX_PROTOCOL_LINE_BYTES = 256 * 1024
+MAX_URL_BYTES = 8 * 1024
 MAX_HEADER_BYTES = 32 * 1024
 MAX_HEADERS = 64
 MAX_HEADER_VALUE_BYTES = 4 * 1024
@@ -267,6 +268,8 @@ async def perform_http_request(
     if len(method.encode("ascii")) > MAX_METHOD_BYTES:
         raise EgressPolicyError("Egress method is invalid")
 
+    if len(url.encode("utf-8")) > MAX_URL_BYTES:
+        raise EgressPolicyError("Egress URL exceeds the broker limit")
     parsed = urlsplit(url)
     if parsed.scheme.lower() not in _ALLOWED_SCHEMES:
         raise EgressPolicyError("Only HTTP and HTTPS egress URLs are permitted")
@@ -402,7 +405,7 @@ class EgressBroker:
             limit=MAX_PROTOCOL_LINE_BYTES,
         )
         try:
-            path.chmod(0o600)
+            path.chmod(0o666)
         except OSError:
             await self.stop()
             raise
@@ -521,7 +524,7 @@ async def create_egress_broker(
     socket_path = root / f"{execution_token}.sock"
     token_path = root / f"{execution_token}.token"
     token_path.write_text(token, encoding="ascii")
-    token_path.chmod(0o600)
+    token_path.chmod(0o644)
     broker = EgressBroker(
         allowlist=allowlist,
         token=token,
