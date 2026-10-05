@@ -39,6 +39,8 @@ def build_oci_command(
     max_memory_mb: int,
     cidfile: str = "/tmp/nexus-sandbox.cid",
     docker_binary: str = "docker",
+    egress_socket_path: str | None = None,
+    egress_token_path: str | None = None,
 ) -> SandboxCommand:
     if max_memory_mb < 64 or max_memory_mb > 4096:
         raise ValueError("Sandbox memory must be between 64 and 4096 MiB")
@@ -54,6 +56,23 @@ def build_oci_command(
         ch in normalized_entrypoint for ch in ("\x00", "\n", "\r")
     ):
         raise ValueError("Sandbox entrypoint is invalid")
+    if (egress_socket_path is None) != (egress_token_path is None):
+        raise ValueError("Egress socket and token paths must be provided together")
+    egress_mounts: list[str] = []
+    egress_env: list[str] = []
+    if egress_socket_path is not None and egress_token_path is not None:
+        egress_socket = _absolute_path(egress_socket_path, label="Egress socket path")
+        egress_token = _absolute_path(egress_token_path, label="Egress token path")
+        egress_mounts = [
+            "--mount",
+            f"type=bind,src={egress_socket},dst=/nexus/egress.sock,readonly",
+            "--mount",
+            f"type=bind,src={egress_token},dst=/nexus/egress.token,readonly",
+        ]
+        egress_env = [
+            "--env=NEXUS_EGRESS_SOCKET=/nexus/egress.sock",
+            "--env=NEXUS_EGRESS_TOKEN_FILE=/nexus/egress.token",
+        ]
 
     command = [
         binary,
@@ -73,6 +92,8 @@ def build_oci_command(
         f"/tmp:rw,nosuid,nodev,noexec,size={_TMPFS_SIZE}",
         "--mount",
         f"type=bind,src={artifact},dst=/nexus/artifact,readonly",
+        *egress_mounts,
+        *egress_env,
         "--cidfile",
         cidfile,
         "--workdir=/nexus",
