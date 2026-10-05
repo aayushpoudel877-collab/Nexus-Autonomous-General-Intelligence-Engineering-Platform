@@ -41,6 +41,8 @@ def build_oci_command(
     docker_binary: str = "docker",
     egress_socket_path: str | None = None,
     egress_token_path: str | None = None,
+    secret_socket_path: str | None = None,
+    secret_token_path: str | None = None,
 ) -> SandboxCommand:
     if max_memory_mb < 64 or max_memory_mb > 4096:
         raise ValueError("Sandbox memory must be between 64 and 4096 MiB")
@@ -58,8 +60,12 @@ def build_oci_command(
         raise ValueError("Sandbox entrypoint is invalid")
     if (egress_socket_path is None) != (egress_token_path is None):
         raise ValueError("Egress socket and token paths must be provided together")
+    if (secret_socket_path is None) != (secret_token_path is None):
+        raise ValueError("Secret socket and token paths must be provided together")
     egress_mounts: list[str] = []
     egress_env: list[str] = []
+    secret_mounts: list[str] = []
+    secret_env: list[str] = []
     if egress_socket_path is not None and egress_token_path is not None:
         egress_socket = _absolute_path(egress_socket_path, label="Egress socket path")
         egress_token = _absolute_path(egress_token_path, label="Egress token path")
@@ -72,6 +78,19 @@ def build_oci_command(
         egress_env = [
             "--env=NEXUS_EGRESS_SOCKET=/nexus/egress.sock",
             "--env=NEXUS_EGRESS_TOKEN_FILE=/nexus/egress.token",
+        ]
+    if secret_socket_path is not None and secret_token_path is not None:
+        secret_socket = _absolute_path(secret_socket_path, label="Secret socket path")
+        secret_token = _absolute_path(secret_token_path, label="Secret token path")
+        secret_mounts = [
+            "--mount",
+            f"type=bind,src={secret_socket},dst=/nexus/secrets.sock,readonly",
+            "--mount",
+            f"type=bind,src={secret_token},dst=/nexus/secrets.token,readonly",
+        ]
+        secret_env = [
+            "--env=NEXUS_SECRET_SOCKET=/nexus/secrets.sock",
+            "--env=NEXUS_SECRET_TOKEN_FILE=/nexus/secrets.token",
         ]
 
     command = [
@@ -94,6 +113,8 @@ def build_oci_command(
         f"type=bind,src={artifact},dst=/nexus/artifact,readonly",
         *egress_mounts,
         *egress_env,
+        *secret_mounts,
+        *secret_env,
         "--cidfile",
         cidfile,
         "--workdir=/nexus",
