@@ -15,6 +15,8 @@ from ..models import (
     PluginRelease,
     PluginTrustRoot,
     ExecutionRequest,
+    SecretGrant,
+    IntegrationConnection,
 )
 from ..schemas.execution import ExecutionCancel, ExecutionRequestCreate, ExecutionRequestRead
 from ..services.audit import record_audit
@@ -119,6 +121,7 @@ async def create_execution_request(
                 max_output_bytes=payload.max_output_bytes,
                 network_policy=payload.network_policy,
                 network_allowlist=payload.network_allowlist,
+                secret_grant_ids=[str(item) for item in payload.secret_grant_ids],
                 provenance={
                     "plugin_id": str(plugin.id),
                     "plugin_release_id": str(release.id),
@@ -141,6 +144,49 @@ async def create_execution_request(
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    secret_grant_ids = list(dict.fromkeys(str(item) for item in payload.secret_grant_ids))
+    if secret_grant_ids:
+        if "secret.read" not in set(requested_capabilities):
+            raise HTTPException(
+                status_code=422,
+                detail="Secret grants require the secret.read execution capability",
+            )
+        grants = await db.scalars(
+            select(SecretGrant).where(
+                SecretGrant.organization_id == api_key.organization_id,
+                SecretGrant.installation_id == installation.id,
+                SecretGrant.id.in_([UUID(item) for item in secret_grant_ids]),
+                SecretGrant.status == "approved",
+            )
+        )
+        approved_grants = list(grants.all())
+        if len(approved_grants) != len(secret_grant_ids):
+            raise HTTPException(
+                status_code=409,
+                detail="All secret grants must be approved for this plugin installation",
+            )
+        integration_ids = {grant.integration_id for grant in approved_grants}
+        integrations = await db.scalars(
+            select(IntegrationConnection).where(
+                IntegrationConnection.organization_id == api_key.organization_id,
+                IntegrationConnection.id.in_(integration_ids),
+                IntegrationConnection.status == "active",
+            )
+        )
+        active_integrations = list(integrations.all())
+        if len(active_integrations) != len(integration_ids) or any(
+            not integration.secret_ref for integration in active_integrations
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="All secret grants must reference active integrations with external secret refs",
+            )
+    elif "secret.read" in set(requested_capabilities):
+        raise HTTPException(
+            status_code=422,
+            detail="The secret.read capability requires approved secret grants",
+        )
 
     approved_capabilities = set(installation.approved_scopes or [])
     if not isinstance(release.manifest_snapshot, dict):
@@ -184,6 +230,7 @@ async def create_execution_request(
             and existing.max_output_bytes == payload.max_output_bytes
             and existing.network_policy == payload.network_policy
             and existing.network_allowlist == network_allowlist
+            and existing.secret_grant_ids == secret_grant_ids
         )
         if not compatible:
             raise HTTPException(
@@ -205,6 +252,7 @@ async def create_execution_request(
         max_output_bytes=payload.max_output_bytes,
         network_policy=payload.network_policy,
         network_allowlist=network_allowlist,
+        secret_grant_ids=secret_grant_ids,
         policy_snapshot=policy_snapshot,
         status="queued",
     )
