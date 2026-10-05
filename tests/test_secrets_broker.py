@@ -3,6 +3,7 @@ import base64
 import json
 import shlex
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -130,7 +131,7 @@ async def test_secret_broker_subprocess_uses_external_provider_without_secrets_i
         ],
     )
     try:
-        token = open(token_path, encoding="ascii").read()
+        token = Path(token_path).read_text(encoding="ascii")
         reader, writer = await asyncio.open_unix_connection(broker.socket_path)
         writer.write(
             (
