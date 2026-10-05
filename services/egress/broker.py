@@ -168,7 +168,7 @@ async def _read_http_headers(
     if not lines:
         raise EgressPolicyError("Egress response did not contain a status line")
     try:
-        version, status_text, reason = lines[0].decode("iso-8859-1").split(" ", 2)
+        version, status_text, _reason = lines[0].decode("iso-8859-1").split(" ", 2)
         status_code = int(status_text)
     except (ValueError, UnicodeDecodeError) as exc:
         raise EgressPolicyError("Egress response status line is invalid") from exc
@@ -490,7 +490,15 @@ class EgressBroker:
             response = {"ok": False, "error": str(exc)[:500]}
         except asyncio.CancelledError:
             raise
-        except Exception:
+        except (
+            OSError,
+            ValueError,
+            TypeError,
+            ConnectionError,
+            asyncio.TimeoutError,
+            binascii.Error,
+            ssl.SSLError,
+        ):
             response = {"ok": False, "error": "Egress broker request failed"}
         writer.write((json.dumps(response, separators=(",", ":")) + "\n").encode("utf-8"))
         await writer.drain()
