@@ -532,8 +532,8 @@ async def create_egress_broker(
     )
     try:
         await broker.start()
-    except Exception as exc:
+    except (OSError, ValueError):
         token_path.unlink(missing_ok=True)
         socket_path.unlink(missing_ok=True)
-        raise exc
+        raise
     return broker, str(token_path)
