@@ -8,7 +8,7 @@ from services.api.app.services.execution import normalize_execution_result
 from .admission import admit_verified_artifact
 from .config import settings
 from .launcher import launch_sandbox, new_cidfile
-from services.egress.broker import create_egress_broker
+from services.egress.process import create_egress_broker
 from .sandbox import build_oci_command
 
 
