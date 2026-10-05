@@ -60,6 +60,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 17 — Cooperative Runtime Cancellation:** running sandbox executions now terminate on authoritative cancellation and reconcile worker leases safely. Network-enabled execution remains fail-closed pending egress mediation.
 
+- **Phase 18 — Controlled Egress Mediation:** allowlisted HTTP(S) access is brokered through an authenticated per-execution Unix socket while plugin sandboxes remain on `--network=none`.
+
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
