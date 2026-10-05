@@ -1,38 +1,26 @@
 [object Object]
 
-## Phase 16 isolated launcher
+## Phase 18 mediated egress
 
-The worker can optionally launch the prepared OCI command when NEXUS_SANDBOX_LAUNCH_ENABLED=true.
+Network-enabled execution is no longer rejected solely because its policy is `allowlist`; it is eligible only when the request uses policy version 3, declares the `network.http` capability, and contains the Phase 18 `unix_socket_broker` egress mode.
 
-Launcher controls include:
+The plugin container still uses `--network=none`. For an allowlisted execution the worker creates:
 
-- no shell interpolation; Docker/OCI commands use an argument vector;
-- image must remain pinned by SHA-256;
-- networking stays disabled;
-- execution timeout comes from the request policy;
-- stdout/stderr are bounded before persistence;
-- the launcher starts a fresh process session;
-- timeout/output-limit paths terminate the process group and attempt container cleanup using the recorded container ID;
-- non-zero exits, timeout and output-limit conditions are recorded as distinct terminal errors.
+- a short-lived Unix socket at the execution runtime path;
+- a random per-execution token file;
+- a broker that performs the actual outbound HTTP(S) request.
 
-The default remains disabled. The local Compose worker has no Docker socket mounted and therefore remains a preparation-only worker unless an operator supplies a separate isolated runtime boundary.
+The sandbox receives the socket and token as read-only mounts plus:
 
+- `NEXUS_EGRESS_SOCKET=/nexus/egress.sock`
+- `NEXUS_EGRESS_TOKEN_FILE=/nexus/egress.token`
 
-## Phase 17 cooperative cancellation
+The broker contract is JSON Lines:
 
-A running sandbox now receives a bounded cancellation poll from the worker. When the authoritative execution request changes to cancelled, the launcher:
+`{"token":"...","method":"GET","url":"https://api.example.com/path","headers":{...},"body_base64":"..."}`
 
-1. stops the sandbox process group;
-2. waits for the configured grace period;
-3. forces termination when necessary;
-4. attempts docker rm -f using the recorded container ID; and
-5. returns a distinct sandbox_cancelled execution outcome.
+Successful responses include status code, bounded headers, base64 response bytes and a truncation flag. Redirects are not followed. The broker rejects IP-literal destinations and any DNS result that is not globally routable.
 
-The worker checks the persisted request state before committing its final outcome. If the API already cancelled the request, the worker records execution.worker_cancelled rather than overwriting the cancellation with a late success/failure.
+Limits are frozen into the execution policy snapshot: 128 KiB request payload, 4 MiB response body, at most four concurrent broker requests, and a maximum 15-second broker request timeout.
 
-Configuration:
-
-- NEXUS_SANDBOX_CANCELLATION_POLL_SECONDS (default 0.5 seconds)
-- NEXUS_SANDBOX_STOP_GRACE_SECONDS (default 3 seconds)
-
-Network-enabled requests remain fail-closed until a dedicated egress mediation boundary is implemented.
+Direct socket access, arbitrary protocols and network namespace attachment remain unavailable.
