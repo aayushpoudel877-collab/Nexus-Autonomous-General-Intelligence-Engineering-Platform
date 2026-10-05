@@ -22,6 +22,7 @@ from ..models import (
     User,
     DeveloperApiKey,
     PluginTrustRoot,
+    SecretGrant,
 )
 from ..schemas.integrations import (
     IntegrationCreate,
@@ -34,6 +35,7 @@ from ..schemas.integrations import (
     PluginReleaseRead,
     PluginReleaseVerification,
 )
+from ..schemas.secrets import SecretGrantApproval, SecretGrantCreate, SecretGrantRead
 from ..schemas.artifacts import (
     PluginArtifactVerification,
     PluginTrustRootCreate,
@@ -77,6 +79,130 @@ async def _installation_for_org(
     if installation is None:
         raise HTTPException(status_code=404, detail="Plugin installation not found")
     return installation
+
+
+@router.get("/secret-grants", response_model=list[SecretGrantRead])
+async def list_secret_grants(
+    api_key: DeveloperApiKey = Depends(require_api_key_scopes("plugin:read")),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await db.scalars(
+        select(SecretGrant)
+        .where(SecretGrant.organization_id == api_key.organization_id)
+        .order_by(SecretGrant.created_at.desc())
+    )
+    return list(rows.all())
+
+
+@router.post("/secret-grants", response_model=SecretGrantRead, status_code=201)
+async def request_secret_grant(
+    payload: SecretGrantCreate,
+    request: Request,
+    api_key: DeveloperApiKey = Depends(require_api_key_scopes("plugin:execute")),
+    db: AsyncSession = Depends(get_db),
+):
+    installation = await _installation_for_org(
+        db,
+        payload.installation_id,
+        api_key.organization_id,
+    )
+    if installation.status != "approved" or "secret.read" not in set(installation.approved_scopes or []):
+        raise HTTPException(
+            status_code=409,
+            detail="The plugin installation does not have the approved secret.read scope",
+        )
+
+    integration = await db.scalar(
+        select(IntegrationConnection).where(
+            IntegrationConnection.id == payload.integration_id,
+            IntegrationConnection.organization_id == api_key.organization_id,
+            IntegrationConnection.status == "active",
+        )
+    )
+    if integration is None:
+        raise HTTPException(status_code=404, detail="Active integration not found")
+    if not integration.secret_ref:
+        raise HTTPException(status_code=409, detail="Integration has no configured external secret reference")
+
+    existing = await db.scalar(
+        select(SecretGrant).where(
+            SecretGrant.organization_id == api_key.organization_id,
+            SecretGrant.installation_id == installation.id,
+            SecretGrant.integration_id == integration.id,
+        )
+    )
+    if existing:
+        return existing
+
+    grant = SecretGrant(
+        organization_id=api_key.organization_id,
+        installation_id=installation.id,
+        integration_id=integration.id,
+        created_by_user_id=api_key.created_by_user_id,
+        status="requested",
+        approved_scopes=["secret.read"],
+    )
+    db.add(grant)
+    await db.flush()
+    await record_audit(
+        db,
+        action="developer.secret_grant.requested",
+        resource_type="secret_grant",
+        actor_user_id=api_key.created_by_user_id,
+        organization_id=api_key.organization_id,
+        resource_id=str(grant.id),
+        detail={
+            "installation_id": str(installation.id),
+            "integration_id": str(integration.id),
+            "scope": "secret.read",
+        },
+        request_id=getattr(request.state, "request_id", None),
+    )
+    await db.commit()
+    await db.refresh(grant)
+    return grant
+
+
+@router.post("/secret-grants/{grant_id}/approve", response_model=SecretGrantRead)
+async def approve_secret_grant(
+    grant_id: UUID,
+    payload: SecretGrantApproval,
+    request: Request,
+    user: User = Depends(require_roles("owner", "admin")),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    grant = await db.scalar(
+        select(SecretGrant).where(
+            SecretGrant.id == grant_id,
+            SecretGrant.organization_id == membership.organization_id,
+        )
+    )
+    if grant is None:
+        raise HTTPException(status_code=404, detail="Secret grant not found")
+    if grant.status != "requested":
+        raise HTTPException(status_code=409, detail="Only requested secret grants can be reviewed")
+    if payload.status == "approved" and not payload.note.strip():
+        raise HTTPException(status_code=422, detail="An approval note is required")
+    grant.status = payload.status
+    grant.approved_scopes = ["secret.read"] if payload.status == "approved" else []
+    grant.approval_note = payload.note.strip()
+    grant.approved_by_user_id = user.id
+    grant.approved_at = datetime.now(timezone.utc)
+    await record_audit(
+        db,
+        action="developer.secret_grant.reviewed",
+        resource_type="secret_grant",
+        actor_user_id=user.id,
+        organization_id=membership.organization_id,
+        resource_id=str(grant.id),
+        detail={"status": grant.status, "scope": "secret.read"},
+        request_id=getattr(request.state, "request_id", None),
+    )
+    await db.commit()
+    await db.refresh(grant)
+    return grant
+
 
 
 
