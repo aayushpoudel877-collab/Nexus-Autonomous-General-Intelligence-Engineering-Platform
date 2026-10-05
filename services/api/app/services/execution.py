@@ -79,7 +79,7 @@ def build_policy_snapshot(
     secret_grant_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
-        "version": 3,
+        "version": 4,
         "capabilities": list(capabilities),
         "limits": {
             "timeout_seconds": timeout_seconds,
