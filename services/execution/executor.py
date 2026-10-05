@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
 from services.api.app.models import ExecutionRequest
+from services.secrets.broker import SecretGrantSpec
 from services.api.app.services.artifact_store import ArtifactStore
 from services.api.app.services.execution import normalize_execution_result
 
@@ -28,6 +29,7 @@ class ExecutionBackend:
         self,
         request: ExecutionRequest,
         cancellation_check: Callable[[], Awaitable[bool]] | None = None,
+        secret_grants: list[SecretGrantSpec] | None = None,
     ) -> ExecutionOutcome:
         raise NotImplementedError
 
@@ -79,6 +81,7 @@ class SandboxAdmissionExecutor(ExecutionBackend):
         self,
         request: ExecutionRequest,
         cancellation_check: Callable[[], Awaitable[bool]] | None = None,
+        secret_grants: list[SecretGrantSpec] | None = None,
     ) -> ExecutionOutcome:
         try:
             admission = admit_verified_artifact(
@@ -152,13 +155,66 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 ),
             )
 
-        broker = None
-        token_path = None
+        egress_broker = None
+        egress_token_path = None
+        secret_broker = None
+        secret_token_path = None
         cidfile = new_cidfile(settings.runtime_root)
         try:
+            if admission.secret_required:
+                if not secret_grants or len(secret_grants) != len(admission.secret_grant_ids):
+                    result = {"status": "blocked", "entrypoint": request.entrypoint}
+                    normalized, size = normalize_execution_result(
+                        result, max_output_bytes=request.max_output_bytes
+                    )
+                    return ExecutionOutcome(
+                        success=False,
+                        result=normalized,
+                        output_bytes=size,
+                        error_code="secret_broker_unavailable",
+                        failure_reason="Approved secret grants are not available to the worker.",
+                    )
+                expected_grants = set(admission.secret_grant_ids)
+                provided_grants = {grant.grant_id for grant in secret_grants}
+                if provided_grants != expected_grants:
+                    result = {"status": "blocked", "entrypoint": request.entrypoint}
+                    normalized, size = normalize_execution_result(
+                        result, max_output_bytes=request.max_output_bytes
+                    )
+                    return ExecutionOutcome(
+                        success=False,
+                        result=normalized,
+                        output_bytes=size,
+                        error_code="secret_broker_unavailable",
+                        failure_reason="The worker secret grant set does not match the frozen execution policy.",
+                    )
+                from services.secrets.process import create_secret_broker
+                try:
+                    secret_broker, secret_token_path = await create_secret_broker(
+                        runtime_root=settings.runtime_root,
+                        execution_id=str(request.id),
+                        grants=secret_grants,
+                    )
+                except (OSError, TypeError, ValueError) as exc:
+                    result = {
+                        "status": "blocked",
+                        "entrypoint": request.entrypoint,
+                    }
+                    normalized, size = normalize_execution_result(
+                        result,
+                        max_output_bytes=request.max_output_bytes,
+                    )
+                    return ExecutionOutcome(
+                        success=False,
+                        result=normalized,
+                        output_bytes=size,
+                        error_code="secret_broker_unavailable",
+                        failure_reason=str(exc)[:500],
+                    )
+
             if admission.egress_required:
                 try:
-                    broker, token_path = await create_egress_broker(
+                    egress_broker, egress_token_path = await create_egress_broker(
                         runtime_root=settings.runtime_root,
                         execution_id=str(request.id),
                         allowlist=admission.network_allowlist,
@@ -200,8 +256,10 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 max_memory_mb=request.max_memory_mb,
                 cidfile=cidfile,
                 docker_binary=settings.docker_binary,
-                egress_socket_path=broker.socket_path if broker else None,
-                egress_token_path=token_path,
+                egress_socket_path=egress_broker.socket_path if egress_broker else None,
+                egress_token_path=egress_token_path,
+                secret_socket_path=secret_broker.socket_path if secret_broker else None,
+                secret_token_path=secret_token_path,
             )
 
             try:
@@ -252,12 +310,20 @@ class SandboxAdmissionExecutor(ExecutionBackend):
                 failure_reason=str(exc)[:1000],
             )
         finally:
-            if broker is not None:
-                await broker.stop()
-            if token_path:
+            if egress_broker is not None:
+                await egress_broker.stop()
+            if egress_token_path:
                 try:
                     from pathlib import Path
-                    Path(token_path).unlink(missing_ok=True)
+                    Path(egress_token_path).unlink(missing_ok=True)
+                except OSError:
+                    pass
+            if secret_broker is not None:
+                await secret_broker.stop()
+            if secret_token_path:
+                try:
+                    from pathlib import Path
+                    Path(secret_token_path).unlink(missing_ok=True)
                 except OSError:
                     pass
 
