@@ -4,12 +4,15 @@ import json
 import pytest
 
 import services.egress.broker as broker_module
+from pathlib import Path
+
 from services.egress.broker import (
     EgressBroker,
     EgressPolicyError,
     EgressResult,
     perform_http_request,
 )
+from services.egress.process import _sanitized_environment, create_egress_broker
 
 
 @pytest.mark.asyncio
@@ -194,3 +197,54 @@ async def test_perform_http_request_pins_resolved_ip_and_parses_response(monkeyp
     assert "GET /health HTTP/1.1" in seen["request"]
     assert "Host: api.example.com:" + str(port) in seen["request"]
     assert "X-Test: broker" in seen["request"]
+
+
+def test_egress_broker_environment_does_not_inherit_control_plane_secrets(
+    monkeypatch,
+):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://secret")
+    monkeypatch.setenv("NEXUS_SECRET_KEY", "secret")
+    monkeypatch.setenv("REDIS_URL", "redis://secret")
+    env = _sanitized_environment()
+    assert "DATABASE_URL" not in env
+    assert "NEXUS_SECRET_KEY" not in env
+    assert "REDIS_URL" not in env
+
+
+@pytest.mark.asyncio
+async def test_egress_broker_subprocess_lifecycle(tmp_path):
+    broker, token_path = await create_egress_broker(
+        runtime_root=str(tmp_path),
+        execution_id="subprocess-test",
+        allowlist=["api.example.com:443"],
+        request_timeout_seconds=5,
+        max_request_bytes=128 * 1024,
+        max_response_bytes=4096,
+    )
+    try:
+        token = Path(token_path).read_text(encoding="ascii")
+        reader, writer = await asyncio.open_unix_connection(broker.socket_path)
+        writer.write(
+            (
+                json.dumps(
+                    {
+                        "token": token,
+                        "method": "GET",
+                        "url": "https://api.example.com/data",
+                    }
+                )
+                + "\n"
+            ).encode()
+        )
+        await writer.drain()
+        response = json.loads((await reader.readline()).decode())
+        writer.close()
+        await writer.wait_closed()
+        assert response["ok"] is False
+        assert "Egress destination could not be reached" in response["error"]
+    finally:
+        await broker.stop()
+
+    assert not Path(broker.socket_path).exists()
+    assert not Path(token_path).exists()
+    assert not Path(broker.config_path).exists()
