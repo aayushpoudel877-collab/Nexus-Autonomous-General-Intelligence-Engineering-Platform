@@ -25,6 +25,7 @@ MAX_ALLOWLIST_ENTRIES = 20
 MAX_EGRESS_REQUEST_BYTES = 128 * 1_024
 MAX_EGRESS_RESPONSE_BYTES = 4 * 1_024 * 1_024
 MAX_EGRESS_TIMEOUT_SECONDS = 15
+NETWORK_CAPABILITY = "network.http"
 WORKER_LEASE_SECONDS = 60
 WORKER_POLL_SECONDS = 2
 MAX_WORKER_ATTEMPTS = 3
@@ -137,6 +138,10 @@ def normalize_execution_policy(
     normalized_allowlist = validate_network_allowlist(network_allowlist)
     if network_policy == "allowlist" and not normalized_allowlist:
         raise ValueError("Network-enabled executions require at least one allowlist entry")
+    if network_policy == "allowlist" and NETWORK_CAPABILITY not in capabilities:
+        raise ValueError(
+            f"Network-enabled executions require the '{NETWORK_CAPABILITY}' capability"
+        )
     snapshot = build_policy_snapshot(
         capabilities=capabilities,
         timeout_seconds=timeout_seconds,
