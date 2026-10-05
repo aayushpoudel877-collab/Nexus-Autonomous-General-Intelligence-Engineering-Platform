@@ -109,20 +109,24 @@ def test_non_global_address_is_rejected():
 
 @pytest.mark.asyncio
 async def test_private_dns_result_is_rejected(monkeypatch):
-    async def fake_resolve(*_args):
-        return ["10.0.0.10"]
+    async def fake_getaddrinfo(*_args, **_kwargs):
+        return [
+            (
+                2,
+                1,
+                6,
+                "",
+                ("10.0.0.10", 443),
+            )
+        ]
 
-    monkeypatch.setattr(broker_module, "_resolve_public_addresses", fake_resolve)
+    monkeypatch.setattr(
+        broker_module.socket,
+        "getaddrinfo",
+        fake_getaddrinfo,
+    )
     with pytest.raises(EgressPolicyError):
-        await perform_http_request(
-            method="GET",
-            url="https://api.example.com/data",
-            headers={},
-            body=b"",
-            allowlist=["api.example.com:443"],
-            timeout_seconds=5,
-            max_response_bytes=4096,
-        )
+        await broker_module._resolve_public_addresses("api.example.com", 443)
 
 
 def test_broker_result_is_bounded():
