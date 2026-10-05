@@ -2,7 +2,7 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 18</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 19</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
@@ -58,6 +58,17 @@ export default function ExecutionPage() {
             Allowlisted HTTP(S) requests use an authenticated per-execution Unix-socket broker while
             the plugin remains on <code>--network=none</code>. The broker enforces host/port allowlists,
             public-address resolution, bounded payloads and no redirects.
+          </p>
+        </article>
+
+        <article>
+          <p className="eyebrow">SECRET MEDIATION</p>
+          <h2>Credentials stay outside the plugin</h2>
+          <p>
+            Secret access requires an owner-approved grant and <code>secret.read</code>. The worker
+            revalidates grants, then starts a short-lived scrubbed broker subprocess. The sandbox
+            receives only a Unix socket and token path; resolved secret values never enter its
+            environment, execution results or audit records.
           </p>
         </article>
       </section>
