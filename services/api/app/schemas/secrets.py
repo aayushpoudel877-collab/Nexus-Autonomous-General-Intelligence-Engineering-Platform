@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class SecretGrantCreate(BaseModel):
@@ -29,6 +29,7 @@ class SecretGrantApproval(BaseModel):
     status: str = Field(pattern=r"^(approved|revoked)$")
     note: str = Field(default="", max_length=4000)
 
+    @field_validator("note")
     @classmethod
     def normalize_note(cls, value: str) -> str:
         return value.strip()
