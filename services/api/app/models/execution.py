@@ -69,6 +69,7 @@ class ExecutionRequest(Base):
     max_output_bytes: Mapped[int] = mapped_column(Integer, nullable=False, default=1_048_576)
     network_policy: Mapped[str] = mapped_column(String(20), nullable=False, default="none")
     network_allowlist: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    secret_grant_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     policy_snapshot: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued", index=True)
     worker_id: Mapped[str | None] = mapped_column(String(160), nullable=True, index=True)
