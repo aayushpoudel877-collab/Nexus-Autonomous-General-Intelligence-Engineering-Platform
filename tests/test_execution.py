@@ -43,6 +43,9 @@ def test_execution_policy_is_bounded():
     assert snapshot["execution"]["sandbox_required"] is True
     assert snapshot["execution"]["artifact_verification_required"] is True
     assert snapshot["execution"]["artifact_verified"] is False
+    assert snapshot["execution"]["network_mediation_required"] is True
+    assert snapshot["egress"]["mode"] == "unix_socket_broker"
+    assert snapshot["egress"]["max_redirects"] == 0
 
 
 def test_execution_policy_rejects_network_without_allowlist_mode():
@@ -115,7 +118,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         },
     )
     assert snapshot == {
-        "version": 2,
+        "version": 3,
         "capabilities": ["dataset.read"],
         "limits": {
             "timeout_seconds": 60,
@@ -132,6 +135,14 @@ def test_policy_snapshot_is_explicit_and_reproducible():
             "artifact_verification_required": True,
             "secret_access_requires_external_reference": True,
             "artifact_verified": False,
+            "network_mediation_required": False,
+        },
+        "egress": {
+            "mode": "disabled",
+            "max_request_bytes": 131072,
+            "max_response_bytes": 4194304,
+            "timeout_seconds": 15,
+            "max_redirects": 0,
         },
     }
 
@@ -180,5 +191,38 @@ def test_policy_snapshot_records_verified_artifact_state():
         network_allowlist=[],
         artifact_verified=True,
     )
-    assert snapshot["version"] == 2
+    assert snapshot["version"] == 3
     assert snapshot["execution"]["artifact_verified"] is True
+
+
+def test_execution_policy_requires_allowlist_for_mediated_network():
+    with pytest.raises(ValueError):
+        normalize_execution_policy(
+            capabilities=["network.http"],
+            timeout_seconds=300,
+            max_memory_mb=512,
+            max_output_bytes=1_048_576,
+            network_policy="allowlist",
+            network_allowlist=[],
+        )
+
+
+def test_execution_policy_rejects_invalid_allowlist_port():
+    with pytest.raises(ValueError):
+        validate_network_allowlist(["api.example.com:65536"])
+
+
+def test_execution_policy_records_mediated_egress_contract():
+    _, allowlist, snapshot = normalize_execution_policy(
+        capabilities=["network.http"],
+        timeout_seconds=30,
+        max_memory_mb=512,
+        max_output_bytes=1_048_576,
+        network_policy="allowlist",
+        network_allowlist=["api.example.com:443"],
+    )
+    assert allowlist == ["api.example.com:443"]
+    assert snapshot["version"] == 3
+    assert snapshot["execution"]["network_mediation_required"] is True
+    assert snapshot["egress"]["mode"] == "unix_socket_broker"
+    assert snapshot["egress"]["timeout_seconds"] == 15
