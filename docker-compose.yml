@@ -51,6 +51,7 @@ services:
       NEXUS_SANDBOX_STOP_GRACE_SECONDS: ${NEXUS_SANDBOX_STOP_GRACE_SECONDS:-3}
       NEXUS_SANDBOX_CANCELLATION_POLL_SECONDS: ${NEXUS_SANDBOX_CANCELLATION_POLL_SECONDS:-0.5}
       NEXUS_SANDBOX_IMAGE: ${NEXUS_SANDBOX_IMAGE:-}
+      NEXUS_SECRET_PROVIDER_COMMAND: ${NEXUS_SECRET_PROVIDER_COMMAND:-}
     command: ["python", "-m", "services.execution.worker"]
     volumes:
       - nexus_artifacts:/var/lib/nexus/artifacts
