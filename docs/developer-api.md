@@ -1,156 +1,16 @@
-# NEXUS-Ω Developer API
+[object Object]
 
-Phase 10 adds a tenant-scoped developer surface without granting direct database access or arbitrary code execution.
+## Phase 18 controlled egress
 
-## Authentication
+Execution requests may use `network_policy=allowlist` only when the request also includes the `network.http` capability. The API freezes the following egress policy with the request:
 
-Owner and admin users can create developer API keys from:
+- exact hostname/port allowlist;
+- Unix-socket broker mode;
+- 128 KiB request limit;
+- 4 MiB response limit;
+- 15-second maximum broker request timeout;
+- zero redirects.
 
-- `POST /api/v1/developer/api-keys`
+The plugin runtime remains on `--network=none`. Network traffic is performed by the trusted egress broker through an authenticated per-execution Unix socket. Plugin code does not receive a raw network namespace.
 
-Keys use the `nxk_` prefix and are stored only as SHA-256 digests. The plaintext secret is returned once in the create response and is never returned by the list endpoint.
-
-Send a key with:
-
-```http
-X-Nexus-API-Key: nxk_<prefix>_<secret>
-```
-
-Keys can have these scopes:
-
-- `developer:read`
-- `developer:write`
-- `plugin:read`
-- `plugin:write`
-
-An expired or revoked key is rejected. API-key activity records the latest request time, while administrative creation and revocation are written to the organization audit stream.
-
-## Plugin registry
-
-The plugin registry is metadata-only in this phase. It lets an organization register a plugin manifest and lifecycle state without downloading or executing plugin code.
-
-Available endpoints:
-
-- `GET /api/v1/developer/whoami`
-- `GET /api/v1/developer/plugins`
-- `POST /api/v1/developer/plugins`
-- `PATCH /api/v1/developer/plugins/{plugin_id}`
-
-Plugin slugs are unique within an organization. All reads and writes are tenant-scoped by the API key's organization.
-
-## Python SDK
-
-The repository includes a dependency-free client under `packages/sdk`.
-
-```python
-from packages.sdk import NexusClient
-
-client = NexusClient(
-    "http://localhost:8000/api/v1",
-    "nxk_<prefix>_<secret>",
-)
-
-print(client.whoami())
-print(client.list_plugins())
-
-client.create_plugin(
-    slug="my-research-plugin",
-    name="My Research Plugin",
-    version="0.1.0",
-    description="Research workflow integration metadata",
-    manifest={"capabilities": ["research.plan.read"]},
-)
-```
-
-The SDK is intentionally small so it can remain a stable transport boundary while richer generated clients and additional language SDKs are added later.
-
-## Security boundary
-
-This phase does not:
-
-- execute plugin code,
-- download plugin packages from arbitrary URLs,
-- issue unrestricted root credentials,
-- provide distributed rate limiting,
-- persist plaintext API-key secrets,
-- or dispatch outbound webhook events.
-
-Those capabilities require separate isolation, policy, signing, rotation, and delivery controls.
-
-
-## Phase 11 governance APIs
-
-New developer scopes:
-
-- `plugin:release`
-- `plugin:install`
-- `plugin:execute`
-- `integration:read`
-- `integration:write`
-
-Governance endpoints:
-
-- `GET /api/v1/governance/integrations`
-- `POST /api/v1/governance/integrations`
-- `PATCH /api/v1/governance/integrations/{integration_id}`
-- `GET /api/v1/governance/plugins/{plugin_id}/releases`
-- `POST /api/v1/governance/plugins/{plugin_id}/releases`
-- `POST /api/v1/governance/plugin-releases/{release_id}/verify`
-- `GET /api/v1/governance/plugin-installations`
-- `POST /api/v1/governance/plugin-installations`
-- `POST /api/v1/governance/plugin-installations/{installation_id}/approve`
-
-Integration configuration is explicitly non-secret. The API accepts only external `secret://...` references, and common secret-like config fields are rejected. Plugin releases remain metadata-only and must be explicitly reviewed before installation requests can be created.
-
-
-## Phase 12 execution requests
-
-The `plugin:execute` scope enables the controlled execution queue:
-
-- `GET /api/v1/execution/requests`
-- `POST /api/v1/execution/requests`
-- `GET /api/v1/execution/requests/{request_id}`
-- `POST /api/v1/execution/requests/{request_id}/cancel`
-
-An execution request must reference an approved installation for a verified plugin release. Requested capabilities are checked against both the approved installation scopes and the plugin's declared capabilities and entrypoints.
-
-Requests are idempotent by organization plus `idempotency_key`. They capture bounded timeout, memory, output and network-policy limits in a policy snapshot. The API only queues the request; it does not execute plugin code.
-
-## Phase 14 artifact trust APIs
-
-Trust roots and artifact verification are intentionally human-controlled because they change the cryptographic trust boundary.
-
-Trust-root endpoints:
-
-- `GET /api/v1/governance/trust-roots` — list organization trust roots through a developer API key with `plugin:read`.
-- `POST /api/v1/governance/trust-roots` — create an Ed25519 trust root as an owner/admin.
-- `POST /api/v1/governance/trust-roots/{trust_root_id}/revoke` — revoke an active trust root as an owner/admin.
-
-Release verification:
-
-- `POST /api/v1/governance/plugin-releases/{release_id}/verify-artifact` — supply bounded base64-encoded artifact bytes and a trust-root ID. The platform hashes the bytes, compares the release SHA-256, and verifies the detached Ed25519 signature over that digest.
-- `POST /api/v1/governance/plugin-releases/{release_id}/verify` — human review can mark the release `verified` only after cryptographic artifact verification has succeeded.
-
-A verified release still cannot execute by itself. Installation and execution require the verification trust root to remain active and the other Phase 11/12 approval gates to pass.
-
-
-## Phase 15 artifact staging and sandbox admission
-
-Successful artifact verification now durably stages the exact verified bytes under a content-addressed SHA-256 storage key. Release reads expose:
-
-- `artifact_storage_key`
-- `artifact_size_bytes`
-- `artifact_staged_at`
-
-Execution requests freeze that storage identity in their provenance snapshot. The worker re-hashes the staged bytes before runtime admission.
-
-The sandbox adapter currently compiles a digest-pinned OCI command but does not launch it. This keeps arbitrary plugin code outside the worker process until the isolated launcher phase is enabled.
-
-
-## Phase 17 execution cancellation
-
-The execution API keeps the existing cancellation endpoint:
-
-POST /api/v1/execution/requests/{request_id}/cancel
-
-Cancelling a running request now propagates to the worker runtime. The worker observes the authoritative cancelled state, terminates the isolated sandbox, and refuses to overwrite the cancelled record with a late runtime result. Cancellation is recorded in the organization audit stream.
+The runtime broker protocol is intentionally narrow: HTTP(S) GET, HEAD and POST requests with bounded headers/body, no credential-bearing URLs and no redirect following.
