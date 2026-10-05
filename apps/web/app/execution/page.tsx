@@ -2,7 +2,7 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 17</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 18</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
@@ -48,6 +48,16 @@ export default function ExecutionPage() {
           <p>
             Cancellation is checked against the authoritative execution state. The worker terminates
             the sandbox process group and reconciles the database state before writing its final audit event.
+          </p>
+        </article>
+
+        <article>
+          <p className="eyebrow">EGRESS MEDIATION</p>
+          <h2>Network without a network namespace</h2>
+          <p>
+            Allowlisted HTTP(S) requests use an authenticated per-execution Unix-socket broker while
+            the plugin remains on <code>--network=none</code>. The broker enforces host/port allowlists,
+            public-address resolution, bounded payloads and no redirects.
           </p>
         </article>
       </section>
