@@ -22,6 +22,9 @@ MAX_OUTPUT_BYTES = 16 * 1_024 * 1_024
 MAX_CAPABILITIES = 16
 MAX_INPUT_JSON_BYTES = 64 * 1_024
 MAX_ALLOWLIST_ENTRIES = 20
+MAX_EGRESS_REQUEST_BYTES = 128 * 1_024
+MAX_EGRESS_RESPONSE_BYTES = 4 * 1_024 * 1_024
+MAX_EGRESS_TIMEOUT_SECONDS = 15
 WORKER_LEASE_SECONDS = 60
 WORKER_POLL_SECONDS = 2
 MAX_WORKER_ATTEMPTS = 3
@@ -45,6 +48,14 @@ def validate_network_allowlist(values: list[str]) -> list[str]:
         item = value.strip().lower()
         if not _HOST_PATTERN.fullmatch(item):
             raise ValueError("Network allowlist entries must be hostnames with optional ports")
+        if ":" in item:
+            host, port_text = item.rsplit(":", 1)
+            if not 1 <= int(port_text) <= 65_535:
+                raise ValueError("Network allowlist ports must be between 1 and 65535")
+            if not host or host.startswith(".") or host.endswith("."):
+                raise ValueError("Network allowlist hostnames are invalid")
+        elif item.startswith(".") or item.endswith("."):
+            raise ValueError("Network allowlist hostnames are invalid")
         if item not in normalized:
             normalized.append(item)
     if len(normalized) > MAX_ALLOWLIST_ENTRIES:
@@ -64,7 +75,7 @@ def build_policy_snapshot(
     artifact_verified: bool = False,
 ) -> dict[str, Any]:
     return {
-        "version": 2,
+        "version": 3,
         "capabilities": list(capabilities),
         "limits": {
             "timeout_seconds": timeout_seconds,
@@ -80,6 +91,14 @@ def build_policy_snapshot(
             "artifact_verification_required": True,
             "secret_access_requires_external_reference": True,
             "artifact_verified": artifact_verified,
+            "network_mediation_required": network_policy == "allowlist",
+        },
+        "egress": {
+            "mode": "unix_socket_broker" if network_policy == "allowlist" else "disabled",
+            "max_request_bytes": MAX_EGRESS_REQUEST_BYTES,
+            "max_response_bytes": MAX_EGRESS_RESPONSE_BYTES,
+            "timeout_seconds": min(timeout_seconds, MAX_EGRESS_TIMEOUT_SECONDS),
+            "max_redirects": 0,
         },
         "provenance": dict(provenance or {}),
     }
@@ -116,6 +135,8 @@ def normalize_execution_policy(
     if network_policy == "none" and network_allowlist:
         raise ValueError("A network allowlist is only valid with network_policy='allowlist'")
     normalized_allowlist = validate_network_allowlist(network_allowlist)
+    if network_policy == "allowlist" and not normalized_allowlist:
+        raise ValueError("Network-enabled executions require at least one allowlist entry")
     snapshot = build_policy_snapshot(
         capabilities=capabilities,
         timeout_seconds=timeout_seconds,
