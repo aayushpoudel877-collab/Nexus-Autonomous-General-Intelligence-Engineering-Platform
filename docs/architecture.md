@@ -86,3 +86,14 @@ Phase 17 closes the cancellation gap between the API control plane and the sandb
 The launcher treats cancellation as a first-class terminal control signal and attempts container cleanup using the existing CID file. The worker then reconciles the final database state before emitting its completion audit event, so a cancelled request cannot be overwritten by a late sandbox result or lease completion.
 
 Network-enabled execution remains blocked by the Phase 15 admission policy; the dedicated egress mediation phase must establish a controlled network boundary before allowlisted network requests can execute.
+
+
+## Phase 18 controlled egress boundary
+
+Phase 18 enables allowlisted HTTP(S) access without attaching the plugin sandbox to a network. The sandbox continues to run with `--network=none` and receives only two read-only runtime mounts: an authenticated Unix-domain socket and a per-execution token file.
+
+The worker owns a per-execution egress broker. The broker accepts a bounded JSON-lines protocol, authenticates the request token, permits only GET/HEAD/POST HTTP(S), enforces the frozen host/port allowlist, rejects destinations resolving to private/local/reserved addresses, connects directly to the selected resolved public IP while preserving TLS hostname verification, disables redirects, limits request and response sizes, and caps concurrent requests.
+
+The broker is short-lived and is stopped together with the sandbox. Token and socket cleanup happens on normal completion and broker startup failures. The sandbox has no route to the worker's network namespace other than the explicit Unix socket mount, so direct TCP/UDP access remains unavailable.
+
+Phase 18 deliberately does not add arbitrary protocols, DNS control, raw sockets, HTTP proxy tunneling, or direct network namespace access.
