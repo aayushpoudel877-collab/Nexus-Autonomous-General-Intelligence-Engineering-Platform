@@ -517,6 +517,7 @@ async def create_egress_broker(
     execution_token = execution_id or uuid.uuid4().hex
     root = Path(runtime_root).resolve() / "egress"
     root.mkdir(parents=True, exist_ok=True)
+    root.chmod(0o700)
     socket_path = root / f"{execution_token}.sock"
     token_path = root / f"{execution_token}.token"
     token_path.write_text(token, encoding="ascii")
@@ -529,5 +530,10 @@ async def create_egress_broker(
         max_request_bytes=max_request_bytes,
         max_response_bytes=max_response_bytes,
     )
-    await broker.start()
+    try:
+        await broker.start()
+    except Exception as exc:
+        token_path.unlink(missing_ok=True)
+        socket_path.unlink(missing_ok=True)
+        raise exc
     return broker, str(token_path)
