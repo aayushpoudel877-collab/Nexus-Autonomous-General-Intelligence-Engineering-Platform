@@ -22,6 +22,7 @@ from .ecosystem import DeveloperApiKey, PluginRegistration
 from .integration import IntegrationConnection, PluginInstallation, PluginRelease
 from .execution import ExecutionRequest
 from .trust import PluginTrustRoot
+from .secrets import SecretGrant
 
 __all__ = [
     "Organization",
@@ -59,4 +60,5 @@ __all__ = [
     "PluginInstallation",
     "ExecutionRequest",
     "PluginTrustRoot",
+    "SecretGrant",
 ]
