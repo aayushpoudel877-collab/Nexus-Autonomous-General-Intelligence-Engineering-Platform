@@ -28,3 +28,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0013 — graph-contract: boundary value checkpoint for the durable workflow control plane.
 - 0014 — graph-contract: ownership check checkpoint for the durable workflow control plane.
 - 0015 — graph-contract: state transition checkpoint for the durable workflow control plane.
+- 0016 — graph-contract: idempotent replay checkpoint for the durable workflow control plane.
