@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from services.api.app.services.artifact_store import ArtifactStore
+from services.api.app.services.execution import MAX_SECRET_GRANTS, MAX_SECRET_LEASE_SECONDS, MIN_SECRET_LEASE_SECONDS
 
 
 @dataclass(frozen=True)
@@ -26,7 +27,7 @@ def admit_verified_artifact(
     if not isinstance(policy_snapshot, dict):
         raise TypeError("Execution policy snapshot is missing")
     version = policy_snapshot.get("version")
-    if version not in {2, 3, 4}:
+    if version not in {2, 3, 4, 5}:
         raise ValueError("Execution policy snapshot version is unsupported")
     execution = policy_snapshot.get("execution")
     provenance = policy_snapshot.get("provenance")
@@ -86,8 +87,22 @@ def admit_verified_artifact(
         grant_ids = secrets.get("grant_ids")
         if not isinstance(grant_ids, list) or any(not isinstance(item, str) for item in grant_ids):
             raise TypeError("Execution secret grant IDs are invalid")
-        if len(grant_ids) > 8:
-            raise ValueError("Execution requests cannot use more than 8 secret grants")
+        if len(grant_ids) > MAX_SECRET_GRANTS:
+            raise ValueError(
+                f"Execution requests cannot use more than {MAX_SECRET_GRANTS} secret grants"
+            )
+        if version >= 5:
+            grant_expirations = secrets.get("grant_expires_at")
+            if not isinstance(grant_expirations, dict):
+                raise TypeError("Execution secret lease metadata is missing")
+            if set(grant_expirations) != set(grant_ids):
+                raise ValueError("Execution secret lease metadata does not match grant IDs")
+            if any(not isinstance(value, str) or not value for value in grant_expirations.values()):
+                raise ValueError("Execution secret lease metadata is invalid")
+            if secrets.get("lease_min_seconds") != MIN_SECRET_LEASE_SECONDS:
+                raise ValueError("Execution secret lease minimum is invalid")
+            if secrets.get("lease_max_seconds") != MAX_SECRET_LEASE_SECONDS:
+                raise ValueError("Execution secret lease maximum is invalid")
         if mode == "unix_socket_broker":
             if not grant_ids:
                 raise ValueError("Secret broker mode requires at least one grant")
