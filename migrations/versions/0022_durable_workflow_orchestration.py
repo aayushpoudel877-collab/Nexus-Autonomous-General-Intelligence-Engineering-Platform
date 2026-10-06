@@ -56,6 +56,7 @@ def upgrade() -> None:
         sa.Column("lease_expires_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("heartbeat_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("status", sa.String(length=20), nullable=False),
+        sa.CheckConstraint("attempt_count >= 0", name="ck_workflow_runs_attempt_count"),
         sa.Column("input_json", sa.JSON(), nullable=False),
         sa.Column("context_json", sa.JSON(), nullable=False),
         sa.Column("policy_snapshot", sa.JSON(), nullable=False),
