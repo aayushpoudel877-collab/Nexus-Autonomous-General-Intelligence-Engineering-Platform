@@ -13,3 +13,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0009 — graph-contract: terminal state for the durable workflow control plane.
 - 0010 — graph-contract: recovery path for the durable workflow control plane.
 - 0011 — graph-contract: observability path for the durable workflow control plane.
+- 0001 — graph-contract: acceptance path for durable workflow graph validation.
