@@ -1,5 +1,6 @@
 import base64
 import binascii
+import hashlib
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -213,7 +214,21 @@ async def approve_secret_grant(
     if expires_at is not None and expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
 
+    integration = await db.scalar(
+        select(IntegrationConnection).where(
+            IntegrationConnection.id == grant.integration_id,
+            IntegrationConnection.organization_id == membership.organization_id,
+        )
+    )
+    if integration is None:
+        raise HTTPException(status_code=409, detail="Grant integration no longer exists")
+
     if payload.status == "approved":
+        if integration.status != "active" or not integration.secret_ref:
+            raise HTTPException(
+                status_code=409,
+                detail="Secret grant approval requires an active integration with an external secret reference",
+            )
         if expires_at is None:
             raise HTTPException(
                 status_code=422,
@@ -229,8 +244,12 @@ async def approve_secret_grant(
                     f"{MIN_SECRET_LEASE_SECONDS} seconds and {MAX_SECRET_LEASE_SECONDS} seconds from now"
                 ),
             )
+        grant.secret_ref_sha256 = hashlib.sha256(
+            integration.secret_ref.encode("utf-8")
+        ).hexdigest()
     else:
         expires_at = None
+        grant.secret_ref_sha256 = None
 
     grant.status = payload.status
     grant.approved_scopes = ["secret.read"] if payload.status == "approved" else []
