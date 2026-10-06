@@ -16,6 +16,20 @@ class WorkflowNodeCreate(BaseModel):
         import json
         if len(json.dumps(self.config, separators=(",", ":"), sort_keys=True, default=str).encode()) > 32_768:
             raise ValueError("Node configuration is too large")
+        allowed_keys = {
+            "checkpoint": set(),
+            "research_task": {"research_task_id"},
+            "execution": {"execution_request_id"},
+            "approval": {"prompt"},
+        }[self.node_type]
+        unexpected = set(self.config) - allowed_keys
+        if unexpected:
+            raise ValueError("Node configuration contains unsupported fields")
+        if any(
+            any(secret_term in str(key).lower() for secret_term in ("secret", "token", "password", "credential", "api_key"))
+            for key in self.config
+        ):
+            raise ValueError("Node configuration cannot contain credential-like fields")
         required = {
             "research_task": "research_task_id",
             "execution": "execution_request_id",
