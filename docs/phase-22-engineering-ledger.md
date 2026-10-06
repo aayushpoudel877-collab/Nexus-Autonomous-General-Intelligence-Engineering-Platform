@@ -36,3 +36,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0021 — graph-contract: migration path checkpoint for the durable workflow control plane.
 - 0022 — graph-contract: serialization path checkpoint for the durable workflow control plane.
 - 0023 — graph-contract: authorization path checkpoint for the durable workflow control plane.
+- 0024 — graph-contract: concurrency path checkpoint for the durable workflow control plane.
