@@ -74,3 +74,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0059 — tenant-isolation: idempotent replay checkpoint for the durable workflow control plane.
 - 0060 — tenant-isolation: malformed input checkpoint for the durable workflow control plane.
 - 0061 — tenant-isolation: missing reference checkpoint for the durable workflow control plane.
+- 0062 — tenant-isolation: terminal state checkpoint for the durable workflow control plane.
