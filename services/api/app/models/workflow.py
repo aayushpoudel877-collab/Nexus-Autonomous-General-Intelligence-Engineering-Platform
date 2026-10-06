@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,7 +45,7 @@ class WorkflowNode(Base):
 
 class WorkflowRun(Base):
     __tablename__ = "workflow_runs"
-    __table_args__ = (Index("ix_workflow_runs_org_status", "organization_id", "status"), Index("ix_workflow_runs_workflow_created", "workflow_id", "created_at"))
+    __table_args__ = (\n        CheckConstraint("attempt_count >= 0", name="ck_workflow_runs_attempt_count"),\n        Index("ix_workflow_runs_org_status", "organization_id", "status"),\n        Index("ix_workflow_runs_workflow_created", "workflow_id", "created_at"),\n        Index("ix_workflow_runs_claimable_lease", "status", "lease_expires_at"),\n    )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     workflow_id: Mapped[UUID] = mapped_column(ForeignKey("workflow_definitions.id", ondelete="CASCADE"), index=True)
