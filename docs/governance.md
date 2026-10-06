@@ -21,3 +21,8 @@ Secret grants now require a bounded expiration at approval time. Approval must i
 The governance lifecycle now treats revoked grant IDs as permanently retired. A later request for the same installation/integration receives a new grant identity, so an older execution snapshot cannot regain access after revocation.
 
 Legacy non-revoked grants are expired during migration 0020 and must be explicitly approved again.
+
+
+## Phase 21 secret reference integrity
+
+Grant approval fingerprints the external secret reference without exposing that reference in grant responses. Changing an integration reference causes the old grant to fail closed at execution admission and worker runtime; a new reference therefore requires explicit grant review.
