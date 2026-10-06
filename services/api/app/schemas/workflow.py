@@ -16,6 +16,14 @@ class WorkflowNodeCreate(BaseModel):
         import json
         if len(json.dumps(self.config, separators=(",", ":"), sort_keys=True, default=str).encode()) > 32_768:
             raise ValueError("Node configuration is too large")
+        required = {
+            "research_task": "research_task_id",
+            "execution": "execution_request_id",
+        }.get(self.node_type)
+        if required and not isinstance(self.config.get(required), str):
+            raise ValueError(f"{self.node_type} nodes require {required}")
+        if self.node_type == "approval" and len(str(self.config.get("prompt", "")).strip()) < 3:
+            raise ValueError("Approval nodes require a prompt")
         return self
 
 
