@@ -76,3 +76,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0061 — tenant-isolation: missing reference checkpoint for the durable workflow control plane.
 - 0062 — tenant-isolation: terminal state checkpoint for the durable workflow control plane.
 - 0063 — tenant-isolation: recovery path checkpoint for the durable workflow control plane.
+- 0064 — tenant-isolation: observability path checkpoint for the durable workflow control plane.
