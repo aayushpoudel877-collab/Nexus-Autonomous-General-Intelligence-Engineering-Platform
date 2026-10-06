@@ -108,3 +108,12 @@ Execution policy version 4 freezes opaque secret grant IDs and a no-cache secret
 The secret broker is a short-lived subprocess with a scrubbed environment. It receives only the grant-to-reference mapping, a temporary socket/token, and the external provider command configuration. It never writes secret values to files or logs. The plugin sandbox receives only the broker socket and token as read-only mounts and environment paths; it never receives the resolved credential in its environment. The broker resolves values through an operator-supplied provider command using stdin/stdout JSON and no shell interpolation.
 
 The default deployment has no secret provider configured, so secret-enabled execution fails closed until a dedicated secret manager adapter is supplied.
+
+
+## Phase 20 secret lease boundary
+
+Phase 20 upgrades the secret policy snapshot to version 5. Every newly approved secret grant has an explicit finite expiration bounded between one minute and seven days. API execution admission requires every requested grant to be approved, unexpired and attached to an active integration; the worker repeats that check immediately before starting the sandbox.
+
+Grant IDs are immutable across approval lifecycles. A PostgreSQL partial unique index permits only one live grant for an organization/installation/integration tuple while allowing a revoked grant to remain permanently revoked and a later approval to receive a new ID. This prevents an old queued execution from regaining credential access after a grant is revoked and later re-approved.
+
+Legacy non-revoked grants are expired by migration 0020 and require explicit re-approval. Secret lease expiration metadata is stored in the execution policy snapshot, but secret values and underlying secret references remain outside the API/execution records.
