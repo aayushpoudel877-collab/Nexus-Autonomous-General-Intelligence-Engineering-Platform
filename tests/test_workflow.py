@@ -97,3 +97,50 @@ def test_run_classification_prioritizes_failure_and_approval():
     assert classify_run_after_tick({"a": "succeeded", "b": "pending"}, True) == "paused"
     assert classify_run_after_tick({"a": "succeeded", "b": "succeeded"}, False) == "succeeded"
     assert classify_run_after_tick({"a": "running"}, False) == "running"
+
+
+def test_workflow_node_contracts_require_safe_external_references():
+    with pytest.raises(ValueError, match="research_task_id"):
+        WorkflowNodeCreate(node_key="research", title="Research", node_type="research_task")
+    with pytest.raises(ValueError, match="execution_request_id"):
+        WorkflowNodeCreate(node_key="execute", title="Execute", node_type="execution")
+    with pytest.raises(ValueError, match="prompt"):
+        WorkflowNodeCreate(node_key="approval", title="Approval", node_type="approval", config={})
+    assert WorkflowNodeCreate(
+        node_key="research", title="Research", node_type="research_task", config={"research_task_id": "00000000-0000-0000-0000-000000000001"}
+    ).config["research_task_id"]
+
+
+def test_workflow_graph_rejects_excessive_depth():
+    nodes = []
+    for index in range(51):
+        nodes.append({
+            "node_key": f"n{index}",
+            "node_type": "checkpoint",
+            "depends_on": [] if index == 0 else [f"n{index - 1}"],
+        })
+    with pytest.raises(ValueError, match="depth"):
+        validate_workflow_graph(nodes)
+
+
+def test_workflow_run_lease_columns_are_present():
+    from services.api.app.models.workflow import WorkflowRun
+
+    columns = WorkflowRun.__table__.c
+    assert "worker_id" in columns
+    assert "attempt_count" in columns
+    assert "lease_expires_at" in columns
+    assert "heartbeat_at" in columns
+
+
+def test_workflow_policy_is_bounded():
+    with pytest.raises(ValueError):
+        build_workflow_policy_snapshot(version=2)
+
+
+def test_workflow_runner_package_is_importable():
+    from services.orchestrator.engine import tick_run
+    from services.orchestrator.worker import claim_runs
+
+    assert callable(tick_run)
+    assert callable(claim_runs)
