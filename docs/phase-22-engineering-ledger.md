@@ -80,3 +80,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0076 — tenant-isolation: operator path checkpoint for the durable workflow control plane.
 
 - 0077 — orchestration-acceptance: atomic checkpoint 77 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0078 — orchestration-acceptance: atomic checkpoint 78 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
