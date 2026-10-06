@@ -10,3 +10,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0006 — graph-contract: idempotent replay for the durable workflow control plane.
 - 0007 — graph-contract: malformed input for the durable workflow control plane.
 - 0008 — graph-contract: missing reference for the durable workflow control plane.
+- 0009 — graph-contract: terminal state for the durable workflow control plane.
