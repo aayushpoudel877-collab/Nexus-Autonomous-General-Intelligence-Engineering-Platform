@@ -97,3 +97,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0092 — orchestration-acceptance: atomic checkpoint 92 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0093 — orchestration-acceptance: atomic checkpoint 93 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0094 — orchestration-acceptance: atomic checkpoint 94 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0095 — orchestration-acceptance: atomic checkpoint 95 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
