@@ -68,3 +68,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0053 — tenant-isolation: regression case checkpoint for the durable workflow control plane.
 - 0054 — tenant-isolation: deployment parity checkpoint for the durable workflow control plane.
 - 0055 — tenant-isolation: release checkpoint checkpoint for the durable workflow control plane.
+- 0056 — tenant-isolation: acceptance evidence checkpoint for the durable workflow control plane.
