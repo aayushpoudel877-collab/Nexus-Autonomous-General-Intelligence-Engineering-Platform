@@ -41,3 +41,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0026 — graph-contract: timeout path checkpoint for the durable workflow control plane.
 - 0027 — graph-contract: retry path checkpoint for the durable workflow control plane.
 - 0028 — graph-contract: cancellation path checkpoint for the durable workflow control plane.
+- 0029 — graph-contract: operator path checkpoint for the durable workflow control plane.
