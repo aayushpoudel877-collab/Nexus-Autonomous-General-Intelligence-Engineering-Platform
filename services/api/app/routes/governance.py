@@ -440,8 +440,28 @@ async def update_integration(
         raise HTTPException(status_code=404, detail="Integration not found")
 
     updates = payload.model_dump(exclude_unset=True)
+    reference_changed = (
+        "secret_ref" in updates and updates["secret_ref"] != integration.secret_ref
+    )
     for field, value in updates.items():
         setattr(integration, field, value)
+
+    revoked_grants = 0
+    if reference_changed:
+        grants = await db.scalars(
+            select(SecretGrant).where(
+                SecretGrant.organization_id == api_key.organization_id,
+                SecretGrant.integration_id == integration.id,
+                SecretGrant.status == "approved",
+            )
+        )
+        for grant in grants.all():
+            grant.status = "revoked"
+            grant.approved_scopes = []
+            grant.expires_at = None
+            grant.secret_ref_sha256 = None
+            revoked_grants += 1
+
     if updates:
         await record_audit(
             db,
@@ -450,7 +470,10 @@ async def update_integration(
             actor_user_id=api_key.created_by_user_id,
             organization_id=api_key.organization_id,
             resource_id=str(integration.id),
-            detail={"fields": sorted(updates)},
+            detail={
+                "fields": sorted(updates),
+                "revoked_secret_grants": revoked_grants,
+            },
             request_id=getattr(request.state, "request_id", None),
         )
         await db.commit()
