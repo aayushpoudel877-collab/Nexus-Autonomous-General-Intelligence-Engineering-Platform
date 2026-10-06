@@ -19,3 +19,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0004 — incremental acceptance checkpoint for the durable workflow control plane.
 - 0005 — incremental acceptance checkpoint for the durable workflow control plane.
 - 0006 — incremental acceptance checkpoint for the durable workflow control plane.
+- 0007 — graph-contract: malformed input checkpoint for the durable workflow control plane.
