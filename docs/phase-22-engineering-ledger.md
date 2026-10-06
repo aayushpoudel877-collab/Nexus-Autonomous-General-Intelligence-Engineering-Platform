@@ -86,3 +86,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0071 — tenant-isolation: concurrency path checkpoint for the durable workflow control plane.
 - 0072 — tenant-isolation: lease path checkpoint for the durable workflow control plane.
 - 0073 — tenant-isolation: timeout path checkpoint for the durable workflow control plane.
+- 0074 — tenant-isolation: retry path checkpoint for the durable workflow control plane.
