@@ -22,3 +22,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0007 — graph-contract: malformed input checkpoint for the durable workflow control plane.
 - 0008 — graph-contract: missing reference checkpoint for the durable workflow control plane.
 - 0009 — graph-contract: terminal state checkpoint for the durable workflow control plane.
+- 0010 — graph-contract: recovery path checkpoint for the durable workflow control plane.
