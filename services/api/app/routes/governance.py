@@ -1,6 +1,6 @@
 import base64
 import binascii
-import hashlib
+
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -244,9 +244,7 @@ async def approve_secret_grant(
                     f"{MIN_SECRET_LEASE_SECONDS} seconds and {MAX_SECRET_LEASE_SECONDS} seconds from now"
                 ),
             )
-        grant.secret_ref_sha256 = hashlib.sha256(
-            integration.secret_ref.encode("utf-8")
-        ).hexdigest()
+        grant.secret_ref_sha256 = secret_ref_sha256(integration.secret_ref)
     else:
         expires_at = None
         grant.secret_ref_sha256 = None
