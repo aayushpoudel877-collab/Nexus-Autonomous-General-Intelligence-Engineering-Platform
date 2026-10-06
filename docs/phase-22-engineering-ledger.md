@@ -38,3 +38,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0023 — graph-contract: authorization path checkpoint for the durable workflow control plane.
 - 0024 — graph-contract: concurrency path checkpoint for the durable workflow control plane.
 - 0025 — graph-contract: lease path checkpoint for the durable workflow control plane.
+- 0026 — graph-contract: timeout path checkpoint for the durable workflow control plane.
