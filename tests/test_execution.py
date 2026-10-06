@@ -214,6 +214,10 @@ def test_secret_policy_requires_explicit_grants():
         network_policy="none",
         network_allowlist=[],
         secret_grant_ids=["grant-1", "grant-2"],
+        secret_grant_expires_at={
+            "grant-1": "2026-10-06T06:00:00+00:00",
+            "grant-2": "2026-10-06T07:00:00+00:00",
+        },
     )
     assert snapshot["version"] == 5
     assert snapshot["execution"]["secret_mediation_required"] is True
@@ -246,7 +250,7 @@ def test_policy_snapshot_records_verified_artifact_state():
         network_allowlist=[],
         artifact_verified=True,
     )
-    assert snapshot["version"] == 4
+    assert snapshot["version"] == 5
     assert snapshot["execution"]["artifact_verified"] is True
 
 
