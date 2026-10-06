@@ -122,3 +122,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0117 — orchestration-acceptance: bounded state-machine checkpoint 117.
 - 0118 — orchestration-acceptance: bounded state-machine checkpoint 118.
 - 0119 — orchestration-acceptance: bounded state-machine checkpoint 119.
+- 0120 — orchestration-acceptance: bounded state-machine checkpoint 120.
