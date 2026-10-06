@@ -30,3 +30,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0015 — graph-contract: state transition checkpoint for the durable workflow control plane.
 - 0016 — graph-contract: idempotent replay checkpoint for the durable workflow control plane.
 - 0017 — graph-contract: observability path checkpoint for the durable workflow control plane.
+- 0018 — graph-contract: audit path checkpoint for the durable workflow control plane.
