@@ -6,3 +6,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0002 — graph-contract: negative path for the durable workflow control plane.
 - 0003 — graph-contract: boundary value for the durable workflow control plane.
 - 0004 — graph-contract: ownership check for the durable workflow control plane.
+- 0005 — graph-contract: state transition for the durable workflow control plane.
