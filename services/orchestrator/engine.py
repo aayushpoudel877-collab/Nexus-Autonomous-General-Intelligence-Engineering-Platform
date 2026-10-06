@@ -181,7 +181,7 @@ async def tick_run(
             node_run.started_at = node_run.started_at or now
             node_run.lease_expires_at = now + timedelta(seconds=lease_seconds)
             if node.node_type == "checkpoint":
-                node_run.output_json = {"checkpoint": node.node_key, "workflow_version": run.version}
+                node_run.output_json = {"checkpoint": node.node_key, "workflow_version": run.context_json.get("workflow_version", 1)}
                 ensure_node_run_transition(node_run.status, "succeeded")
                 node_run.status = "succeeded"
                 node_run.finished_at = now
