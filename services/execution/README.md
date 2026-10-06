@@ -35,3 +35,8 @@ The actual secret manager is supplied by the deployment through `NEXUS_SECRET_PR
 ## Phase 20 secret leases
 
 Secret-enabled executions use policy snapshot version 5. Approved `secret.read` grants have a bounded one-minute-to-seven-day lease. The worker revalidates that lease immediately before sandbox launch, and revoked grant IDs are permanently retired so a historical execution cannot regain access after a later approval.
+
+
+## Phase 21 secret reference integrity
+
+Policy snapshot version 6 freezes an SHA-256 fingerprint of every approved secret reference. The worker and API compare the active integration reference against that fingerprint immediately before execution. This permits value rotation behind a stable reference while preventing a previously approved grant from being silently retargeted.
