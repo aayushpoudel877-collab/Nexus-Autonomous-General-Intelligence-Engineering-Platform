@@ -27,7 +27,7 @@ def admit_verified_artifact(
     if not isinstance(policy_snapshot, dict):
         raise TypeError("Execution policy snapshot is missing")
     version = policy_snapshot.get("version")
-    if version not in {2, 3, 4, 5}:
+    if version not in {2, 3, 4, 5, 6}:
         raise ValueError("Execution policy snapshot version is unsupported")
     execution = policy_snapshot.get("execution")
     provenance = policy_snapshot.get("provenance")
@@ -103,6 +103,17 @@ def admit_verified_artifact(
                 raise ValueError("Execution secret lease minimum is invalid")
             if secrets.get("lease_max_seconds") != MAX_SECRET_LEASE_SECONDS:
                 raise ValueError("Execution secret lease maximum is invalid")
+        if version >= 6:
+            reference_fingerprints = secrets.get("grant_reference_sha256")
+            if not isinstance(reference_fingerprints, dict):
+                raise TypeError("Execution secret reference binding metadata is missing")
+            if set(reference_fingerprints) != set(grant_ids):
+                raise ValueError("Execution secret reference metadata does not match grant IDs")
+            if any(
+                not isinstance(value, str) or len(value) != 64
+                for value in reference_fingerprints.values()
+            ):
+                raise ValueError("Execution secret reference fingerprints are invalid")
         if mode == "unix_socket_broker":
             if not grant_ids:
                 raise ValueError("Secret broker mode requires at least one grant")
