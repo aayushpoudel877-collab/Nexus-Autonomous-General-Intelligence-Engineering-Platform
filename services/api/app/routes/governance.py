@@ -1,6 +1,6 @@
 import base64
 import binascii
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -219,7 +219,6 @@ async def approve_secret_grant(
                 status_code=422,
                 detail="An explicit secret lease expiration is required",
             )
-        from datetime import timedelta
         minimum_expiry = now + timedelta(seconds=MIN_SECRET_LEASE_SECONDS)
         maximum_expiry = now + timedelta(seconds=MAX_SECRET_LEASE_SECONDS)
         if not minimum_expiry <= expires_at <= maximum_expiry:
