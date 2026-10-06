@@ -67,3 +67,8 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
+
+
+## Phase 20 — Secret Lease Lifecycle & Revocation Safety
+
+- **Phase 20 — Secret Lease Lifecycle & Revocation Safety:** secret grants now require finite expiration, policy snapshots freeze grant expiry metadata, expired grants are rejected at API and worker boundaries, and revoked grant identities are never reused. Legacy live grants are expired during migration 0020 and must be explicitly re-approved.
