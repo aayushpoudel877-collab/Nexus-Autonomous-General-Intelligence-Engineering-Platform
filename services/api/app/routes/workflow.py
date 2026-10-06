@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,6 +12,7 @@ from ..models import ExecutionRequest, ResearchPlan, ResearchTask, User, Workben
 from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
 from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
+from services.orchestrator.engine import tick_run
 from ..services.workflow import (
     build_workflow_policy_snapshot,
     classify_run_after_tick,
@@ -190,85 +191,6 @@ async def list_workflow_runs(
     return list(rows.all())
 
 
-async def _sync_external_node(
-    db: AsyncSession,
-    node: WorkflowNode,
-    node_run: WorkflowNodeRun,
-    organization_id: UUID,
-    now: datetime,
-) -> None:
-    if node.node_type == "research_task":
-        try:
-            task_id = UUID(str(node.config.get("research_task_id")))
-        except (ValueError, TypeError) as exc:
-            node_run.status = "failed"
-            node_run.error_message = "Invalid research_task_id"
-            node_run.finished_at = now
-            node_run.lease_expires_at = None
-            raise HTTPException(status_code=422, detail="Invalid research task reference") from exc
-        task = await db.scalar(
-            select(ResearchTask)
-            .join(ResearchPlan, ResearchTask.plan_id == ResearchPlan.id)
-            .where(ResearchTask.id == task_id, ResearchPlan.organization_id == organization_id)
-        )
-        if not task:
-            node_run.status = "failed"
-            node_run.error_message = "Referenced research task not found"
-            node_run.finished_at = now
-            node_run.lease_expires_at = None
-            return
-        node_run.output_json = {"research_task_id": str(task.id), "external_status": task.status}
-        if task.status == "succeeded":
-            ensure_node_run_transition(node_run.status, "succeeded")
-            node_run.status = "succeeded"
-            node_run.finished_at = now
-            node_run.lease_expires_at = None
-        elif task.status in {"failed", "cancelled"}:
-            ensure_node_run_transition(node_run.status, "failed")
-            node_run.status = "failed"
-            node_run.error_message = task.output_summary or f"Research task ended with status {task.status}"
-            node_run.finished_at = now
-            node_run.lease_expires_at = None
-        else:
-            node_run.lease_expires_at = now + timedelta(seconds=LEASE_SECONDS)
-        return
-
-    try:
-        execution_id = UUID(str(node.config.get("execution_request_id")))
-    except (ValueError, TypeError) as exc:
-        node_run.status = "failed"
-        node_run.error_message = "Invalid execution_request_id"
-        node_run.finished_at = now
-        node_run.lease_expires_at = None
-        raise HTTPException(status_code=422, detail="Invalid execution request reference") from exc
-    execution = await db.scalar(
-        select(ExecutionRequest).where(
-            ExecutionRequest.id == execution_id,
-            ExecutionRequest.organization_id == organization_id,
-        )
-    )
-    if not execution:
-        node_run.status = "failed"
-        node_run.error_message = "Referenced execution request not found"
-        node_run.finished_at = now
-        node_run.lease_expires_at = None
-        return
-    node_run.output_json = {"execution_request_id": str(execution.id), "external_status": execution.status}
-    if execution.status == "succeeded":
-        ensure_node_run_transition(node_run.status, "succeeded")
-        node_run.status = "succeeded"
-        node_run.finished_at = now
-        node_run.lease_expires_at = None
-    elif execution.status in {"failed", "cancelled"}:
-        ensure_node_run_transition(node_run.status, "failed")
-        node_run.status = "failed"
-        node_run.error_message = execution.failure_reason or f"Execution ended with status {execution.status}"
-        node_run.finished_at = now
-        node_run.lease_expires_at = None
-    else:
-        node_run.lease_expires_at = now + timedelta(seconds=LEASE_SECONDS)
-
-
 @router.post("/{workflow_id}/runs/{run_id}/tick", response_model=WorkflowRunRead)
 async def tick_workflow(
     workflow_id: UUID,
@@ -280,88 +202,15 @@ async def tick_workflow(
     run = await _run(db, run_id, membership.organization_id)
     if run.workflow_id != workflow_id:
         raise HTTPException(status_code=404, detail="Workflow run not found")
-    if run.status in {"cancelled", "succeeded", "failed"}:
-        return run
-
-    nodes = await db.scalars(
-        select(WorkflowNode)
-        .where(WorkflowNode.workflow_id == workflow_id)
-        .order_by(WorkflowNode.created_at)
-    )
-    node_list = list(nodes.all())
-    validate_workflow_graph([{"node_key": n.node_key, "node_type": n.node_type, "depends_on": n.depends_on} for n in node_list])
-    node_by_key = {node.node_key: node for node in node_list}
-    node_runs_by_id = {item.node_id: item for item in run.node_runs}
-    statuses = {node.node_key: node_runs_by_id[node.id].status for node in node_list}
-    now = datetime.now(timezone.utc)
-    progress = True
-    ready_seen: list[str] = []
-
-    while progress:
-        progress = False
-        ready_keys = ready_node_keys(
-            [{"node_key": node.node_key, "depends_on": node.depends_on} for node in node_list], statuses
+    try:
+        await tick_run(
+            db,
+            run,
+            organization_id=membership.organization_id,
+            actor_user_id=user.id,
         )
-        if not ready_keys:
-            break
-        for key in ready_keys:
-            node = node_by_key[key]
-            node_run = node_runs_by_id[node.id]
-            ready_seen.append(key)
-            if node.node_type == "approval":
-                if not any(approval.status == "pending" for approval in node_run.approvals):
-                    db.add(
-                        WorkflowApproval(
-                            run_id=run.id,
-                            node_run_id=node_run.id,
-                            prompt=str(node.config.get("prompt", f"Approve workflow node '{node.title}'")),
-                        )
-                    )
-                ensure_node_run_transition(node_run.status, "ready")
-                node_run.status = "ready"
-                statuses[key] = "ready"
-                progress = True
-                continue
-
-            ensure_node_run_transition(node_run.status, "ready")
-            node_run.status = "ready"
-            ensure_node_run_transition(node_run.status, "running")
-            node_run.status = "running"
-            node_run.attempt += 1
-            node_run.started_at = node_run.started_at or now
-            node_run.lease_expires_at = now + timedelta(seconds=LEASE_SECONDS)
-            if node.node_type == "checkpoint":
-                node_run.output_json = {"checkpoint": node.node_key, "workflow_version": run.policy_snapshot.get("version", 1)}
-                ensure_node_run_transition(node_run.status, "succeeded")
-                node_run.status = "succeeded"
-                node_run.finished_at = now
-                node_run.lease_expires_at = None
-            elif node.node_type in {"research_task", "execution"}:
-                await _sync_external_node(db, node, node_run, membership.organization_id, now)
-            statuses[key] = node_run.status
-            progress = True
-
-    approval_pending = any(approval.status == "pending" for approval in run.approvals) or any(
-        node.node_type == "approval" and node_runs_by_id[node.id].status == "ready" for node in node_list
-    )
-    new_status = classify_run_after_tick(statuses, approval_pending)
-    if new_status != run.status:
-        ensure_run_transition(run.status, new_status)
-        run.status = new_status
-        if new_status == "paused":
-            run.context_json = {**run.context_json, "pause_reason": "human_approval_required"}
-        if new_status in {"succeeded", "failed"}:
-            run.finished_at = now
-
-    await record_audit(
-        db,
-        action="workflow.run.ticked",
-        resource_type="workflow_run",
-        actor_user_id=user.id,
-        organization_id=membership.organization_id,
-        resource_id=str(run.id),
-        detail={"ready_nodes": ready_seen, "status": run.status},
-    )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     await db.commit()
     return await _run(db, run.id, membership.organization_id)
 
