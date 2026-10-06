@@ -106,6 +106,7 @@ def upgrade() -> None:
         sa.Column("decision_note", sa.Text(), nullable=False),
         sa.Column("decided_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.UniqueConstraint("node_run_id", name="uq_workflow_approval_node_run"),
     )
     op.create_index("ix_workflow_approvals_run_id", "workflow_approvals", ["run_id"])
     op.create_index("ix_workflow_approvals_node_run_id", "workflow_approvals", ["node_run_id"])
@@ -114,6 +115,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index("ix_workflow_approvals_run_status", table_name="workflow_approvals")
+    op.drop_constraint("uq_workflow_approval_node_run", "workflow_approvals", type_="unique")
     op.drop_index("ix_workflow_approvals_node_run_id", table_name="workflow_approvals")
     op.drop_index("ix_workflow_approvals_run_id", table_name="workflow_approvals")
     op.drop_table("workflow_approvals")
