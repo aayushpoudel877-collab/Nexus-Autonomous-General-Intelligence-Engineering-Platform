@@ -140,12 +140,14 @@ async def create_execution_request(
                     ),
                 },
                 artifact_verified=bool(release.artifact_verified_at),
+                secret_grant_expires_at=secret_grant_expires_at,
             )
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     secret_grant_ids = list(dict.fromkeys(str(item) for item in payload.secret_grant_ids))
+    secret_grant_expires_at: dict[str, str] = {}
     if secret_grant_ids:
         if "secret.read" not in set(requested_capabilities):
             raise HTTPException(
@@ -158,6 +160,8 @@ async def create_execution_request(
                 SecretGrant.installation_id == installation.id,
                 SecretGrant.id.in_([UUID(item) for item in secret_grant_ids]),
                 SecretGrant.status == "approved",
+                SecretGrant.expires_at.is_not(None),
+                SecretGrant.expires_at > datetime.now(timezone.utc),
             )
         )
         approved_grants = list(grants.all())
@@ -182,6 +186,11 @@ async def create_execution_request(
                 status_code=409,
                 detail="All secret grants must reference active integrations with external secret refs",
             )
+        grants_by_id = {str(grant.id): grant for grant in approved_grants}
+        secret_grant_expires_at = {
+            grant_id: grants_by_id[grant_id].expires_at.isoformat()
+            for grant_id in secret_grant_ids
+        }
     elif "secret.read" in set(requested_capabilities):
         raise HTTPException(
             status_code=422,
@@ -279,6 +288,7 @@ async def create_execution_request(
             and existing.max_output_bytes == payload.max_output_bytes
             and existing.network_policy == payload.network_policy
             and existing.network_allowlist == network_allowlist
+            and existing.secret_grant_ids == secret_grant_ids
         )
         if not compatible:
             raise HTTPException(
