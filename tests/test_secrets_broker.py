@@ -12,6 +12,8 @@ from services.secrets.broker import (
     SecretBroker,
     SecretGrantSpec,
     SecretPolicyError,
+    secret_ref_matches,
+    secret_ref_sha256,
 )
 from services.secrets.process import _sanitized_environment, create_secret_broker
 
@@ -147,3 +149,12 @@ async def test_secret_broker_subprocess_uses_external_provider_without_secrets_i
         assert base64.b64decode(response["secret_base64"]) == b"fixture-secret"
     finally:
         await broker.stop()
+
+
+def test_secret_reference_fingerprint_is_stable_and_nonreversible_by_contract():
+    reference = "secret://vault/nexus/github/token"
+    fingerprint = secret_ref_sha256(reference)
+    assert len(fingerprint) == 64
+    assert secret_ref_matches(reference, fingerprint)
+    assert not secret_ref_matches("secret://vault/nexus/github/other", fingerprint)
+    assert secret_ref_matches(reference, fingerprint.upper())
