@@ -16,3 +16,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0001 — graph-contract: acceptance path for durable workflow graph validation.
 - 0002 — incremental acceptance checkpoint for the durable workflow control plane.
 - 0003 — incremental acceptance checkpoint for the durable workflow control plane.
+- 0004 — incremental acceptance checkpoint for the durable workflow control plane.
