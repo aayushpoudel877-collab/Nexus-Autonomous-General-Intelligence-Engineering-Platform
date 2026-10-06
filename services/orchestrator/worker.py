@@ -56,7 +56,7 @@ async def run_once() -> int:
             await db.flush()
             for claimed_run in claimed:
                 run = await load_run(db, claimed_run.id)
-                if run is None or run.organization_id is None:
+                if run is None:
                     continue
                 try:
                     await tick_run(
@@ -91,8 +91,7 @@ async def run_once() -> int:
 async def main() -> None:
     while True:
         count = await run_once()
-        if count == 0:
-            await asyncio.sleep(POLL_SECONDS)
+        await asyncio.sleep(POLL_SECONDS)
 
 
 if __name__ == "__main__":
