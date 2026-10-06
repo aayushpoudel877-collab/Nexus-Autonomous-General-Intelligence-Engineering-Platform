@@ -1,5 +1,5 @@
 import asyncio
-import hashlib
+
 import logging
 from datetime import datetime, timezone
 
@@ -13,7 +13,7 @@ from .config import settings
 from .db import SessionLocal, engine
 from .executor import ExecutionOutcome, SandboxAdmissionExecutor
 from .repository import claim_next_request, finish_request, heartbeat_request, requeue_expired_requests
-from services.secrets.broker import SecretGrantSpec
+from services.secrets.broker import SecretGrantSpec, secret_ref_matches
 
 
 logging.basicConfig(
@@ -81,8 +81,7 @@ async def _load_secret_grants(request_id) -> list[SecretGrantSpec]:
             )
             for grant, integration in grants
             if integration.secret_ref
-            and grant.secret_ref_sha256
-            == hashlib.sha256(integration.secret_ref.encode("utf-8")).hexdigest()
+            and secret_ref_matches(integration.secret_ref, grant.secret_ref_sha256)
         ]
         return specs
 
