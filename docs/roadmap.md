@@ -75,3 +75,8 @@ Initial implementation: secret grants now require finite owner/admin-approved ex
 ## Phase 21 — Secret Reference Integrity & Rotation Safety
 
 Initial implementation: approved secret grants are bound to a SHA-256 fingerprint of the external secret reference, execution policy version 6 freezes that fingerprint alongside the finite lease, and API/worker admission reject grants when the live integration reference no longer matches the approved fingerprint. Secret values and the opaque reference itself remain outside execution records.
+
+
+## Phase 22 — Durable Autonomous Workflow Orchestration
+
+Initial implementation: tenant-scoped versioned workflow DAGs, bounded graph validation, durable workflow/node run records, worker ownership leases, PostgreSQL row-lock claiming, resumable orchestration ticks, same-organization research/execution synchronization, explicit human approval gates, audit coverage, operator UI, and a dedicated compose service. The workflow layer coordinates already-governed records and cannot bypass plugin artifact verification, sandboxing, egress mediation, secret mediation, or execution policy gates.
