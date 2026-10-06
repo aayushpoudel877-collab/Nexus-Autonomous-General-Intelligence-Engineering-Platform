@@ -65,3 +65,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0050 — graph-contract: worker handoff checkpoint for the durable workflow control plane.
 - 0051 — tenant-isolation: crash recovery checkpoint for the durable workflow control plane.
 - 0052 — tenant-isolation: finalization checkpoint for the durable workflow control plane.
+- 0053 — tenant-isolation: regression case checkpoint for the durable workflow control plane.
