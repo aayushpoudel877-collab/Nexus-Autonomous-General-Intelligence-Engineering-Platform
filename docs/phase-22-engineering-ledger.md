@@ -61,3 +61,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0046 — graph-contract: approval resume checkpoint for the durable workflow control plane.
 - 0047 — graph-contract: approval rejection checkpoint for the durable workflow control plane.
 - 0048 — graph-contract: external completion checkpoint for the durable workflow control plane.
+- 0049 — graph-contract: external failure checkpoint for the durable workflow control plane.
