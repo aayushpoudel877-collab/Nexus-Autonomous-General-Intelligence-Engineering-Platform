@@ -45,3 +45,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0030 — graph-contract: worker path checkpoint for the durable workflow control plane.
 - 0031 — graph-contract: API path checkpoint for the durable workflow control plane.
 - 0032 — graph-contract: UI path checkpoint for the durable workflow control plane.
+- 0033 — graph-contract: documentation path checkpoint for the durable workflow control plane.
