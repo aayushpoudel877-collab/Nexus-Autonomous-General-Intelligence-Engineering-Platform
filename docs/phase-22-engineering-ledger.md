@@ -25,3 +25,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0010 — graph-contract: recovery path checkpoint for the durable workflow control plane.
 - 0011 — graph-contract: acceptance path checkpoint for the durable workflow control plane.
 - 0012 — graph-contract: negative path checkpoint for the durable workflow control plane.
+- 0013 — graph-contract: boundary value checkpoint for the durable workflow control plane.
