@@ -210,6 +210,8 @@ async def tick_run(
         run.status = new_status
         if new_status == "paused":
             run.context_json = {**run.context_json, "pause_reason": "human_approval_required"}
+            run.worker_id = None
+            run.lease_expires_at = None
         if new_status in {"succeeded", "failed"}:
             run.finished_at = now
             run.worker_id = None
