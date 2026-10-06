@@ -281,7 +281,7 @@ def test_execution_policy_records_mediated_egress_contract():
         network_allowlist=["api.example.com:443"],
     )
     assert allowlist == ["api.example.com:443"]
-    assert snapshot["version"] == 4
+    assert snapshot["version"] == 5
     assert snapshot["execution"]["network_mediation_required"] is True
     assert snapshot["egress"]["mode"] == "unix_socket_broker"
     assert snapshot["egress"]["timeout_seconds"] == 15
