@@ -23,6 +23,7 @@ from .integration import IntegrationConnection, PluginInstallation, PluginReleas
 from .execution import ExecutionRequest
 from .trust import PluginTrustRoot
 from .secrets import SecretGrant
+from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
 
 __all__ = [
     "Organization",
@@ -61,4 +62,9 @@ __all__ = [
     "ExecutionRequest",
     "PluginTrustRoot",
     "SecretGrant",
+    "WorkflowDefinition",
+    "WorkflowNode",
+    "WorkflowRun",
+    "WorkflowNodeRun",
+    "WorkflowApproval",
 ]
