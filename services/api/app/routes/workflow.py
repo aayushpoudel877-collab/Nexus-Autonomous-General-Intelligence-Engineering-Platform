@@ -143,7 +143,7 @@ async def start_workflow(
         workflow_id=workflow.id,
         organization_id=membership.organization_id,
         created_by=user.id,
-        status="running",
+        status="queued",
         input_json=payload.input_json,
         context_json={"workflow_version": workflow.version},
         policy_snapshot=build_workflow_policy_snapshot(),
@@ -156,7 +156,7 @@ async def start_workflow(
     db.add(run)
     await record_audit(
         db,
-        action="workflow.run.started",
+        action="workflow.run.queued",
         resource_type="workflow_run",
         actor_user_id=user.id,
         organization_id=membership.organization_id,
