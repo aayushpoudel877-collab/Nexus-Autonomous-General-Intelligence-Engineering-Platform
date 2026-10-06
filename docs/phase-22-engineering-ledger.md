@@ -71,3 +71,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0056 — tenant-isolation: acceptance evidence checkpoint for the durable workflow control plane.
 - 0057 — tenant-isolation: ownership check checkpoint for the durable workflow control plane.
 - 0058 — tenant-isolation: state transition checkpoint for the durable workflow control plane.
+- 0059 — tenant-isolation: idempotent replay checkpoint for the durable workflow control plane.
