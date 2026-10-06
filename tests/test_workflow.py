@@ -157,3 +157,14 @@ def test_workflow_node_configuration_rejects_credential_like_fields():
 
 def test_ready_nodes_include_failed_approval_as_a_valid_explicit_transition():
     ensure_node_run_transition("ready", "failed")
+
+
+def test_workflow_approval_is_unique_per_node_run():
+    from services.api.app.models.workflow import WorkflowApproval
+
+    constraints = {
+        constraint.name
+        for constraint in WorkflowApproval.__table__.constraints
+        if constraint.name
+    }
+    assert "uq_workflow_approval_node_run" in constraints
