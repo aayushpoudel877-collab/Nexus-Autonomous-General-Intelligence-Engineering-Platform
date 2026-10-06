@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
-import hashlib
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from services.secrets.broker import secret_ref_sha256
 
 from ..core.dependencies import require_api_key_scopes
 from ..db.session import get_db
@@ -159,7 +161,7 @@ async def create_execution_request(
         grants_by_id = {str(grant.id): grant for grant in approved_grants}
         if any(
             grants_by_id[grant_id].secret_ref_sha256
-            != hashlib.sha256(integrations_by_id[grants_by_id[grant_id].integration_id].secret_ref.encode("utf-8")).hexdigest()
+            != secret_ref_sha256(integrations_by_id[grants_by_id[grant_id].integration_id].secret_ref)
             for grant_id in secret_grant_ids
         ):
             raise HTTPException(
