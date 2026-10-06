@@ -134,3 +134,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0129 — orchestration-acceptance: bounded state-machine checkpoint 129.
 - 0130 — orchestration-acceptance: bounded state-machine checkpoint 130.
 - 0131 — orchestration-acceptance: bounded state-machine checkpoint 131.
+- 0132 — orchestration-acceptance: bounded state-machine checkpoint 132.
