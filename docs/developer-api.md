@@ -24,3 +24,8 @@ The secret-grant list exposes lease expiration metadata but never exposes the un
 Execution policy snapshots are version 5 and record only opaque grant IDs plus their expiration timestamps. API admission rejects expired grants, and the worker revalidates lease status immediately before sandbox startup.
 
 Revoked grant identities are never reused. A later approval creates a fresh grant ID.
+
+
+## Phase 21 secret reference contract
+
+Execution policy version 6 records only opaque grant IDs, lease expiration timestamps and SHA-256 fingerprints of the approved external secret references. The underlying `secret_ref` is never returned in execution policy data. Integrations may rotate the secret value behind the same reference without changing the grant; changing the reference itself invalidates the grant and requires a new approval.
