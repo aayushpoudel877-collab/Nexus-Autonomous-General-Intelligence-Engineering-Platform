@@ -64,6 +64,7 @@ The research planner currently tracks plans and tasks; it does not autonomously 
 
 - **Phase 19 — Secrets Mediation & Credential Isolation:** approved secret grants are frozen as opaque execution IDs and resolved only through a short-lived scrubbed broker subprocess. Secret-enabled execution remains fail-closed until an external provider is configured.
 
+- **Phase 21 — Secret Reference Integrity & Rotation Safety:** approved grants are cryptographically bound to their external reference fingerprint, and execution fails closed when an integration reference changes.
 ## Repository checkpoint
 
 Changes are committed to `main`. Use the GitHub Actions page to verify the current revision before deploying or applying database migrations.
