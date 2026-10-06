@@ -144,3 +144,16 @@ def test_workflow_runner_package_is_importable():
 
     assert callable(tick_run)
     assert callable(claim_runs)
+
+def test_workflow_node_configuration_rejects_credential_like_fields():
+    with pytest.raises(ValueError, match="credential"):
+        WorkflowNodeCreate(
+            node_key="execute",
+            title="Execute",
+            node_type="execution",
+            config={"execution_request_id": "00000000-0000-0000-0000-000000000001", "api_token": "should-not-persist"},
+        )
+
+
+def test_ready_nodes_include_failed_approval_as_a_valid_explicit_transition():
+    ensure_node_run_transition("ready", "failed")
