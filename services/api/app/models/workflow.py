@@ -88,7 +88,7 @@ class WorkflowNodeRun(Base):
 
 class WorkflowApproval(Base):
     __tablename__ = "workflow_approvals"
-    __table_args__ = (Index("ix_workflow_approvals_run_status", "run_id", "status"),)
+    __table_args__ = (\n        UniqueConstraint("node_run_id", name="uq_workflow_approval_node_run"),\n        Index("ix_workflow_approvals_run_status", "run_id", "status"),\n    )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     run_id: Mapped[UUID] = mapped_column(ForeignKey("workflow_runs.id", ondelete="CASCADE"), index=True)
