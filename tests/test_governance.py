@@ -202,9 +202,16 @@ def test_secret_grant_schemas_are_opaque():
         installation_id="00000000-0000-0000-0000-000000000001",
         integration_id="00000000-0000-0000-0000-000000000002",
     )
-    approval = SecretGrantApproval(status="approved", note="  reviewed  ")
+    from datetime import datetime, timedelta, timezone
+
+    approval = SecretGrantApproval(
+        status="approved",
+        note="  reviewed  ",
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+    )
     assert request.installation_id
     assert approval.note == "reviewed"
+    assert approval.expires_at is not None
     assert not hasattr(request, "secret_ref")
 
 
@@ -219,3 +226,10 @@ def test_secret_grant_live_identity_is_unique_but_revoked_ids_can_be_reissued():
     assert live_index.unique is True
     assert "status <> 'revoked'" in str(live_index.dialect_options["postgresql"]["where"])
 
+
+
+def test_secret_grant_approval_schema_can_revoke_without_expiry():
+    from services.api.app.schemas.secrets import SecretGrantApproval
+
+    approval = SecretGrantApproval(status="revoked")
+    assert approval.expires_at is None
