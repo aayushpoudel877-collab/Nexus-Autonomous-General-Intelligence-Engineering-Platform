@@ -34,3 +34,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0019 — graph-contract: policy path checkpoint for the durable workflow control plane.
 - 0020 — graph-contract: persistence path checkpoint for the durable workflow control plane.
 - 0021 — graph-contract: migration path checkpoint for the durable workflow control plane.
+- 0022 — graph-contract: serialization path checkpoint for the durable workflow control plane.
