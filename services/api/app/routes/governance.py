@@ -46,6 +46,7 @@ from ..services.artifact_verification import MAX_ARTIFACT_BYTES, verify_artifact
 from ..services.artifact_store import ArtifactStore
 from ..services.audit import record_audit
 from ..services.ecosystem import canonical_manifest_sha256
+from services.secrets.broker import secret_ref_sha256
 from ..services.execution import MAX_SECRET_LEASE_SECONDS, MIN_SECRET_LEASE_SECONDS
 
 router = APIRouter(prefix="/governance", tags=["ecosystem-governance"])
