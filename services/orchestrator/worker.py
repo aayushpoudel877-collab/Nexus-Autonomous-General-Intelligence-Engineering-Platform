@@ -66,7 +66,7 @@ async def run_once() -> int:
                         worker_id=WORKER_ID,
                         lease_seconds=LEASE_SECONDS,
                     )
-                except Exception as exc:
+                except (ValueError, RuntimeError, OSError) as exc:
                     run.status = "failed"
                     run.finished_at = datetime.now(timezone.utc)
                     run.worker_id = None
@@ -89,7 +89,7 @@ async def run_once() -> int:
 
 async def main() -> None:
     while True:
-        count = await run_once()
+        await run_once()
         await asyncio.sleep(POLL_SECONDS)
 
 
