@@ -66,3 +66,7 @@ Initial implementation: allowlisted HTTP(S) execution is mediated through a per-
 
 ## Phase 19 — Secrets Mediation & Credential Isolation
 Initial implementation: integrations expose only opaque secret grants to plugin executions. Owners/admins explicitly approve per-installation grants, execution policies freeze only grant IDs, and workers revalidate grant status against active integrations immediately before execution. Secrets are delivered only through a per-execution Unix-socket broker running in a scrubbed subprocess; the plugin never receives secrets through environment variables, artifacts, audit events, result JSON or direct filesystem access. The broker uses an external provider command configured by the deployment and fails closed when no provider is configured. Secret values are not cached.
+
+
+## Phase 20 — Secret Lease Lifecycle & Revocation Safety
+Initial implementation: secret grants now require finite owner/admin-approved expiration windows bounded to seven days; execution policy version 5 freezes grant expiration metadata without storing secret values; API admission rejects expired grants; workers revalidate active, unexpired grants immediately before sandbox launch; and revoked grant identities can never be reused for a later approval, preventing historical queued executions from regaining access under a recycled ID. Legacy non-revoked grants are expired during migration and require explicit re-approval.
