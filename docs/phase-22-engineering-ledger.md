@@ -63,3 +63,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0048 — graph-contract: external completion checkpoint for the durable workflow control plane.
 - 0049 — graph-contract: external failure checkpoint for the durable workflow control plane.
 - 0050 — graph-contract: worker handoff checkpoint for the durable workflow control plane.
+- 0051 — tenant-isolation: crash recovery checkpoint for the durable workflow control plane.
