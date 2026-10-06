@@ -129,6 +129,7 @@ async def request_secret_grant(
             SecretGrant.organization_id == api_key.organization_id,
             SecretGrant.installation_id == installation.id,
             SecretGrant.integration_id == integration.id,
+            SecretGrant.status != "revoked",
         )
     )
     if existing:
