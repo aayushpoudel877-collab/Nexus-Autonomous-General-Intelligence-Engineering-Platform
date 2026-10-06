@@ -12,3 +12,12 @@ Available controls:
 - require `secret.read` in the plugin installation approval and execution capabilities.
 
 The execution worker rechecks grant state immediately before sandbox startup, so revocation and integration disablement take effect without modifying historical policy snapshots.
+
+
+## Phase 20 secret-lease governance
+
+Secret grants now require a bounded expiration at approval time. Approval must include an explicit expiration between one minute and seven days from the review time.
+
+The governance lifecycle now treats revoked grant IDs as permanently retired. A later request for the same installation/integration receives a new grant identity, so an older execution snapshot cannot regain access after revocation.
+
+Legacy non-revoked grants are expired during migration 0020 and must be explicitly approved again.
