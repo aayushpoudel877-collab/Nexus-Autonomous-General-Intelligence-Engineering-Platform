@@ -86,3 +86,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0081 — orchestration-acceptance: atomic checkpoint 81 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0082 — orchestration-acceptance: atomic checkpoint 82 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0083 — orchestration-acceptance: atomic checkpoint 83 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0084 — orchestration-acceptance: atomic checkpoint 84 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
