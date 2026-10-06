@@ -68,7 +68,6 @@ async def run_once() -> int:
                     )
                 except Exception as exc:
                     run.status = "failed"
-                    run.failure_reason = str(exc)[:4000] if hasattr(run, "failure_reason") else None
                     run.finished_at = datetime.now(timezone.utc)
                     run.worker_id = None
                     run.lease_expires_at = None
