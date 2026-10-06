@@ -117,3 +117,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0112 — orchestration-acceptance: atomic verification checkpoint 112.
 - 0113 — orchestration-acceptance: atomic verification checkpoint 113.
 - 0114 — orchestration-acceptance: atomic verification checkpoint 114.
+- 0115 — orchestration-acceptance: bounded state-machine checkpoint 115.
