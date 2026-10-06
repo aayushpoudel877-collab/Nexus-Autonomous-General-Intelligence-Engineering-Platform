@@ -269,6 +269,8 @@ async def decide_workflow_approval(
         node_run.status = "running"
         ensure_node_run_transition(node_run.status, "succeeded")
         node_run.status = "succeeded"
+        node_run.attempt += 1
+        node_run.started_at = node_run.started_at or approval.decided_at
         node_run.finished_at = approval.decided_at
         node_run.lease_expires_at = None
         node_run.output_json = {"decision": "approved", "note": payload.note}
