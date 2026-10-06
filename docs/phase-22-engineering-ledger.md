@@ -52,3 +52,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0037 — graph-contract: same-tenant reference checkpoint for the durable workflow control plane.
 - 0038 — graph-contract: cross-tenant rejection checkpoint for the durable workflow control plane.
 - 0039 — graph-contract: frozen-state check checkpoint for the durable workflow control plane.
+- 0040 — graph-contract: bounded payload checkpoint for the durable workflow control plane.
