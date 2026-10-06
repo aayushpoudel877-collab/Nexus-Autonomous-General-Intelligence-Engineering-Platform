@@ -172,7 +172,7 @@ async def create_execution_request(
                 max_output_bytes=payload.max_output_bytes,
                 network_policy=payload.network_policy,
                 network_allowlist=payload.network_allowlist,
-                secret_grant_ids=[str(item) for item in payload.secret_grant_ids],
+                secret_grant_ids=secret_grant_ids,
                 provenance={
                     "plugin_id": str(plugin.id),
                     "plugin_release_id": str(release.id),
