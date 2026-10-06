@@ -112,44 +112,10 @@ async def create_execution_request(
         api_key.organization_id,
     )
 
-    try:
-        requested_capabilities, network_allowlist, policy_snapshot = (
-            normalize_execution_policy(
-                capabilities=payload.capabilities,
-                timeout_seconds=payload.timeout_seconds,
-                max_memory_mb=payload.max_memory_mb,
-                max_output_bytes=payload.max_output_bytes,
-                network_policy=payload.network_policy,
-                network_allowlist=payload.network_allowlist,
-                secret_grant_ids=[str(item) for item in payload.secret_grant_ids],
-                provenance={
-                    "plugin_id": str(plugin.id),
-                    "plugin_release_id": str(release.id),
-                    "plugin_version": release.version,
-                    "package_sha256": release.package_sha256,
-                    "manifest_sha256": release.manifest_sha256,
-                    "signer": release.signer,
-                    "verification_key_id": release.verification_key_id or "",
-                    "verification_method": release.verification_method or "",
-                    "artifact_storage_key": release.artifact_storage_key or "",
-                    "artifact_size_bytes": str(release.artifact_size_bytes or 0),
-                    "artifact_staged_at": (
-                        release.artifact_staged_at.isoformat()
-                        if release.artifact_staged_at
-                        else ""
-                    ),
-                },
-                artifact_verified=bool(release.artifact_verified_at),
-                secret_grant_expires_at=secret_grant_expires_at,
-            )
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
     secret_grant_ids = list(dict.fromkeys(str(item) for item in payload.secret_grant_ids))
     secret_grant_expires_at: dict[str, str] = {}
     if secret_grant_ids:
-        if "secret.read" not in set(requested_capabilities):
+        if "secret.read" not in set(payload.capabilities):
             raise HTTPException(
                 status_code=422,
                 detail="Secret grants require the secret.read execution capability",
@@ -196,6 +162,40 @@ async def create_execution_request(
             status_code=422,
             detail="The secret.read capability requires approved secret grants",
         )
+
+    try:
+        requested_capabilities, network_allowlist, policy_snapshot = (
+            normalize_execution_policy(
+                capabilities=payload.capabilities,
+                timeout_seconds=payload.timeout_seconds,
+                max_memory_mb=payload.max_memory_mb,
+                max_output_bytes=payload.max_output_bytes,
+                network_policy=payload.network_policy,
+                network_allowlist=payload.network_allowlist,
+                secret_grant_ids=[str(item) for item in payload.secret_grant_ids],
+                provenance={
+                    "plugin_id": str(plugin.id),
+                    "plugin_release_id": str(release.id),
+                    "plugin_version": release.version,
+                    "package_sha256": release.package_sha256,
+                    "manifest_sha256": release.manifest_sha256,
+                    "signer": release.signer,
+                    "verification_key_id": release.verification_key_id or "",
+                    "verification_method": release.verification_method or "",
+                    "artifact_storage_key": release.artifact_storage_key or "",
+                    "artifact_size_bytes": str(release.artifact_size_bytes or 0),
+                    "artifact_staged_at": (
+                        release.artifact_staged_at.isoformat()
+                        if release.artifact_staged_at
+                        else ""
+                    ),
+                },
+                artifact_verified=bool(release.artifact_verified_at),
+                secret_grant_expires_at=secret_grant_expires_at,
+            )
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     approved_capabilities = set(installation.approved_scopes or [])
     if not isinstance(release.manifest_snapshot, dict):
