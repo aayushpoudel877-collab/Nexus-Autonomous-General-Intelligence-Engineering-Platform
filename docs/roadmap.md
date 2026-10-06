@@ -70,3 +70,8 @@ Initial implementation: integrations expose only opaque secret grants to plugin 
 
 ## Phase 20 — Secret Lease Lifecycle & Revocation Safety
 Initial implementation: secret grants now require finite owner/admin-approved expiration windows bounded to seven days; execution policy version 5 freezes grant expiration metadata without storing secret values; API admission rejects expired grants; workers revalidate active, unexpired grants immediately before sandbox launch; and revoked grant identities can never be reused for a later approval, preventing historical queued executions from regaining access under a recycled ID. Legacy non-revoked grants are expired during migration and require explicit re-approval.
+
+
+## Phase 21 — Secret Reference Integrity & Rotation Safety
+
+Initial implementation: approved secret grants are bound to a SHA-256 fingerprint of the external secret reference, execution policy version 6 freezes that fingerprint alongside the finite lease, and API/worker admission reject grants when the live integration reference no longer matches the approved fingerprint. Secret values and the opaque reference itself remain outside execution records.
