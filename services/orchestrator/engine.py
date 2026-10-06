@@ -147,6 +147,14 @@ async def tick_run(
     progress = True
     ready_seen: list[str] = []
 
+    for node in node_list:
+        node_run = node_runs_by_id[node.id]
+        if node.node_type in {"research_task", "execution"} and node_run.status == "running":
+            await _sync_external_node(
+                db, node, node_run, organization_id, now, lease_seconds
+            )
+            statuses[node.node_key] = node_run.status
+
     while progress:
         progress = False
         ready_keys = ready_node_keys(
