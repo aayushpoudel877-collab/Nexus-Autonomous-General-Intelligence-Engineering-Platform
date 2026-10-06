@@ -157,7 +157,7 @@ async def create_execution_request(
             grant_id: grants_by_id[grant_id].expires_at.isoformat()
             for grant_id in secret_grant_ids
         }
-    elif "secret.read" in set(requested_capabilities):
+    elif "secret.read" in set(payload.capabilities):
         raise HTTPException(
             status_code=422,
             detail="The secret.read capability requires approved secret grants",
