@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import hashlib
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -114,6 +115,7 @@ async def create_execution_request(
 
     secret_grant_ids = list(dict.fromkeys(str(item) for item in payload.secret_grant_ids))
     secret_grant_expires_at: dict[str, str] = {}
+    secret_grant_ref_sha256: dict[str, str] = {}
     if secret_grant_ids:
         if "secret.read" not in set(payload.capabilities):
             raise HTTPException(
@@ -128,6 +130,7 @@ async def create_execution_request(
                 SecretGrant.status == "approved",
                 SecretGrant.expires_at.is_not(None),
                 SecretGrant.expires_at > datetime.now(timezone.utc),
+                SecretGrant.secret_ref_sha256.is_not(None),
             )
         )
         approved_grants = list(grants.all())
@@ -152,9 +155,23 @@ async def create_execution_request(
                 status_code=409,
                 detail="All secret grants must reference active integrations with external secret refs",
             )
+        integrations_by_id = {integration.id: integration for integration in active_integrations}
         grants_by_id = {str(grant.id): grant for grant in approved_grants}
+        if any(
+            grants_by_id[grant_id].secret_ref_sha256
+            != hashlib.sha256(integrations_by_id[grants_by_id[grant_id].integration_id].secret_ref.encode("utf-8")).hexdigest()
+            for grant_id in secret_grant_ids
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="One or more secret grants no longer match the approved external secret reference",
+            )
         secret_grant_expires_at = {
             grant_id: grants_by_id[grant_id].expires_at.isoformat()
+            for grant_id in secret_grant_ids
+        }
+        secret_grant_ref_sha256 = {
+            grant_id: grants_by_id[grant_id].secret_ref_sha256
             for grant_id in secret_grant_ids
         }
     elif "secret.read" in set(payload.capabilities):
@@ -192,6 +209,7 @@ async def create_execution_request(
                 },
                 artifact_verified=bool(release.artifact_verified_at),
                 secret_grant_expires_at=secret_grant_expires_at,
+                secret_grant_ref_sha256=secret_grant_ref_sha256,
             )
         )
     except ValueError as exc:
