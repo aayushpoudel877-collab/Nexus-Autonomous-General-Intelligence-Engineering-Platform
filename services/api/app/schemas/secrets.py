@@ -22,12 +22,14 @@ class SecretGrantRead(BaseModel):
     approval_note: str
     approved_by_user_id: UUID | None
     approved_at: datetime | None
+    expires_at: datetime | None
     created_at: datetime
 
 
 class SecretGrantApproval(BaseModel):
     status: str = Field(pattern=r"^(approved|revoked)$")
     note: str = Field(default="", max_length=4000)
+    expires_at: datetime | None = None
 
     @field_validator("note")
     @classmethod
