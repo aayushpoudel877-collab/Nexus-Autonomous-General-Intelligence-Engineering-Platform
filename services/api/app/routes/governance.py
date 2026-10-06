@@ -45,6 +45,7 @@ from ..services.artifact_verification import MAX_ARTIFACT_BYTES, verify_artifact
 from ..services.artifact_store import ArtifactStore
 from ..services.audit import record_audit
 from ..services.ecosystem import canonical_manifest_sha256
+from ..services.execution import MAX_SECRET_LEASE_SECONDS, MIN_SECRET_LEASE_SECONDS
 
 router = APIRouter(prefix="/governance", tags=["ecosystem-governance"])
 
@@ -133,7 +134,28 @@ async def request_secret_grant(
         )
     )
     if existing:
-        return existing
+        now = datetime.now(timezone.utc)
+        if (
+            existing.status == "approved"
+            and (existing.expires_at is None or existing.expires_at <= now)
+        ):
+            existing.status = "revoked"
+            existing.approved_scopes = []
+            existing.approval_note = "Automatically expired before a new grant request."
+            existing.approved_at = now
+            await record_audit(
+                db,
+                action="developer.secret_grant.expired",
+                resource_type="secret_grant",
+                actor_user_id=api_key.created_by_user_id,
+                organization_id=api_key.organization_id,
+                resource_id=str(existing.id),
+                detail={"installation_id": str(installation.id), "integration_id": str(integration.id)},
+                request_id=getattr(request.state, "request_id", None),
+            )
+            await db.flush()
+        else:
+            return existing
 
     grant = SecretGrant(
         organization_id=api_key.organization_id,
@@ -185,11 +207,38 @@ async def approve_secret_grant(
         raise HTTPException(status_code=409, detail="Only requested secret grants can be reviewed")
     if payload.status == "approved" and not payload.note.strip():
         raise HTTPException(status_code=422, detail="An approval note is required")
+
+    now = datetime.now(timezone.utc)
+    expires_at = payload.expires_at
+    if expires_at is not None and expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if payload.status == "approved":
+        if expires_at is None:
+            raise HTTPException(
+                status_code=422,
+                detail="An explicit secret lease expiration is required",
+            )
+        from datetime import timedelta
+        minimum_expiry = now + timedelta(seconds=MIN_SECRET_LEASE_SECONDS)
+        maximum_expiry = now + timedelta(seconds=MAX_SECRET_LEASE_SECONDS)
+        if not minimum_expiry <= expires_at <= maximum_expiry:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Secret lease expiration must be between "
+                    f"{MIN_SECRET_LEASE_SECONDS} seconds and {MAX_SECRET_LEASE_SECONDS} seconds from now"
+                ),
+            )
+    else:
+        expires_at = None
+
     grant.status = payload.status
     grant.approved_scopes = ["secret.read"] if payload.status == "approved" else []
     grant.approval_note = payload.note.strip()
     grant.approved_by_user_id = user.id
-    grant.approved_at = datetime.now(timezone.utc)
+    grant.approved_at = now
+    grant.expires_at = expires_at
     await record_audit(
         db,
         action="developer.secret_grant.reviewed",
