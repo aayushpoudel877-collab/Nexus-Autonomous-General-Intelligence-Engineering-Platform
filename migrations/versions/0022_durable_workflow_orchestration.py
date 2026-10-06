@@ -51,6 +51,10 @@ def upgrade() -> None:
         sa.Column("workflow_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("workflow_definitions.id", ondelete="CASCADE"), nullable=False),
         sa.Column("organization_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("created_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("worker_id", sa.String(length=160), nullable=True),
+        sa.Column("attempt_count", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("lease_expires_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("heartbeat_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("status", sa.String(length=20), nullable=False),
         sa.Column("input_json", sa.JSON(), nullable=False),
         sa.Column("context_json", sa.JSON(), nullable=False),
@@ -63,7 +67,10 @@ def upgrade() -> None:
     op.create_index("ix_workflow_runs_workflow_id", "workflow_runs", ["workflow_id"])
     op.create_index("ix_workflow_runs_organization_id", "workflow_runs", ["organization_id"])
     op.create_index("ix_workflow_runs_created_by", "workflow_runs", ["created_by"])
+    op.create_index("ix_workflow_runs_worker_id", "workflow_runs", ["worker_id"])
+    op.create_index("ix_workflow_runs_lease_expires_at", "workflow_runs", ["lease_expires_at"])
     op.create_index("ix_workflow_runs_org_status", "workflow_runs", ["organization_id", "status"])
+    op.create_index("ix_workflow_runs_claimable_lease", "workflow_runs", ["status", "lease_expires_at"])
     op.create_index("ix_workflow_runs_workflow_created", "workflow_runs", ["workflow_id", "created_at"])
 
     op.create_table(
@@ -113,8 +120,11 @@ def downgrade() -> None:
     op.drop_index("ix_workflow_node_runs_node_id", table_name="workflow_node_runs")
     op.drop_index("ix_workflow_node_runs_run_id", table_name="workflow_node_runs")
     op.drop_table("workflow_node_runs")
-    op.drop_index("ix_workflow_runs_workflow_created", table_name="workflow_runs")
+    op.drop_index("ix_workflow_runs_claimable_lease", table_name="workflow_runs")
     op.drop_index("ix_workflow_runs_org_status", table_name="workflow_runs")
+    op.drop_index("ix_workflow_runs_lease_expires_at", table_name="workflow_runs")
+    op.drop_index("ix_workflow_runs_worker_id", table_name="workflow_runs")
+    op.drop_index("ix_workflow_runs_workflow_created", table_name="workflow_runs")
     op.drop_index("ix_workflow_runs_created_by", table_name="workflow_runs")
     op.drop_index("ix_workflow_runs_organization_id", table_name="workflow_runs")
     op.drop_index("ix_workflow_runs_workflow_id", table_name="workflow_runs")
