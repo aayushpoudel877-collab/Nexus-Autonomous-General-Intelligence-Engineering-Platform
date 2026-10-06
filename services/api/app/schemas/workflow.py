@@ -22,14 +22,15 @@ class WorkflowNodeCreate(BaseModel):
             "execution": {"execution_request_id"},
             "approval": {"prompt"},
         }[self.node_type]
+        credential_like = any(
+            any(secret_term in str(key).lower() for secret_term in ("secret", "token", "password", "credential", "api_key"))
+            for key in self.config
+        )
+        if credential_like:
+            raise ValueError("Node configuration cannot contain credential-like fields")
         unexpected = set(self.config) - allowed_keys
         if unexpected:
             raise ValueError("Node configuration contains unsupported fields")
-        if any(
-            any(secret_term in str(key).lower() for secret_term in ("secret", "token", "password", "credential", "api_key"))
-            for key in self.config
-        ):
-            raise ValueError("Node configuration cannot contain credential-like fields")
         required = {
             "research_task": "research_task_id",
             "execution": "execution_request_id",
