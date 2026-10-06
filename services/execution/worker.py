@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 
@@ -65,6 +66,8 @@ async def _load_secret_grants(request_id) -> list[SecretGrantSpec]:
                 SecretGrant.installation_id == request.installation_id,
                 SecretGrant.id.in_(grant_ids),
                 SecretGrant.status == "approved",
+                SecretGrant.expires_at.is_not(None),
+                SecretGrant.expires_at > datetime.now(timezone.utc),
                 IntegrationConnection.organization_id == request.organization_id,
                 IntegrationConnection.status == "active",
             )
