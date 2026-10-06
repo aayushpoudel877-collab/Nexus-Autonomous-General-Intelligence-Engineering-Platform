@@ -21,6 +21,8 @@ MAX_MEMORY_MB = 4_096
 MAX_OUTPUT_BYTES = 16 * 1_024 * 1_024
 MAX_CAPABILITIES = 16
 MAX_SECRET_GRANTS = 8
+MIN_SECRET_LEASE_SECONDS = 60
+MAX_SECRET_LEASE_SECONDS = 7 * 24 * 60 * 60
 MAX_INPUT_JSON_BYTES = 64 * 1_024
 MAX_ALLOWLIST_ENTRIES = 20
 MAX_EGRESS_REQUEST_BYTES = 128 * 1_024
@@ -77,9 +79,10 @@ def build_policy_snapshot(
     provenance: dict[str, str] | None = None,
     artifact_verified: bool = False,
     secret_grant_ids: list[str] | None = None,
+    secret_grant_expires_at: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     return {
-        "version": 4,
+        "version": 5,
         "capabilities": list(capabilities),
         "limits": {
             "timeout_seconds": timeout_seconds,
@@ -108,9 +111,12 @@ def build_policy_snapshot(
         "secrets": {
             "mode": "unix_socket_broker" if secret_grant_ids else "disabled",
             "grant_ids": list(secret_grant_ids or []),
+            "grant_expires_at": dict(secret_grant_expires_at or {}),
             "max_grants": MAX_SECRET_GRANTS,
             "max_value_bytes": 64 * 1024,
             "cache": "none",
+            "lease_min_seconds": MIN_SECRET_LEASE_SECONDS,
+            "lease_max_seconds": MAX_SECRET_LEASE_SECONDS,
         },
         "provenance": dict(provenance or {}),
     }
@@ -127,15 +133,21 @@ def normalize_execution_policy(
     provenance: dict[str, str] | None = None,
     artifact_verified: bool = False,
     secret_grant_ids: list[str] | None = None,
+    secret_grant_expires_at: dict[str, str] | None = None,
 ) -> tuple[list[str], list[str], dict[str, Any]]:
     capabilities = list(dict.fromkeys(capabilities))
     secret_grant_ids = list(dict.fromkeys(secret_grant_ids or []))
+    secret_grant_expires_at = dict(secret_grant_expires_at or {})
     if len(secret_grant_ids) > MAX_SECRET_GRANTS:
         raise ValueError(f"Execution requests cannot use more than {MAX_SECRET_GRANTS} secret grants")
     if secret_grant_ids and SECRET_CAPABILITY not in capabilities:
         raise ValueError(f"Secret-enabled executions require the '{SECRET_CAPABILITY}' capability")
     if SECRET_CAPABILITY in capabilities and not secret_grant_ids:
         raise ValueError(f"The '{SECRET_CAPABILITY}' capability requires at least one approved secret grant")
+    if set(secret_grant_expires_at) != set(secret_grant_ids):
+        raise ValueError("Secret grant expiration metadata must match the requested secret grants")
+    if any(not isinstance(value, str) or not value for value in secret_grant_expires_at.values()):
+        raise ValueError("Secret grant expiration metadata must contain ISO timestamps")
     if not capabilities or len(capabilities) > MAX_CAPABILITIES:
         raise ValueError(
             f"Execution requests require 1-{MAX_CAPABILITIES} capabilities"
@@ -171,6 +183,7 @@ def normalize_execution_policy(
         provenance=provenance,
         artifact_verified=artifact_verified,
         secret_grant_ids=secret_grant_ids,
+        secret_grant_expires_at=secret_grant_expires_at,
     )
     return capabilities, normalized_allowlist, snapshot
 
