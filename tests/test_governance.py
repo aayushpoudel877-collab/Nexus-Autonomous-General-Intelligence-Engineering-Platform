@@ -233,3 +233,10 @@ def test_secret_grant_approval_schema_can_revoke_without_expiry():
 
     approval = SecretGrantApproval(status="revoked")
     assert approval.expires_at is None
+
+
+def test_secret_grant_binds_reference_fingerprint_without_exposing_reference():
+    from services.api.app.models.secrets import SecretGrant
+
+    assert "secret_ref_sha256" in SecretGrant.__table__.c
+    assert SecretGrant.__table__.c.secret_ref_sha256.type.length == 64
