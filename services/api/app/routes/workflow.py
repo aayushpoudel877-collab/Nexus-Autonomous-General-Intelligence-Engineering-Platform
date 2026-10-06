@@ -229,6 +229,11 @@ async def cancel_workflow(
         if node_run.status not in {"succeeded", "failed", "cancelled"}:
             node_run.status = "cancelled"
             node_run.lease_expires_at = None
+    for approval in run.approvals:
+        if approval.status == "pending":
+            approval.status = "rejected"
+            approval.decision_note = "Workflow run cancelled"
+            approval.decided_at = run.finished_at
     await record_audit(
         db,
         action="workflow.run.cancelled",
@@ -255,6 +260,8 @@ async def decide_workflow_approval(
     if run.workflow_id != workflow_id:
         raise HTTPException(status_code=404, detail="Workflow run not found")
     approval = next((item for item in run.approvals if item.id == approval_id), None)
+    if run.status == "cancelled":
+        raise HTTPException(status_code=409, detail="Cannot decide approval for a cancelled workflow run")
     if approval is None or approval.status != "pending":
         raise HTTPException(status_code=404, detail="Pending workflow approval not found")
     node_run = next((item for item in run.node_runs if item.id == approval.node_run_id), None)
