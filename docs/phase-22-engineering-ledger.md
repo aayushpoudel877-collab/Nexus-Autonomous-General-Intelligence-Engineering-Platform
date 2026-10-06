@@ -32,3 +32,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0017 — graph-contract: observability path checkpoint for the durable workflow control plane.
 - 0018 — graph-contract: audit path checkpoint for the durable workflow control plane.
 - 0019 — graph-contract: policy path checkpoint for the durable workflow control plane.
+- 0020 — graph-contract: persistence path checkpoint for the durable workflow control plane.
