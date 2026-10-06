@@ -81,3 +81,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0066 — tenant-isolation: policy path checkpoint for the durable workflow control plane.
 - 0067 — tenant-isolation: persistence path checkpoint for the durable workflow control plane.
 - 0068 — tenant-isolation: migration path checkpoint for the durable workflow control plane.
+- 0069 — tenant-isolation: serialization path checkpoint for the durable workflow control plane.
