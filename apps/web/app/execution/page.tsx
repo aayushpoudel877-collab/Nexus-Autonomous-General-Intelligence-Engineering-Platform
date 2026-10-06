@@ -2,11 +2,11 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 20</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 21</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
-          resources, idempotency, explicit network policy and finite secret leases.
+          resources, idempotency, explicit network policy and finite secret leases and reference integrity.
         </p>
         <p>
           <a href="/governance">Governance</a> · <a href="/developer">Developer</a> ·{" "}
@@ -58,6 +58,16 @@ export default function ExecutionPage() {
             Allowlisted HTTP(S) requests use an authenticated per-execution Unix-socket broker while
             the plugin remains on <code>--network=none</code>. The broker enforces host/port allowlists,
             public-address resolution, bounded payloads and no redirects.
+          </p>
+        </article>
+
+        <article>
+          <p className="eyebrow">REFERENCE INTEGRITY</p>
+          <h2>Approved references cannot be silently retargeted</h2>
+          <p>
+            Each approved secret grant is bound to a SHA-256 fingerprint of the external reference that
+            was reviewed. Changing the integration reference immediately revokes approved grants, and
+            both API admission and the worker verify the binding before execution.
           </p>
         </article>
 
