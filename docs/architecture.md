@@ -117,3 +117,8 @@ Phase 20 upgrades the secret policy snapshot to version 5. Every newly approved 
 Grant IDs are immutable across approval lifecycles. A PostgreSQL partial unique index permits only one live grant for an organization/installation/integration tuple while allowing a revoked grant to remain permanently revoked and a later approval to receive a new ID. This prevents an old queued execution from regaining credential access after a grant is revoked and later re-approved.
 
 Legacy non-revoked grants are expired by migration 0020 and require explicit re-approval. Secret lease expiration metadata is stored in the execution policy snapshot, but secret values and underlying secret references remain outside the API/execution records.
+
+
+## Phase 21 secret reference integrity boundary
+
+Phase 21 binds each approved secret grant to a SHA-256 fingerprint of the external `secret://...` reference that was reviewed. The execution policy snapshot freezes only this fingerprint and the grant expiration; it never stores the underlying reference or secret value. If an integration's reference changes, API admission rejects the grant and the worker independently rechecks the fingerprint before launching the sandbox. This supports safe rotation behind a stable secret reference while forcing re-approval when a grant is retargeted to a different external reference.
