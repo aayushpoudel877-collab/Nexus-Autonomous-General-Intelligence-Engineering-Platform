@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, JSON, String, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, JSON, String, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,11 +11,13 @@ from ..db.base import Base
 class SecretGrant(Base):
     __tablename__ = "secret_grants"
     __table_args__ = (
-        UniqueConstraint(
+        Index(
+            "uq_secret_grant_org_installation_integration_live",
             "organization_id",
             "installation_id",
             "integration_id",
-            name="uq_secret_grant_org_installation_integration",
+            unique=True,
+            postgresql_where=text("status <> 'revoked'"),
         ),
         CheckConstraint(
             "status IN ('requested', 'approved', 'revoked')",
