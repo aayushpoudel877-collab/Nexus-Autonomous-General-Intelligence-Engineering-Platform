@@ -2,11 +2,11 @@ export default function ExecutionPage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">NEXUS-Ω / PHASE 19</p>
+        <p className="eyebrow">NEXUS-Ω / PHASE 20</p>
         <h1>Controlled Execution</h1>
         <p className="lead">
           Approved plugin installations now have a persistent execution-control boundary with bounded
-          resources, idempotency and explicit network policy.
+          resources, idempotency, explicit network policy and finite secret leases.
         </p>
         <p>
           <a href="/governance">Governance</a> · <a href="/developer">Developer</a> ·{" "}
@@ -58,6 +58,16 @@ export default function ExecutionPage() {
             Allowlisted HTTP(S) requests use an authenticated per-execution Unix-socket broker while
             the plugin remains on <code>--network=none</code>. The broker enforces host/port allowlists,
             public-address resolution, bounded payloads and no redirects.
+          </p>
+        </article>
+
+        <article>
+          <p className="eyebrow">SECRET LEASES</p>
+          <h2>Credentials expire by design</h2>
+          <p>
+            Secret approvals require an explicit one-minute-to-seven-day expiration. Expired grants are
+            rejected during admission and rechecked by the worker immediately before sandbox launch.
+            Revoked grant identities are never recycled, so historical queued requests cannot regain access.
           </p>
         </article>
 
