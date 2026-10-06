@@ -50,3 +50,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0035 — graph-contract: failure path checkpoint for the durable workflow control plane.
 - 0036 — graph-contract: reconciliation path checkpoint for the durable workflow control plane.
 - 0037 — graph-contract: same-tenant reference checkpoint for the durable workflow control plane.
+- 0038 — graph-contract: cross-tenant rejection checkpoint for the durable workflow control plane.
