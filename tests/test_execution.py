@@ -256,7 +256,7 @@ def test_policy_snapshot_records_verified_artifact_state():
         network_allowlist=[],
         artifact_verified=True,
     )
-    assert snapshot["version"] == 5
+    assert snapshot["version"] == 6
     assert snapshot["execution"]["artifact_verified"] is True
 
 
