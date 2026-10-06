@@ -93,3 +93,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0088 — orchestration-acceptance: atomic checkpoint 88 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0089 — orchestration-acceptance: atomic checkpoint 89 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
 - 0090 — orchestration-acceptance: atomic checkpoint 90 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0091 — orchestration-acceptance: atomic checkpoint 91 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
