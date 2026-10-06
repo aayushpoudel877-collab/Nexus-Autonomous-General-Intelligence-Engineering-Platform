@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import logging
 from datetime import datetime, timezone
 
@@ -80,6 +81,8 @@ async def _load_secret_grants(request_id) -> list[SecretGrantSpec]:
             )
             for grant, integration in grants
             if integration.secret_ref
+            and grant.secret_ref_sha256
+            == hashlib.sha256(integration.secret_ref.encode("utf-8")).hexdigest()
         ]
         return specs
 
