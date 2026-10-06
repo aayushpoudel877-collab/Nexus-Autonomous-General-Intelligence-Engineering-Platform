@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
+import hashlib
 import hmac
 import json
 from dataclasses import dataclass
@@ -18,6 +19,16 @@ MAX_PROTOCOL_LINE_BYTES = 64 * 1024
 MAX_GRANTS = 8
 MAX_SECRET_VALUE_BYTES = 64 * 1024
 MAX_CONCURRENT_REQUESTS = 4
+
+
+def secret_ref_sha256(secret_ref: str) -> str:
+    return hashlib.sha256(secret_ref.encode("utf-8")).hexdigest()
+
+
+def secret_ref_matches(secret_ref: str, fingerprint: str | None) -> bool:
+    if fingerprint is None or len(fingerprint) != 64:
+        return False
+    return hmac.compare_digest(secret_ref_sha256(secret_ref), fingerprint)
 
 
 class SecretPolicyError(ValueError):
