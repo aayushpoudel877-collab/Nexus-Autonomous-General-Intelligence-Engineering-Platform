@@ -80,9 +80,10 @@ def build_policy_snapshot(
     artifact_verified: bool = False,
     secret_grant_ids: list[str] | None = None,
     secret_grant_expires_at: dict[str, str] | None = None,
+    secret_grant_ref_sha256: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     return {
-        "version": 5,
+        "version": 6,
         "capabilities": list(capabilities),
         "limits": {
             "timeout_seconds": timeout_seconds,
@@ -112,6 +113,7 @@ def build_policy_snapshot(
             "mode": "unix_socket_broker" if secret_grant_ids else "disabled",
             "grant_ids": list(secret_grant_ids or []),
             "grant_expires_at": dict(secret_grant_expires_at or {}),
+            "grant_reference_sha256": dict(secret_grant_ref_sha256 or {}),
             "max_grants": MAX_SECRET_GRANTS,
             "max_value_bytes": 64 * 1024,
             "cache": "none",
@@ -134,10 +136,12 @@ def normalize_execution_policy(
     artifact_verified: bool = False,
     secret_grant_ids: list[str] | None = None,
     secret_grant_expires_at: dict[str, str] | None = None,
+    secret_grant_ref_sha256: dict[str, str] | None = None,
 ) -> tuple[list[str], list[str], dict[str, Any]]:
     capabilities = list(dict.fromkeys(capabilities))
     secret_grant_ids = list(dict.fromkeys(secret_grant_ids or []))
     secret_grant_expires_at = dict(secret_grant_expires_at or {})
+    secret_grant_ref_sha256 = dict(secret_grant_ref_sha256 or {})
     if len(secret_grant_ids) > MAX_SECRET_GRANTS:
         raise ValueError(f"Execution requests cannot use more than {MAX_SECRET_GRANTS} secret grants")
     if secret_grant_ids and SECRET_CAPABILITY not in capabilities:
@@ -146,8 +150,12 @@ def normalize_execution_policy(
         raise ValueError(f"The '{SECRET_CAPABILITY}' capability requires at least one approved secret grant")
     if set(secret_grant_expires_at) != set(secret_grant_ids):
         raise ValueError("Secret grant expiration metadata must match the requested secret grants")
+    if set(secret_grant_ref_sha256) != set(secret_grant_ids):
+        raise ValueError("Secret grant reference fingerprints must match the requested secret grants")
     if any(not isinstance(value, str) or not value for value in secret_grant_expires_at.values()):
         raise ValueError("Secret grant expiration metadata must contain ISO timestamps")
+    if any(not isinstance(value, str) or len(value) != 64 for value in secret_grant_ref_sha256.values()):
+        raise ValueError("Secret grant reference fingerprints must be SHA-256 hex values")
     if not capabilities or len(capabilities) > MAX_CAPABILITIES:
         raise ValueError(
             f"Execution requests require 1-{MAX_CAPABILITIES} capabilities"
@@ -184,6 +192,7 @@ def normalize_execution_policy(
         artifact_verified=artifact_verified,
         secret_grant_ids=secret_grant_ids,
         secret_grant_expires_at=secret_grant_expires_at,
+        secret_grant_ref_sha256=secret_grant_ref_sha256,
     )
     return capabilities, normalized_allowlist, snapshot
 
