@@ -157,4 +157,4 @@ def test_secret_reference_fingerprint_is_stable_and_nonreversible_by_contract():
     assert len(fingerprint) == 64
     assert secret_ref_matches(reference, fingerprint)
     assert not secret_ref_matches("secret://vault/nexus/github/other", fingerprint)
-    assert secret_ref_matches(reference, fingerprint.upper())
+    assert not secret_ref_matches(reference, fingerprint.upper())
