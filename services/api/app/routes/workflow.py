@@ -13,7 +13,7 @@ from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode
 from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
 from services.orchestrator.engine import tick_run
-from ..services.workflow import build_workflow_policy_snapshot, ensure_run_transition, validate_workflow_graph
+from ..services.workflow import build_workflow_policy_snapshot, ensure_node_run_transition, ensure_run_transition, validate_workflow_graph
 
 router = APIRouter(prefix="/workflows", tags=["durable-workflows"])
 LEASE_SECONDS = 120
@@ -140,7 +140,7 @@ async def start_workflow(
         input_json=payload.input_json,
         context_json={"workflow_version": workflow.version},
         policy_snapshot=build_workflow_policy_snapshot(),
-        started_at=datetime.now(timezone.utc),
+        started_at=None,
     )
     run.node_runs = [
         WorkflowNodeRun(node_id=node.id, status="pending", input_json=dict(payload.input_json))
