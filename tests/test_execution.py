@@ -118,7 +118,7 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         },
     )
     assert snapshot == {
-        "version": 4,
+        "version": 5,
         "capabilities": ["dataset.read"],
         "limits": {
             "timeout_seconds": 60,
@@ -148,9 +148,12 @@ def test_policy_snapshot_is_explicit_and_reproducible():
         "secrets": {
             "mode": "disabled",
             "grant_ids": [],
+            "grant_expires_at": {},
             "max_grants": 8,
             "max_value_bytes": 65536,
             "cache": "none",
+            "lease_min_seconds": 60,
+            "lease_max_seconds": 604800,
         },
     }
 
@@ -212,10 +215,12 @@ def test_secret_policy_requires_explicit_grants():
         network_allowlist=[],
         secret_grant_ids=["grant-1", "grant-2"],
     )
-    assert snapshot["version"] == 4
+    assert snapshot["version"] == 5
     assert snapshot["execution"]["secret_mediation_required"] is True
     assert snapshot["secrets"]["mode"] == "unix_socket_broker"
     assert snapshot["secrets"]["grant_ids"] == ["grant-1", "grant-2"]
+    assert snapshot["secrets"]["grant_expires_at"]["grant-1"] == "2026-10-06T06:00:00+00:00"
+    assert snapshot["secrets"]["lease_max_seconds"] == 604800
     assert snapshot["secrets"]["cache"] == "none"
 
 
@@ -287,4 +292,18 @@ def test_execution_policy_rejects_network_without_explicit_capability():
             max_output_bytes=1_048_576,
             network_policy="allowlist",
             network_allowlist=["api.example.com:443"],
+        )
+
+
+def test_secret_policy_requires_matching_lease_metadata():
+    with pytest.raises(ValueError):
+        normalize_execution_policy(
+            capabilities=["secret.read"],
+            timeout_seconds=60,
+            max_memory_mb=256,
+            max_output_bytes=4096,
+            network_policy="none",
+            network_allowlist=[],
+            secret_grant_ids=["grant-1"],
+            secret_grant_expires_at={},
         )
