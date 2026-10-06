@@ -57,3 +57,4 @@ This ledger records the incremental acceptance checkpoints used to deliver Phase
 - 0042 — graph-contract: dependency ordering checkpoint for the durable workflow control plane.
 - 0043 — graph-contract: topological ordering checkpoint for the durable workflow control plane.
 - 0044 — graph-contract: cycle rejection checkpoint for the durable workflow control plane.
+- 0045 — graph-contract: approval pause checkpoint for the durable workflow control plane.
