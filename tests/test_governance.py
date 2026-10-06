@@ -206,3 +206,16 @@ def test_secret_grant_schemas_are_opaque():
     assert request.installation_id
     assert approval.note == "reviewed"
     assert not hasattr(request, "secret_ref")
+
+
+def test_secret_grant_live_identity_is_unique_but_revoked_ids_can_be_reissued():
+    from services.api.app.models.secrets import SecretGrant
+
+    indexes = {
+        index.name: index
+        for index in SecretGrant.__table__.indexes
+    }
+    live_index = indexes["uq_secret_grant_org_installation_integration_live"]
+    assert live_index.unique is True
+    assert "status <> 'revoked'" in str(live_index.dialect_options["postgresql"]["where"])
+
