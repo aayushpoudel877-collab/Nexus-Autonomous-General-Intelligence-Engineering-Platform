@@ -157,3 +157,17 @@ class WorkflowRunRead(BaseModel):
 class WorkflowApprovalDecision(BaseModel):
     status: str = Field(pattern=r"^(approved|rejected)$")
     note: str = Field(default="", max_length=4_000)
+
+
+class WorkflowReplayNodeRead(BaseModel):
+    node_key: str
+    status: str
+
+
+class WorkflowReplayRead(BaseModel):
+    run_id: UUID
+    event_count: int
+    replay_checksum: str
+    projected_status: str | None
+    projected_nodes: list[WorkflowReplayNodeRead]
+    drifted: bool
