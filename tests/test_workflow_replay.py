@@ -38,22 +38,22 @@ def test_replay_response_contract():
 
 
 def test_replay_checksum_changes_when_event_changes():
-    base = dict(
-        sequence=1,
-        event_type="workflow.tick",
-        from_status=None,
-        to_status="running",
-        attempt=0,
-        payload_json={"node_statuses": {"a": "pending"}},
-        actor="orchestrator",
-    )
+    base = {
+        "sequence": 1,
+        "event_type": "workflow.tick",
+        "from_status": None,
+        "to_status": "running",
+        "attempt": 0,
+        "payload_json": {"node_statuses": {"a": "pending"}},
+        "actor": "orchestrator",
+    }
     changed = SimpleNamespace(**{**base, "to_status": "failed"})
     original = _canonical_event(SimpleNamespace(**base))
     assert _canonical_event(changed) != original
 
 
 def test_replay_schema_rejects_missing_checksum():
-    with pytest.raises(Exception):
+    with pytest.raises((TypeError, ValueError)):
         WorkflowReplayRead(
             run_id=uuid4(),
             event_count=1,
