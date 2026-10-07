@@ -89,3 +89,8 @@ Initial implementation: workflow nodes support bounded, explicitly allowlisted r
 ## Phase 24 — Workflow Event Journal & Recovery Visibility
 
 Initial implementation: durable PostgreSQL workflow event journaling with globally ordered sequence numbers, tenant-scoped run/node references, credential-safe bounded payloads, tick/queue/cancel/approval lifecycle records, bounded event-history retrieval, and regression coverage. The journal is observational and does not grant execution authority or bypass existing workflow, sandbox, egress, secret, or approval gates.
+
+
+## Phase 25 — Deterministic Workflow Replay & Recovery Analysis
+
+Initial implementation: read-only replay of the durable workflow event journal, canonical event hashing, reconstructed run/node projections, live-state drift detection, replay API access, operator-console replay checks, and regression coverage. Replay never mutates workflow state and cannot bypass existing execution, approval, sandbox, egress, or secret controls.
