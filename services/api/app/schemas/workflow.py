@@ -17,9 +17,9 @@ class WorkflowNodeCreate(BaseModel):
         if len(json.dumps(self.config, separators=(",", ":"), sort_keys=True, default=str).encode()) > 32_768:
             raise ValueError("Node configuration is too large")
         allowed_keys = {
-            "checkpoint": set(),
-            "research_task": {"research_task_id"},
-            "execution": {"execution_request_id"},
+            "checkpoint": {"retry"},
+            "research_task": {"research_task_id", "retry"},
+            "execution": {"execution_request_id", "retry"},
             "approval": {"prompt"},
         }[self.node_type]
         credential_like = any(
@@ -31,6 +31,9 @@ class WorkflowNodeCreate(BaseModel):
         unexpected = set(self.config) - allowed_keys
         if unexpected:
             raise ValueError("Node configuration contains unsupported fields")
+        if "retry" in self.config:
+            from services.api.app.services.workflow_reliability import validate_retry_policy
+            validate_retry_policy(self.config["retry"])
         required = {
             "research_task": "research_task_id",
             "execution": "execution_request_id",

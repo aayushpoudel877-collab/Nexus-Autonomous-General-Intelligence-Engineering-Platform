@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from services.api.app.models import ExecutionRequest, ResearchPlan, ResearchTask
 from services.api.app.models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
 from services.api.app.services.audit import record_audit
+from services.api.app.services.workflow_reliability import next_retry_at, replay_fingerprint, retry_allowed, validate_retry_policy
 from services.api.app.services.workflow import (
     classify_run_after_tick,
     ensure_node_run_transition,
@@ -113,6 +114,26 @@ async def _sync_external_node(
         node_run.lease_expires_at = now + timedelta(seconds=lease_seconds)
 
 
+
+def _schedule_retry(node: WorkflowNode, node_run: WorkflowNodeRun, now: datetime) -> bool:
+    policy = validate_retry_policy(node.config.get("retry"))
+    if not retry_allowed(policy, node_run.attempt, node_run.error_message):
+        return False
+    ensure_node_run_transition(node_run.status, "retry_waiting")
+    node_run.status = "retry_waiting"
+    node_run.lease_expires_at = next_retry_at(now, policy, node_run.attempt)
+    node_run.finished_at = None
+    return True
+
+
+def _promote_due_retry(node_run: WorkflowNodeRun, now: datetime) -> bool:
+    if node_run.status != "retry_waiting" or not node_run.lease_expires_at or node_run.lease_expires_at > now:
+        return False
+    ensure_node_run_transition(node_run.status, "pending")
+    node_run.status = "pending"
+    node_run.lease_expires_at = None
+    return True
+
 async def tick_run(
     db: AsyncSession,
     run: WorkflowRun,
@@ -153,7 +174,14 @@ async def tick_run(
             await _sync_external_node(
                 db, node, node_run, organization_id, now, lease_seconds
             )
+            if node_run.status == "failed":
+                _schedule_retry(node, node_run, now)
             statuses[node.node_key] = node_run.status
+
+    for node in node_list:
+        node_run = node_runs_by_id[node.id]
+        _promote_due_retry(node_run, now)
+        statuses[node.node_key] = node_run.status
 
     while progress:
         progress = False
@@ -198,6 +226,14 @@ async def tick_run(
                 await _sync_external_node(
                     db, node, node_run, organization_id, now, lease_seconds
                 )
+                if node_run.status == "failed":
+                    _schedule_retry(node, node_run, now)
+            node_run.output_json = {
+                **node_run.output_json,
+                "replay_fingerprint": replay_fingerprint(
+                    str(run.id), node.node_key, node_run.attempt, run.input_json
+                ),
+            }
             statuses[key] = node_run.status
             progress = True
 

@@ -15,9 +15,10 @@ _RUN_TRANSITIONS: dict[str, set[str]] = {
 _NODE_TRANSITIONS: dict[str, set[str]] = {
     "pending": {"ready", "cancelled"},
     "ready": {"running", "failed", "cancelled"},
-    "running": {"succeeded", "failed", "blocked", "cancelled"},
+    "running": {"succeeded", "failed", "blocked", "cancelled", "retry_waiting"},
     "blocked": {"ready", "cancelled"},
-    "failed": {"ready", "cancelled"},
+    "failed": {"ready", "retry_waiting", "cancelled"},
+    "retry_waiting": {"pending", "cancelled"},
     "succeeded": set(),
     "cancelled": set(),
 }
