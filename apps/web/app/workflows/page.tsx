@@ -32,7 +32,8 @@ export default function WorkflowsPage() {
   const [description, setDescription] = useState("");
   const [nodes, setNodes] = useState(sample);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);\n  const [replays, setReplays] = useState<Record<string, Replay>>({});
+  const [busy, setBusy] = useState(false);
+  const [replays, setReplays] = useState<Record<string, Replay>>({});
   const active = useMemo(() => workflows.find((item) => item.id === activeWorkflow) ?? workflows[0], [workflows, activeWorkflow]);
 
   async function load() {
@@ -90,7 +91,8 @@ export default function WorkflowsPage() {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not replay run."); }
     finally { setBusy(false); }
   }
-\n  async function decide(run: Run, approval: Run["approvals"][number], status: "approved" | "rejected") {
+
+  async function decide(run: Run, approval: Run["approvals"][number], status: "approved" | "rejected") {
     if (!active || busy) return;
     setBusy(true); setError("");
     try { await request(`/workflows/${active.id}/runs/${run.id}/approvals/${approval.id}`, { method: "POST", body: JSON.stringify({ status, note: status === "approved" ? "Approved from operator console." : "Rejected from operator console." }) }); await loadRuns(active.id); }
