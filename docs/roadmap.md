@@ -80,3 +80,8 @@ Initial implementation: approved secret grants are bound to a SHA-256 fingerprin
 ## Phase 22 — Durable Autonomous Workflow Orchestration
 
 Initial implementation: tenant-scoped versioned workflow DAGs, bounded graph validation, durable workflow/node run records, worker ownership leases, PostgreSQL row-lock claiming, resumable orchestration ticks, same-organization research/execution synchronization, explicit human approval gates, audit coverage, operator UI, and a dedicated compose service. The workflow layer coordinates already-governed records and cannot bypass plugin artifact verification, sandboxing, egress mediation, secret mediation, or execution policy gates.
+
+
+## Phase 23 — Workflow Reliability, Retry & Replay Safety
+
+Initial implementation: workflow nodes support bounded, explicitly allowlisted retry policies with exponential backoff; transient failures enter a durable retry-waiting state instead of immediately failing the whole run; due retries are promoted back into the normal scheduler; and each node attempt receives a deterministic replay fingerprint. Retry limits remain fail-closed, credentials cannot be embedded in retry configuration, and replay fingerprints contain no secret material.
