@@ -59,9 +59,10 @@ async def replay_workflow_run(
     projected_status: str | None = None
     projected_nodes: dict[str, str] = {}
 
+    run_status_events = {"workflow.queued", "workflow.tick", "workflow.cancelled"}
     for event in events:
         digest.update(_canonical_event(event))
-        if event.to_status:
+        if event.event_type in run_status_events and event.to_status:
             projected_status = event.to_status
         if event.event_type == "workflow.tick":
             node_statuses = event.payload_json.get("node_statuses", {})
