@@ -29,7 +29,7 @@ def validate_retry_policy(policy: dict | None) -> dict:
     return {
         "max_attempts": max_attempts,
         "backoff_seconds": backoff,
-        "retryable_errors": sorted(set(item.strip() for item in retryable)),
+        "retryable_errors": sorted({item.strip() for item in retryable}),
     }
 
 
