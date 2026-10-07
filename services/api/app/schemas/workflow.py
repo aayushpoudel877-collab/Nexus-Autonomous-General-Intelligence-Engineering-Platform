@@ -111,6 +111,21 @@ class WorkflowNodeRunRead(BaseModel):
     created_at: datetime
 
 
+class WorkflowEventRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    run_id: UUID
+    node_run_id: UUID | None
+    sequence: int
+    event_type: str
+    from_status: str | None
+    to_status: str | None
+    attempt: int
+    payload_json: dict
+    actor: str
+    created_at: datetime
+
+
 class WorkflowApprovalRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID

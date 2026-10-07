@@ -85,3 +85,7 @@ Initial implementation: tenant-scoped versioned workflow DAGs, bounded graph val
 ## Phase 23 — Workflow Reliability, Retry & Replay Safety
 
 Initial implementation: workflow nodes support bounded, explicitly allowlisted retry policies with exponential backoff; transient failures enter a durable retry-waiting state instead of immediately failing the whole run; due retries are promoted back into the normal scheduler; and each node attempt receives a deterministic replay fingerprint. Retry limits remain fail-closed, credentials cannot be embedded in retry configuration, and replay fingerprints contain no secret material.
+
+## Phase 24 — Workflow Event Journal & Recovery Visibility
+
+Initial implementation: durable PostgreSQL workflow event journaling with globally ordered sequence numbers, tenant-scoped run/node references, credential-safe bounded payloads, tick/queue/cancel/approval lifecycle records, bounded event-history retrieval, and regression coverage. The journal is observational and does not grant execution authority or bypass existing workflow, sandbox, egress, secret, or approval gates.

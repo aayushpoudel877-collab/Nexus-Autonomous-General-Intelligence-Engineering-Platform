@@ -11,6 +11,7 @@ from services.api.app.models import ExecutionRequest, ResearchPlan, ResearchTask
 from services.api.app.models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
 from services.api.app.services.audit import record_audit
 from services.api.app.services.workflow_reliability import next_retry_at, replay_fingerprint, retry_allowed, validate_retry_policy
+from services.api.app.services.workflow_events import append_workflow_event
 from services.api.app.services.workflow import (
     classify_run_after_tick,
     ensure_node_run_transition,
@@ -256,6 +257,21 @@ async def tick_run(
         run.worker_id = worker_id
         run.heartbeat_at = now
         run.lease_expires_at = now + timedelta(seconds=lease_seconds)
+
+    await append_workflow_event(
+        db,
+        run_id=run.id,
+        event_type="workflow.tick",
+        from_status=None,
+        to_status=run.status,
+        payload={
+            "worker_id": worker_id or "api",
+            "ready_nodes": ready_seen,
+            "node_statuses": statuses,
+            "workflow_version": run.context_json.get("workflow_version", 1),
+        },
+        actor="user" if actor_user_id is not None else "orchestrator",
+    )
 
     if actor_user_id is not None:
         await record_audit(

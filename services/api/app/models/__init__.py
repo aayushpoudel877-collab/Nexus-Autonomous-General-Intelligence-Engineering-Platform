@@ -24,6 +24,7 @@ from .execution import ExecutionRequest
 from .trust import PluginTrustRoot
 from .secrets import SecretGrant
 from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
+from .workflow_event import WorkflowEvent
 
 __all__ = [
     "Organization",
@@ -67,6 +68,7 @@ __all__ = [
     "WorkflowRun",
     "WorkflowNodeRun",
     "WorkflowApproval",
+    "WorkflowEvent",
 ]
 
 from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval

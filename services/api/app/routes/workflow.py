@@ -10,10 +10,11 @@ from ..core.dependencies import get_current_user, get_membership, require_roles
 from ..db.session import get_db
 from ..models import ResearchPlan, User, WorkbenchProject
 from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
-from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowRead, WorkflowRunCreate, WorkflowRunRead
+from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
 from services.orchestrator.engine import tick_run
 from ..services.workflow import build_workflow_policy_snapshot, ensure_node_run_transition, ensure_run_transition, validate_workflow_graph
+from ..services.workflow_events import append_workflow_event, list_workflow_events
 
 router = APIRouter(prefix="/workflows", tags=["durable-workflows"])
 LEASE_SECONDS = 120
@@ -147,6 +148,14 @@ async def start_workflow(
         for node in workflow.nodes
     ]
     db.add(run)
+    await append_workflow_event(
+        db,
+        run_id=run.id,
+        event_type="workflow.queued",
+        to_status="queued",
+        payload={"workflow_id": str(workflow.id), "version": workflow.version},
+        actor="user",
+    )
     await record_audit(
         db,
         action="workflow.run.queued",
@@ -234,6 +243,14 @@ async def cancel_workflow(
             approval.status = "rejected"
             approval.decision_note = "Workflow run cancelled"
             approval.decided_at = run.finished_at
+    await append_workflow_event(
+        db,
+        run_id=run.id,
+        event_type="workflow.cancelled",
+        to_status="cancelled",
+        payload={"actor_user_id": str(user.id)},
+        actor="user",
+    )
     await record_audit(
         db,
         action="workflow.run.cancelled",
@@ -291,6 +308,16 @@ async def decide_workflow_approval(
         node_run.lease_expires_at = None
         run.status = "failed"
         run.finished_at = approval.decided_at
+    await append_workflow_event(
+        db,
+        run_id=run.id,
+        node_run_id=node_run.id,
+        event_type="workflow.approval.decided",
+        to_status=node_run.status,
+        attempt=node_run.attempt,
+        payload={"approval_id": str(approval.id), "decision": payload.status},
+        actor="user",
+    )
     await record_audit(
         db,
         action="workflow.approval.decided",
@@ -302,3 +329,21 @@ async def decide_workflow_approval(
     )
     await db.commit()
     return await _run(db, run.id, membership.organization_id)
+
+
+@router.get("/{workflow_id}/runs/{run_id}/events", response_model=list[WorkflowEventRead])
+async def list_workflow_run_events(
+    workflow_id: UUID,
+    run_id: UUID,
+    limit: int = 100,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    run = await _run(db, run_id, membership.organization_id)
+    if run.workflow_id != workflow_id:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    try:
+        return await list_workflow_events(db, run_id=run.id, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
