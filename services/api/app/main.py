@@ -18,8 +18,9 @@ from .routes.audit import router as audit_router
 from .routes.developer import router as developer_router
 from .routes.governance import router as governance_router
 from .routes.execution import router as execution_router
+from .routes.workflow import router as workflow_router
 
-app = FastAPI(title="NEXUS-Ω API", version="0.21.0")
+app = FastAPI(title="NEXUS-Ω API", version="0.22.0")
 
 app.add_middleware(
     TrustedHostMiddleware,
@@ -47,5 +48,6 @@ app.include_router(audit_router, prefix="/api/v1")
 app.include_router(developer_router, prefix="/api/v1")
 app.include_router(governance_router, prefix="/api/v1")
 app.include_router(execution_router, prefix="/api/v1")
+app.include_router(workflow_router, prefix="/api/v1")
 
 app.middleware("http")(security_middleware)

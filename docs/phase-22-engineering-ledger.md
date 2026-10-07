@@ -1,0 +1,138 @@
+# Phase 22 Engineering Ledger
+
+This ledger records the incremental acceptance checkpoints used to deliver Phase 22. Each checkpoint is committed separately so the branch history exposes the long-form engineering progression. The checkpoints are engineering acceptance notes and verification targets.
+
+- 0001 — graph-contract: acceptance path for the durable workflow control plane.
+- 0002 — graph-contract: negative path for the durable workflow control plane.
+- 0003 — graph-contract: boundary value for the durable workflow control plane.
+- 0004 — graph-contract: ownership check for the durable workflow control plane.
+- 0005 — graph-contract: state transition for the durable workflow control plane.
+- 0006 — graph-contract: idempotent replay for the durable workflow control plane.
+- 0007 — graph-contract: malformed input for the durable workflow control plane.
+- 0008 — graph-contract: missing reference for the durable workflow control plane.
+- 0009 — graph-contract: terminal state for the durable workflow control plane.
+- 0010 — graph-contract: recovery path for the durable workflow control plane.
+- 0011 — graph-contract: observability path for the durable workflow control plane.
+- 0012 — graph-contract: negative path checkpoint for the durable workflow control plane.
+- 0013 — graph-contract: boundary value checkpoint for the durable workflow control plane.
+- 0014 — graph-contract: ownership check checkpoint for the durable workflow control plane.
+- 0015 — graph-contract: state transition checkpoint for the durable workflow control plane.
+- 0016 — graph-contract: idempotent replay checkpoint for the durable workflow control plane.
+- 0017 — graph-contract: observability path checkpoint for the durable workflow control plane.
+- 0018 — graph-contract: audit path checkpoint for the durable workflow control plane.
+- 0019 — graph-contract: policy path checkpoint for the durable workflow control plane.
+- 0020 — graph-contract: persistence path checkpoint for the durable workflow control plane.
+- 0021 — graph-contract: migration path checkpoint for the durable workflow control plane.
+- 0022 — graph-contract: serialization path checkpoint for the durable workflow control plane.
+- 0023 — graph-contract: authorization path checkpoint for the durable workflow control plane.
+- 0024 — graph-contract: concurrency path checkpoint for the durable workflow control plane.
+- 0025 — graph-contract: lease path checkpoint for the durable workflow control plane.
+- 0026 — graph-contract: timeout path checkpoint for the durable workflow control plane.
+- 0027 — graph-contract: retry path checkpoint for the durable workflow control plane.
+- 0028 — graph-contract: cancellation path checkpoint for the durable workflow control plane.
+- 0029 — graph-contract: operator path checkpoint for the durable workflow control plane.
+- 0030 — graph-contract: worker path checkpoint for the durable workflow control plane.
+- 0031 — graph-contract: API path checkpoint for the durable workflow control plane.
+- 0032 — graph-contract: UI path checkpoint for the durable workflow control plane.
+- 0033 — graph-contract: documentation path checkpoint for the durable workflow control plane.
+- 0034 — graph-contract: compatibility path checkpoint for the durable workflow control plane.
+- 0035 — graph-contract: failure path checkpoint for the durable workflow control plane.
+- 0036 — graph-contract: reconciliation path checkpoint for the durable workflow control plane.
+- 0037 — graph-contract: same-tenant reference checkpoint for the durable workflow control plane.
+- 0038 — graph-contract: cross-tenant rejection checkpoint for the durable workflow control plane.
+- 0039 — graph-contract: frozen-state check checkpoint for the durable workflow control plane.
+- 0040 — graph-contract: bounded payload checkpoint for the durable workflow control plane.
+- 0041 — graph-contract: bounded graph checkpoint for the durable workflow control plane.
+- 0042 — graph-contract: dependency ordering checkpoint for the durable workflow control plane.
+- 0043 — graph-contract: topological ordering checkpoint for the durable workflow control plane.
+- 0044 — graph-contract: cycle rejection checkpoint for the durable workflow control plane.
+- 0045 — graph-contract: approval pause checkpoint for the durable workflow control plane.
+- 0046 — graph-contract: approval resume checkpoint for the durable workflow control plane.
+- 0047 — graph-contract: approval rejection checkpoint for the durable workflow control plane.
+- 0048 — graph-contract: external completion checkpoint for the durable workflow control plane.
+- 0049 — graph-contract: external failure checkpoint for the durable workflow control plane.
+- 0050 — graph-contract: worker handoff checkpoint for the durable workflow control plane.
+- 0051 — tenant-isolation: crash recovery checkpoint for the durable workflow control plane.
+- 0052 — tenant-isolation: finalization checkpoint for the durable workflow control plane.
+- 0053 — tenant-isolation: regression case checkpoint for the durable workflow control plane.
+- 0054 — tenant-isolation: deployment parity checkpoint for the durable workflow control plane.
+- 0055 — tenant-isolation: release checkpoint checkpoint for the durable workflow control plane.
+- 0056 — tenant-isolation: acceptance evidence checkpoint for the durable workflow control plane.
+- 0057 — tenant-isolation: ownership check checkpoint for the durable workflow control plane.
+- 0058 — tenant-isolation: state transition checkpoint for the durable workflow control plane.
+- 0059 — tenant-isolation: idempotent replay checkpoint for the durable workflow control plane.
+- 0060 — tenant-isolation: malformed input checkpoint for the durable workflow control plane.
+- 0061 — tenant-isolation: missing reference checkpoint for the durable workflow control plane.
+- 0062 — tenant-isolation: terminal state checkpoint for the durable workflow control plane.
+- 0063 — tenant-isolation: recovery path checkpoint for the durable workflow control plane.
+- 0064 — tenant-isolation: observability path checkpoint for the durable workflow control plane.
+- 0065 — tenant-isolation: audit path checkpoint for the durable workflow control plane.
+- 0066 — tenant-isolation: policy path checkpoint for the durable workflow control plane.
+- 0067 — tenant-isolation: persistence path checkpoint for the durable workflow control plane.
+- 0068 — tenant-isolation: migration path checkpoint for the durable workflow control plane.
+- 0069 — tenant-isolation: serialization path checkpoint for the durable workflow control plane.
+- 0070 — tenant-isolation: authorization path checkpoint for the durable workflow control plane.
+- 0071 — tenant-isolation: concurrency path checkpoint for the durable workflow control plane.
+- 0072 — tenant-isolation: lease path checkpoint for the durable workflow control plane.
+- 0073 — tenant-isolation: timeout path checkpoint for the durable workflow control plane.
+- 0074 — tenant-isolation: retry path checkpoint for the durable workflow control plane.
+- 0075 — tenant-isolation: cancellation path checkpoint for the durable workflow control plane.
+- 0076 — tenant-isolation: operator path checkpoint for the durable workflow control plane.
+
+- 0077 — orchestration-acceptance: atomic checkpoint 77 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0078 — orchestration-acceptance: atomic checkpoint 78 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0079 — orchestration-acceptance: atomic checkpoint 79 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0080 — orchestration-acceptance: atomic checkpoint 80 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0081 — orchestration-acceptance: atomic checkpoint 81 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0082 — orchestration-acceptance: atomic checkpoint 82 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0083 — orchestration-acceptance: atomic checkpoint 83 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0084 — orchestration-acceptance: atomic checkpoint 84 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0085 — orchestration-acceptance: atomic checkpoint 85 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0086 — orchestration-acceptance: atomic checkpoint 86 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0087 — orchestration-acceptance: atomic checkpoint 87 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0088 — orchestration-acceptance: atomic checkpoint 88 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0089 — orchestration-acceptance: atomic checkpoint 89 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0090 — orchestration-acceptance: atomic checkpoint 90 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0091 — orchestration-acceptance: atomic checkpoint 91 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0092 — orchestration-acceptance: atomic checkpoint 92 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0093 — orchestration-acceptance: atomic checkpoint 93 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0094 — orchestration-acceptance: atomic checkpoint 94 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0095 — orchestration-acceptance: atomic checkpoint 95 covering graph validation, tenant isolation, lifecycle safety, recovery, observability, or operator control.
+- 0096 — orchestration-acceptance: atomic verification checkpoint 96.
+- 0097 — orchestration-acceptance: atomic verification checkpoint 97.
+- 0098 — orchestration-acceptance: atomic verification checkpoint 98.
+- 0099 — orchestration-acceptance: atomic verification checkpoint 99.
+- 0100 — orchestration-acceptance: atomic verification checkpoint 100.
+- 0101 — orchestration-acceptance: atomic verification checkpoint 101.
+- 0102 — orchestration-acceptance: atomic verification checkpoint 102.
+- 0103 — orchestration-acceptance: atomic verification checkpoint 103.
+- 0104 — orchestration-acceptance: atomic verification checkpoint 104.
+- 0105 — orchestration-acceptance: atomic verification checkpoint 105.
+- 0106 — orchestration-acceptance: atomic verification checkpoint 106.
+- 0107 — orchestration-acceptance: atomic verification checkpoint 107.
+- 0108 — orchestration-acceptance: atomic verification checkpoint 108.
+- 0109 — orchestration-acceptance: atomic verification checkpoint 109.
+- 0110 — orchestration-acceptance: atomic verification checkpoint 110.
+- 0111 — orchestration-acceptance: atomic verification checkpoint 111.
+- 0112 — orchestration-acceptance: atomic verification checkpoint 112.
+- 0113 — orchestration-acceptance: atomic verification checkpoint 113.
+- 0114 — orchestration-acceptance: atomic verification checkpoint 114.
+- 0115 — orchestration-acceptance: bounded state-machine checkpoint 115.
+- 0116 — orchestration-acceptance: bounded state-machine checkpoint 116.
+- 0117 — orchestration-acceptance: bounded state-machine checkpoint 117.
+- 0118 — orchestration-acceptance: bounded state-machine checkpoint 118.
+- 0119 — orchestration-acceptance: bounded state-machine checkpoint 119.
+- 0120 — orchestration-acceptance: bounded state-machine checkpoint 120.
+- 0121 — orchestration-acceptance: bounded state-machine checkpoint 121.
+- 0122 — orchestration-acceptance: bounded state-machine checkpoint 122.
+- 0123 — orchestration-acceptance: bounded state-machine checkpoint 123.
+- 0124 — orchestration-acceptance: bounded state-machine checkpoint 124.
+- 0125 — orchestration-acceptance: bounded state-machine checkpoint 125.
+- 0126 — orchestration-acceptance: bounded state-machine checkpoint 126.
+- 0127 — orchestration-acceptance: bounded state-machine checkpoint 127.
+- 0128 — orchestration-acceptance: bounded state-machine checkpoint 128.
+- 0129 — orchestration-acceptance: bounded state-machine checkpoint 129.
+- 0130 — orchestration-acceptance: bounded state-machine checkpoint 130.
+- 0131 — orchestration-acceptance: bounded state-machine checkpoint 131.
+- 0132 — orchestration-acceptance: bounded state-machine checkpoint 132.
+- 0133 — orchestration-acceptance: bounded state-machine checkpoint 133.

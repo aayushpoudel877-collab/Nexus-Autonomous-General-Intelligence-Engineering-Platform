@@ -122,3 +122,10 @@ Legacy non-revoked grants are expired by migration 0020 and require explicit re-
 ## Phase 21 secret reference integrity boundary
 
 Phase 21 binds each approved secret grant to a SHA-256 fingerprint of the external `secret://...` reference that was reviewed. The execution policy snapshot freezes only this fingerprint and the grant expiration; it never stores the underlying reference or secret value. If an integration's reference changes, API admission rejects the grant and the worker independently rechecks the fingerprint before launching the sandbox. This supports safe rotation behind a stable secret reference while forcing re-approval when a grant is retargeted to a different external reference.
+
+
+## Phase 22 durable workflow boundary
+
+Phase 22 introduces a durable orchestration plane above the research planner and controlled execution plane. Workflow definitions are tenant-scoped DAGs with bounded depth and node count. Workflow runs persist inputs, a frozen scheduling/approval policy, node-run state, worker identity, lease expiry and heartbeat metadata. A PostgreSQL row lock provides the ownership handoff used by the dedicated orchestrator worker; lease expiry permits crash recovery by another worker.
+
+The orchestrator only coordinates existing governed records. Research nodes resolve same-organization research tasks, execution nodes resolve same-organization controlled execution requests, checkpoints are local state transitions, and approval nodes create owner/admin decisions. The orchestrator never fetches plugin artifacts, launches sandbox processes, opens external sockets, or resolves secrets. Those boundaries remain exclusively enforced by the execution worker, artifact trust, egress broker and secret broker layers.
