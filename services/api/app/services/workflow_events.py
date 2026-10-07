@@ -6,6 +6,7 @@ payloads are deliberately rejected before persistence.
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.api.app.models.workflow_event import WorkflowEvent
@@ -56,3 +57,15 @@ async def append_workflow_event(
     db.add(event)
     await db.flush()
     return event
+
+
+async def list_workflow_events(db: AsyncSession, *, run_id: UUID, limit: int = 100) -> list[WorkflowEvent]:
+    if not 1 <= limit <= 500:
+        raise ValueError("Event limit must be between 1 and 500")
+    rows = await db.scalars(
+        select(WorkflowEvent)
+        .where(WorkflowEvent.run_id == run_id)
+        .order_by(WorkflowEvent.sequence.desc())
+        .limit(limit)
+    )
+    return list(rows.all())
