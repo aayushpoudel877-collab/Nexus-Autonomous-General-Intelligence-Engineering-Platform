@@ -22,6 +22,7 @@ WORKER_ID = os.getenv("NEXUS_ORCHESTRATOR_WORKER_ID", f"orchestrator:{socket.get
 
 async def claim_runs(db):
     now = datetime.now(timezone.utc)
+    retry_waiting_due = (WorkflowRun.status == "running") & WorkflowRun.lease_expires_at.is_not(None) & (WorkflowRun.lease_expires_at <= now)
     statement = (
         select(WorkflowRun)
         .where(
@@ -33,6 +34,7 @@ async def claim_runs(db):
                     WorkflowRun.lease_expires_at.is_(None),
                     WorkflowRun.lease_expires_at <= now,
                 ),
+                retry_waiting_due,
             )
         )
         .order_by(WorkflowRun.created_at)
