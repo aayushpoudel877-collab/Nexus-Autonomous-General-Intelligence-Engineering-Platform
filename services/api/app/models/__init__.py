@@ -68,3 +68,5 @@ __all__ = [
     "WorkflowNodeRun",
     "WorkflowApproval",
 ]
+
+from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
