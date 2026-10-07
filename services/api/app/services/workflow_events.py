@@ -16,7 +16,7 @@ _FORBIDDEN_KEYS = {"secret", "token", "password", "credential", "api_key"}
 
 def _validate_payload(payload: dict) -> dict:
     if not isinstance(payload, dict):
-        raise ValueError("Workflow event payload must be an object")
+        raise TypeError("Workflow event payload must be an object")
     for key, value in payload.items():
         lowered = str(key).lower()
         if any(term in lowered for term in _FORBIDDEN_KEYS):
