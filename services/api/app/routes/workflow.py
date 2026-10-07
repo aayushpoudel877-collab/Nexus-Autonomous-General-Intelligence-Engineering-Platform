@@ -10,11 +10,12 @@ from ..core.dependencies import get_current_user, get_membership, require_roles
 from ..db.session import get_db
 from ..models import ResearchPlan, User, WorkbenchProject
 from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
-from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowRunCreate, WorkflowRunRead
+from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowReplayRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
 from services.orchestrator.engine import tick_run
 from ..services.workflow import build_workflow_policy_snapshot, ensure_node_run_transition, ensure_run_transition, validate_workflow_graph
 from ..services.workflow_events import append_workflow_event, list_workflow_events
+from ..services.workflow_replay import replay_workflow_run
 
 router = APIRouter(prefix="/workflows", tags=["durable-workflows"])
 LEASE_SECONDS = 120
@@ -347,3 +348,39 @@ async def list_workflow_run_events(
         return await list_workflow_events(db, run_id=run.id, limit=limit)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/{workflow_id}/runs/{run_id}/replay", response_model=WorkflowReplayRead)
+async def replay_workflow(
+    workflow_id: UUID,
+    run_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    membership = await get_membership(user, db)
+    run = await _run(db, run_id, membership.organization_id)
+    if run.workflow_id != workflow_id:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    node_by_id = {node.id: node for node in run.workflow.nodes}
+    live_nodes = {
+        node_by_id[node_run.node_id].node_key: node_run.status
+        for node_run in run.node_runs
+        if node_run.node_id in node_by_id
+    }
+    replay = await replay_workflow_run(
+        db,
+        run_id=run.id,
+        live_status=run.status,
+        live_nodes=live_nodes,
+    )
+    return WorkflowReplayRead(
+        run_id=replay.run_id,
+        event_count=replay.event_count,
+        replay_checksum=replay.replay_checksum,
+        projected_status=replay.projected_status,
+        projected_nodes=[
+            {"node_key": node.node_key, "status": node.status}
+            for node in replay.projected_nodes
+        ],
+        drifted=replay.drifted,
+    )
