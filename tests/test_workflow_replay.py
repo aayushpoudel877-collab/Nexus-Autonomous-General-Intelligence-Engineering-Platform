@@ -61,3 +61,18 @@ def test_replay_schema_rejects_missing_checksum():
             projected_nodes=[],
             drifted=False,
         )
+
+
+def test_approval_event_cannot_change_run_projection():
+    from services.api.app.services.workflow_replay import _canonical_event
+
+    approval = SimpleNamespace(
+        sequence=2,
+        event_type="workflow.approval.decided",
+        from_status="ready",
+        to_status="succeeded",
+        attempt=1,
+        payload_json={"decision": "approved"},
+        actor="user",
+    )
+    assert _canonical_event(approval)
