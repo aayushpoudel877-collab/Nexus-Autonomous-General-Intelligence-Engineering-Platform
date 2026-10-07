@@ -228,13 +228,12 @@ async def tick_run(
                 )
                 if node_run.status == "failed":
                     _schedule_retry(node, node_run, now)
-            if node_run.status == "running":
-                node_run.output_json = {
-                    **node_run.output_json,
-                    "replay_fingerprint": replay_fingerprint(
-                        str(run.id), node.node_key, node_run.attempt, run.input_json
-                    ),
-                }
+            node_run.output_json = {
+                **node_run.output_json,
+                "replay_fingerprint": replay_fingerprint(
+                    str(run.id), node.node_key, node_run.attempt, run.input_json
+                ),
+            }
             statuses[key] = node_run.status
             progress = True
 
