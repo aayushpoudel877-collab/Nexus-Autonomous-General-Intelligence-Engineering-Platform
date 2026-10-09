@@ -6,11 +6,11 @@ from services.rag.evaluation import evaluate_retrieval
 
 class RagCoreTests(unittest.TestCase):
     def setUp(self):
-        self.a = chunk_text("RAG retrieves relevant evidence for an answer.\\n\\nEvidence should be cited.", "doc-a", "tenant-a", max_chars=38, overlap=8)
+        self.a = chunk_text("RAG retrieves relevant evidence for an answer.\n\nEvidence should be cited.", "doc-a", "tenant-a", max_chars=38, overlap=8)
         self.b = chunk_text("Tenant isolation prevents cross-organization data leaks.", "doc-b", "tenant-b")
 
     def test_normalization(self):
-        self.assertEqual(normalize_text(" hello   world\\r\\nnext "), "hello world\\nnext")
+        self.assertEqual(normalize_text(" hello   world\r\nnext "), "hello world\nnext")
 
     def test_chunk_bounds_and_offsets(self):
         chunks = chunk_text("abcdefghij" * 10, "doc", "t", max_chars=25, overlap=5)
