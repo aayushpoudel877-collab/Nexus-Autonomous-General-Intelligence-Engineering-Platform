@@ -171,3 +171,18 @@ class WorkflowReplayRead(BaseModel):
     projected_status: str | None
     projected_nodes: list[WorkflowReplayNodeRead]
     drifted: bool
+
+
+class WorkflowRecoveryActionRead(BaseModel):
+    action: str
+    node_key: str | None
+    reason: str
+    requires_approval: bool = True
+
+
+class WorkflowRecoveryPlanRead(BaseModel):
+    run_id: UUID
+    run_status: str
+    replay_drifted: bool
+    automatic_mutation_allowed: bool = False
+    actions: list[WorkflowRecoveryActionRead]
