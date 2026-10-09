@@ -15,16 +15,13 @@ class Chunk:
 
 def normalize_text(text: str) -> str:
     """Normalize line endings and horizontal whitespace without deleting paragraphs."""
-    text = text.replace("\\r\\n", "\\n").replace("\\r", "\\n")
-    text = re.sub(r"[\\t\\f\\v ]+", " ", text)
-    text = re.sub(r" *\\n *", "\\n", text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[\t\f\v ]+", " ", text)
+    text = re.sub(r" *\n *", "\n", text)
     return text.strip()
 
 def chunk_text(text: str, document_id: str, tenant_id: str, *, max_chars: int = 1200, overlap: int = 160) -> list[Chunk]:
-    """Split normalized text into bounded chunks, preferring paragraph/sentence boundaries.
-
-    Offsets refer to the normalized text returned by normalize_text, not the raw input.
-    """
+    """Split normalized text into bounded overlapping chunks with stable offsets."""
     if not document_id.strip() or not tenant_id.strip():
         raise ValueError("document_id and tenant_id are required")
     if max_chars < 1 or overlap < 0 or overlap >= max_chars:
@@ -39,13 +36,18 @@ def chunk_text(text: str, document_id: str, tenant_id: str, *, max_chars: int = 
         end = hard_end
         if hard_end < len(normalized):
             floor = start + max(1, max_chars // 2)
-            candidates = [normalized.rfind("\\n\\n", floor, hard_end), normalized.rfind(". ", floor, hard_end), normalized.rfind(" ", floor, hard_end)]
+            candidates = [
+                normalized.rfind("\n\n", floor, hard_end),
+                normalized.rfind(". ", floor, hard_end),
+                normalized.rfind(" ", floor, hard_end),
+            ]
             boundary = max(candidates)
             if boundary >= floor:
-                end = boundary + (2 if normalized[boundary:boundary+2] == "\\n\\n" or normalized[boundary:boundary+2] == ". " else 1)
-        body = normalized[start:end].strip()
+                end = boundary + (2 if normalized[boundary:boundary+2] in ("\n\n", ". ") else 1)
+        raw_piece = normalized[start:end]
+        body = raw_piece.strip()
         if body:
-            left = start + len(normalized[start:end]) - len(normalized[start:end].lstrip())
+            left = start + len(raw_piece) - len(raw_piece.lstrip())
             right = left + len(body)
             chunks.append(Chunk(f"{document_id}:{ordinal}", document_id, tenant_id, body, left, right, ordinal))
             ordinal += 1
