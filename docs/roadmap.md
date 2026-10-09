@@ -94,3 +94,8 @@ Initial implementation: durable PostgreSQL workflow event journaling with global
 ## Phase 25 — Deterministic Workflow Replay & Recovery Analysis
 
 Initial implementation: read-only replay of the durable workflow event journal, canonical event hashing, reconstructed run/node projections, live-state drift detection, replay API access, operator-console replay checks, and regression coverage. Replay never mutates workflow state and cannot bypass existing execution, approval, sandbox, egress, or secret controls.
+
+
+## Phase 26 — Governed Workflow Recovery Planning
+
+Initial implementation: tenant-scoped read-only recovery-plan API derived from live workflow state and deterministic replay drift; bounded advisory actions for inspection, retry review, and normal-scheduler resumption; terminal-run protection; and explicit human-approval requirements. Planning does not execute retries, reopen terminal runs, bypass idempotency, or override sandbox, egress, secret, and approval gates.

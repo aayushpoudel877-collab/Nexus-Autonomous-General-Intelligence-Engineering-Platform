@@ -10,12 +10,13 @@ from ..core.dependencies import get_current_user, get_membership, require_roles
 from ..db.session import get_db
 from ..models import ResearchPlan, User, WorkbenchProject
 from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
-from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowReplayRead, WorkflowRunCreate, WorkflowRunRead
+from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowReplayRead, WorkflowRecoveryPlanRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
 from services.orchestrator.engine import tick_run
 from ..services.workflow import build_workflow_policy_snapshot, ensure_node_run_transition, ensure_run_transition, validate_workflow_graph
 from ..services.workflow_events import append_workflow_event, list_workflow_events
 from ..services.workflow_replay import replay_workflow_run
+from ..services.workflow_recovery import build_recovery_plan
 
 router = APIRouter(prefix="/workflows", tags=["durable-workflows"])
 LEASE_SECONDS = 120
@@ -383,4 +384,50 @@ async def replay_workflow(
             for node in replay.projected_nodes
         ],
         drifted=replay.drifted,
+    )
+
+
+@router.get("/{workflow_id}/runs/{run_id}/recovery-plan", response_model=WorkflowRecoveryPlanRead)
+async def get_workflow_recovery_plan(
+    workflow_id: UUID,
+    run_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return advisory recovery steps; this endpoint never mutates workflow state."""
+    membership = await get_membership(user, db)
+    run = await _run(db, run_id, membership.organization_id)
+    if run.workflow_id != workflow_id:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    node_by_id = {node.id: node for node in run.workflow.nodes}
+    live_nodes = {
+        node_by_id[node_run.node_id].node_key: node_run.status
+        for node_run in run.node_runs
+        if node_run.node_id in node_by_id
+    }
+    replay = await replay_workflow_run(
+        db,
+        run_id=run.id,
+        live_status=run.status,
+        live_nodes=live_nodes,
+    )
+    plan = build_recovery_plan(
+        run_status=run.status,
+        node_statuses=live_nodes,
+        replay_drifted=replay.drifted,
+    )
+    return WorkflowRecoveryPlanRead(
+        run_id=run.id,
+        run_status=plan.run_status,
+        replay_drifted=plan.replay_drifted,
+        automatic_mutation_allowed=plan.automatic_mutation_allowed,
+        actions=[
+            {
+                "action": action.action,
+                "node_key": action.node_key,
+                "reason": action.reason,
+                "requires_approval": action.requires_approval,
+            }
+            for action in plan.actions
+        ],
     )

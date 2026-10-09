@@ -79,3 +79,5 @@ Changes are committed to `main`. Use the GitHub Actions page to verify the curre
 ## Phase 20 — Secret Lease Lifecycle & Revocation Safety
 
 - **Phase 20 — Secret Lease Lifecycle & Revocation Safety:** secret grants now require finite expiration, policy snapshots freeze grant expiry metadata, expired grants are rejected at API and worker boundaries, and revoked grant identities are never reused. Legacy live grants are expired during migration 0020 and must be explicitly re-approved.
+
+- **Phase 26 — Governed Workflow Recovery Planning:** tenant-scoped read-only recovery recommendations based on live node state and replay drift, bounded action lists, terminal-run safeguards, and human-review requirements. Recovery plans are advisory and never mutate runs or bypass execution controls.
