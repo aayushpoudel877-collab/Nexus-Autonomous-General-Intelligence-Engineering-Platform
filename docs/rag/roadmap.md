@@ -2,8 +2,8 @@
 
 This is a multi-phase research and engineering program. A large commit count is not a quality metric; changes should represent reviewable, tested improvements.
 
-- **Phase 26 — Retrieval core (current):** contracts, normalization/chunking, lexical retrieval, optional dense-score fusion, evidence packaging, citation structure checks, baseline metrics and tests.
-- **Phase 27 — Persistent corpus:** PostgreSQL document/chunk schemas, tenant-safe migrations, lifecycle states, idempotent ingestion, content hashes and retention controls.
+- **Phase 26 — Retrieval core (implemented):** contracts, normalization/chunking, tenant-scoped lexical retrieval, optional dense-score fusion, evidence packaging, citation structure checks, baseline metrics and tests.
+- **Phase 27 — Persistent corpus (implemented foundation):** organization-owned document/chunk models, PostgreSQL migration, content SHA-256 deduplication, lifecycle status, bounded pagination, async persistence helpers, and contract tests. API routes and concurrent-ingestion retry handling remain follow-up work.
 - **Phase 28 — Embedding adapters:** pluggable embedding interface, batching, rate limits, model/version tracking, vector store abstraction and migration tests.
 - **Phase 29 — Hybrid ranking research:** configurable BM25, reciprocal-rank fusion, query rewriting experiments, metadata filters, diversity controls and ablation reports.
 - **Phase 30 — Ingestion pipeline:** bounded PDF/DOCX/HTML/text parsers, MIME validation, malware scanning integration, extraction provenance and dead-letter handling.
