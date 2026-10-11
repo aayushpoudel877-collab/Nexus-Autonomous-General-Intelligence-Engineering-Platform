@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import AsyncMock, SimpleNamespace
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 from services.rag.persistence import DocumentAlreadyArchived, ingest_document, list_document_chunks, set_document_status
