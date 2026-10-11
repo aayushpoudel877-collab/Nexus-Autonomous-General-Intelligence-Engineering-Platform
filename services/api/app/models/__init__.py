@@ -25,6 +25,7 @@ from .trust import PluginTrustRoot
 from .secrets import SecretGrant
 from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
 from .workflow_event import WorkflowEvent
+from .rag import RAGDocument, RAGChunk
 
 __all__ = [
     "Organization",
@@ -69,6 +70,8 @@ __all__ = [
     "WorkflowNodeRun",
     "WorkflowApproval",
     "WorkflowEvent",
+    "RAGDocument",
+    "RAGChunk",
 ]
 
 from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
