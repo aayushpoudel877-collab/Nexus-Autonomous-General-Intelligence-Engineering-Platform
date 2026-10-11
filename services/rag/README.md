@@ -1,25 +1,27 @@
-# NEXUS RAG Intelligence Engine — Phase 26
+# NEXUS RAG Intelligence Engine
 
-A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. This phase establishes a deterministic, provider-agnostic retrieval core with explicit source attribution and evaluation hooks. It is intentionally safe by default: no hidden web fetching, no arbitrary code execution, and no claim that retrieved text is trustworthy instructions.
+A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The current foundation includes deterministic retrieval, source attribution, persistent document/chunk records, and evaluation hooks. It is provider-independent and treats retrieved text as untrusted data.
 
-## Capabilities in this phase
+## Capabilities
 - Stable text normalization and overlap-aware chunking with source offsets.
 - Tenant-scoped document and chunk contracts.
-- Hybrid lexical retrieval using a transparent BM25-like scorer plus optional dense-vector scores.
-- Rank fusion, duplicate suppression, source diversity, and evidence packaging.
-- Citation validation that rejects references to chunks not present in the supplied evidence.
-- Evaluation primitives for recall@k, reciprocal rank, citation coverage, and unsupported-answer flags.
-- A small deterministic demo path that does not require API keys or a hosted model.
+- Hybrid lexical retrieval with optional externally generated dense similarity scores.
+- Evidence packaging, citation-reference validation, and retrieval metrics.
+- PostgreSQL-backed document/chunk schema and async persistence helpers.
+- Content-hash idempotency per organization and lifecycle states for documents.
+- Unit tests, a local retrieval demo, architecture/security notes, and a staged research roadmap.
 
 ## Boundaries
-This package does **not** yet embed documents, call an LLM, persist vectors, parse binary files, or perform production authorization by itself. Integrate it through NEXUS API authentication and tenant context. Dense scores must come from a separately configured embedding/vector adapter. Treat all retrieved content as untrusted data, not instructions.
+This subsystem does **not** yet generate embeddings, query a vector database, parse uploaded binary files, call an LLM, or expose a public API. The API must derive organization scope from authenticated membership and own transaction commits. Citation checks validate reference structure, not semantic entailment. Treat retrieved text as untrusted data, never as instructions.
 
 ## Quick start
 From the repository root:
 
-```bash
-python -m pytest services/rag/tests -q
+\`\`\`bash
+python -m pytest services/rag/tests tests/test_rag_persistence_contracts.py -q
 python -m services.rag.demo
-```
+\`\`\`
 
-See `docs/rag/phase-26-architecture.md` for design and `docs/rag/roadmap.md` for follow-on milestones.
+Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
+
+See \`docs/rag/phase-26-architecture.md\`, \`docs/rag/phase-27-persistent-corpus.md\`, and \`docs/rag/roadmap.md\`.
