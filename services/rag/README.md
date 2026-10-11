@@ -17,11 +17,11 @@ This subsystem does **not** yet generate embeddings, query a vector database, pa
 ## Quick start
 From the repository root:
 
-\`\`\`bash
+```bash
 python -m pytest services/rag/tests tests/test_rag_persistence_contracts.py -q
 python -m services.rag.demo
-\`\`\`
+```
 
 Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
 
-See \`docs/rag/phase-26-architecture.md\`, \`docs/rag/phase-27-persistent-corpus.md\`, and \`docs/rag/roadmap.md\`.
+See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, and `docs/rag/roadmap.md`.
