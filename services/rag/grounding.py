@@ -221,7 +221,7 @@ class CitationValidationReport:
     reason: str
 
 
-_CITATION_RE = re.compile(r"\\[(E[1-9][0-9]*)\\]")
+_CITATION_RE = re.compile(r"\[(E[1-9][0-9]*)\]")
 
 
 def validate_citations(
@@ -258,6 +258,6 @@ def evidence_prompt_block(evidence: Sequence[Evidence]) -> str:
     for item in evidence:
         blocks.append(
             f"[{item.evidence_id}] Source: {item.title} "
-            f"({item.source_uri or 'no URI'})\\n{item.text}"
+            f"({item.source_uri or 'no URI'})\n{item.text}"
         )
-    return "\\n\\n".join(blocks)
+    return "\n\n".join(blocks)
