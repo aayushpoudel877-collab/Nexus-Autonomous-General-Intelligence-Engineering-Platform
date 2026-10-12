@@ -24,6 +24,11 @@ class FakeProvider:
         return [[float(len(text)), 1.0] for text in texts]
 
 
+class WrongCountProvider(FakeProvider):
+    async def embed(self, texts):
+        return []
+
+
 @pytest.mark.asyncio
 async def test_embedding_batches_preserve_input_order():
     provider = FakeProvider()
@@ -54,6 +59,12 @@ async def test_embedding_rejects_empty_and_oversized_text():
         await embed_batched(FakeProvider(), ["  "])
     with pytest.raises(ValueError):
         await embed_batched(FakeProvider(), ["too long"], max_text_chars=3)
+
+
+@pytest.mark.asyncio
+async def test_embedding_rejects_malformed_provider_response():
+    with pytest.raises(ValueError, match="different number"):
+        await embed_batched(WrongCountProvider(), ["text"])
 
 
 def test_embedding_model_requires_identity_and_positive_dimensions():
@@ -100,6 +111,25 @@ async def test_vector_store_upsert_is_idempotent_for_tenant_chunk_key():
     )
     assert len(store) == 1
     assert matches[0].record.text == "new"
+
+
+@pytest.mark.asyncio
+async def test_vector_store_rejects_mixed_model_versions():
+    store = InMemoryVectorStore()
+    different_model = EmbeddingModel(
+        provider="test", model="tiny", version="v2", dimensions=2
+    )
+    records = [
+        VectorRecord("org-a", "doc-a", "chunk-a", "a", EmbeddingVector(MODEL, (1.0, 0.0))),
+        VectorRecord(
+            "org-a", "doc-b", "chunk-b", "b",
+            EmbeddingVector(different_model, (1.0, 0.0)),
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="model versions"):
+        await store.upsert(records)
+    assert len(store) == 0
 
 
 @pytest.mark.asyncio
