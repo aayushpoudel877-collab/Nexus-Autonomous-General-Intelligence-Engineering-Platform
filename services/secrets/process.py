@@ -47,7 +47,7 @@ class SecretBrokerProcess:
                     self.process.wait(),
                     timeout=BROKER_STOP_TIMEOUT_SECONDS,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 try:
                     self.process.kill()
                 except ProcessLookupError:
