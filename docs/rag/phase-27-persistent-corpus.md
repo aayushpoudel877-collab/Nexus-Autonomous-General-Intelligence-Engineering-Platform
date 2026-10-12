@@ -4,7 +4,7 @@
 - `rag_documents` stores organization ownership, title/source metadata, a SHA-256 fingerprint of the exact original UTF-8 text, character count, lifecycle status, and timestamps.
 - `rag_chunks` stores organization and document ownership, ordinal, normalized extracted text, source offsets into the normalized text, a whitespace-based token estimate, and timestamp.
 - A unique organization/content hash constraint makes exact-content ingestion idempotent within an organization while allowing the same content in different organizations.
-- Database checks constrain status values, non-negative ordinals, and positive source spans. Foreign keys cascade physical document deletion to chunks.
+- Database checks constrain status values, non-negative ordinals, and positive source spans. A composite foreign key enforces that each chunk and its parent document have the same organization; physical document deletion cascades to chunks.
 - Ingestion is bounded to 2,000,000 source characters, chunk sizes of 100–12,000 characters, and JSON metadata of at most 16 KiB. These limits protect the persistence boundary; API-level request limits are still required.
 
 ## Transaction contract
