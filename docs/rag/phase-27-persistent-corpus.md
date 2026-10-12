@@ -10,7 +10,7 @@
 ## Transaction contract
 `ingest_document` does not commit. The API/service caller owns transaction boundaries and must commit or roll back explicitly. The fingerprint is computed from original text, while chunks are produced from normalized text and offsets refer to that normalized representation. Existing active content returns the prior record without duplicating chunks; matching archived/deleted content fails closed.
 
-Concurrent duplicate ingestion can still race. The unique constraint remains authoritative; the API must catch the integrity conflict, roll back the failed transaction, and then reload the organization-scoped matching record rather than retrying within a failed transaction.
+Concurrent duplicate ingestion is protected by a savepoint. If the unique organization/content-hash constraint wins a race, the helper reloads and returns the active organization-scoped record without invalidating the caller's outer transaction. This recovery assumes PostgreSQL READ COMMITTED isolation; unrelated integrity errors are re-raised for the caller to handle.
 
 ## Lifecycle contract
 - `active -> archived`, `active -> deleted`, and `archived -> deleted` are permitted.
