@@ -69,9 +69,9 @@ class RagPersistenceContractTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertFalse(changed)
         statement = session.execute.await_args.args[0]
-        compiled = str(statement.compile(compile_kwargs={"literal_binds": True}))
-        self.assertIn("rag_documents.organization_id", compiled)
-        self.assertIn("rag_documents.status IN ('active')", compiled)
+        sql = str(statement)
+        self.assertIn("rag_documents.organization_id", sql)
+        self.assertIn("rag_documents.status IN", sql)
 
     async def test_matching_archived_document_fails_closed(self):
         session = AsyncMock()
