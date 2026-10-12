@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
-    BigInteger, CheckConstraint, DateTime, ForeignKey, Index, JSON, String, Text, UniqueConstraint, func,
+    BigInteger, CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Index, JSON, String, Text, UniqueConstraint, func,
 )
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,6 +15,7 @@ class RAGDocument(Base):
     __tablename__ = "rag_documents"
     __table_args__ = (
         UniqueConstraint("organization_id", "content_sha256", name="uq_rag_documents_org_hash"),
+        UniqueConstraint("id", "organization_id", name="uq_rag_documents_id_org"),
         CheckConstraint("status IN ('active', 'archived', 'deleted')", name="ck_rag_documents_status"),
         Index("ix_rag_documents_org_created", "organization_id", "created_at"),
     )
@@ -41,6 +42,12 @@ class RAGChunk(Base):
         CheckConstraint("ordinal >= 0", name="ck_rag_chunks_ordinal"),
         CheckConstraint("start_char >= 0 AND end_char > start_char", name="ck_rag_chunks_offsets"),
         Index("ix_rag_chunks_org_document", "organization_id", "document_id"),
+        ForeignKeyConstraint(
+            ["document_id", "organization_id"],
+            ["rag_documents.id", "rag_documents.organization_id"],
+            ondelete="CASCADE",
+            name="fk_rag_chunks_document_org",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -48,7 +55,7 @@ class RAGChunk(Base):
         PGUUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
     )
     document_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("rag_documents.id", ondelete="CASCADE"), nullable=False
+        PGUUID(as_uuid=True), nullable=False
     )
     ordinal: Mapped[int] = mapped_column(nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
