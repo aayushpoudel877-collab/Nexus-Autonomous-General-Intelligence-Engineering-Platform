@@ -344,7 +344,7 @@ async def perform_http_request(
         except EgressPolicyError:
             raise
         except (
-            asyncio.TimeoutError,
+            TimeoutError,
             ConnectionError,
             OSError,
             ssl.SSLError,
@@ -496,7 +496,7 @@ class EgressBroker:
             ValueError,
             TypeError,
             ConnectionError,
-            asyncio.TimeoutError,
+            TimeoutError,
             binascii.Error,
             ssl.SSLError,
         ):
