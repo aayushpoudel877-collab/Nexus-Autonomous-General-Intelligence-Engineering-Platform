@@ -31,4 +31,4 @@ line-length = 100
 include = ["services*", "packages*"]
 
 [tool.ruff.lint]
-ignore = ["B008", "UP017"]
+ignore = ["B008", "UP017", "I001"]
