@@ -63,3 +63,26 @@ def test_rejects_invalid_limit_and_non_bytes():
         extract_document(b"hello", filename="a.txt", max_bytes=0)
     with pytest.raises(TypeError):
         extract_document("hello", filename="a.txt")
+
+
+def test_extracts_docx_paragraphs_and_tables():
+    from io import BytesIO
+
+    from docx import Document
+
+    document = Document()
+    document.add_paragraph("NEXUS document ingestion")
+    table = document.add_table(rows=1, cols=2)
+    table.cell(0, 0).text = "retrieval"
+    table.cell(0, 1).text = "evaluation"
+    buffer = BytesIO()
+    document.save(buffer)
+
+    result = extract_document(
+        buffer.getvalue(),
+        filename="course.docx",
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    assert "NEXUS document ingestion" in result.text
+    assert "retrieval | evaluation" in result.text
+    assert result.parser == "python-docx-text-v1"
