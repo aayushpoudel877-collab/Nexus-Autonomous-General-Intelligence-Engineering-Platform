@@ -2,7 +2,7 @@
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +11,6 @@ from ..db.session import get_db
 from ..models import RAGChunk, RAGDocument, User
 from ..services.audit import record_audit
 from services.rag.chunking import Chunk
-from services.rag.grounding import evidence_prompt_block
 from services.rag.persistence import (
     DocumentAlreadyArchived,
     ingest_document,
@@ -35,6 +34,7 @@ router = APIRouter(prefix="/rag", tags=["rag-knowledge"])
 @router.post("/documents", response_model=RAGDocumentCreated, status_code=status.HTTP_201_CREATED)
 async def create_document(
     payload: RAGDocumentCreate,
+    response: Response,
     user: User = Depends(require_roles("owner", "admin", "instructor")),
     db: AsyncSession = Depends(get_db),
 ):
@@ -67,6 +67,7 @@ async def create_document(
         )
     await db.commit()
     await db.refresh(document)
+    response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return RAGDocumentCreated(document=RAGDocumentRead.from_record(document), created=created)
 
 
@@ -178,7 +179,7 @@ async def query_corpus(
             RAGDocument.status == "active",
         )
         .order_by(RAGDocument.created_at.desc(), RAGChunk.ordinal.asc())
-        .limit(10_000)
+        .limit(2_000)
     )
     pairs = rows.all()
     chunks = [
