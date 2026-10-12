@@ -2,6 +2,7 @@
 
 from .chunking import Chunk, chunk_text
 from .embedding_cache import EmbeddingCache
+from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
 from .generation import (
     GenerationAnswer,
     GenerationEvidence,
@@ -10,7 +11,18 @@ from .generation import (
     ProviderGeneration,
     generate_grounded_answer,
 )
-from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
+from .grounding import (
+    CitationValidationReport,
+    ClaimEvidence,
+    ClaimGroundingReport,
+    ClaimGroundingVerifier,
+    GroundingAssessment,
+    GroundingClaim,
+    GroundingReport,
+    LexicalGroundingVerifier,
+    evidence_prompt_block,
+    validate_citations,
+)
 from .ranking import (
     RankedCandidate,
     compare_ranking_runs,
@@ -24,6 +36,10 @@ from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, Vector
 
 __all__ = [
     "Chunk",
+    "CitationValidationReport",
+    "ClaimEvidence",
+    "ClaimGroundingReport",
+    "ClaimGroundingVerifier",
     "EmbeddingCache",
     "EmbeddingModel",
     "EmbeddingProvider",
@@ -33,7 +49,11 @@ __all__ = [
     "GenerationEvidence",
     "GenerationProvider",
     "GenerationRequest",
+    "GroundingAssessment",
+    "GroundingClaim",
+    "GroundingReport",
     "InMemoryVectorStore",
+    "LexicalGroundingVerifier",
     "ProviderGeneration",
     "RankedCandidate",
     "RetrievalHit",
@@ -44,9 +64,11 @@ __all__ = [
     "compare_ranking_runs",
     "diversify_by_group",
     "embed_batched",
+    "evidence_prompt_block",
     "filter_candidates",
     "generate_grounded_answer",
     "hybrid_retrieve",
     "ranking_metrics",
     "reciprocal_rank_fusion",
+    "validate_citations",
 ]
