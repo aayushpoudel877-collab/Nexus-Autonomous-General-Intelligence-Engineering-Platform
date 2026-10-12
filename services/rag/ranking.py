@@ -150,23 +150,23 @@ def ranking_metrics(
 
 
 def compare_ranking_runs(
-    runs: Mapping[str, Sequence[str]],
+    runs: Mapping[str, Mapping[str, Sequence[str]]],
     relevance: Mapping[str, set[str]],
     *,
     k: int = 10,
 ) -> dict[str, dict[str, float]]:
-    """Produce comparable per-query and mean metrics for named ranking strategies."""
+    """Compare named strategies over query-specific rankings and relevance labels."""
     if not runs:
         raise ValueError("at least one ranking run is required")
     if not relevance:
         raise ValueError("at least one relevance judgement is required")
     report: dict[str, dict[str, float]] = {}
-    for name, ranked_ids in runs.items():
+    for name, query_runs in runs.items():
         if not name.strip():
             raise ValueError("run names must be non-empty")
         per_query = [
-            ranking_metrics(ranked_ids, relevant, k=k)
-            for relevant in relevance.values()
+            ranking_metrics(query_runs.get(query_id, ()), relevant, k=k)
+            for query_id, relevant in relevance.items()
         ]
         metric_names = per_query[0].keys()
         report[name] = {
