@@ -2,8 +2,6 @@ from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
-from fastapi.routing import APIRoute
-
 from services.api.app.main import app
 from services.api.app.routes.rag import router
 from services.api.app.schemas.rag import RAGDocumentCreate, RAGQueryRequest
@@ -17,17 +15,12 @@ def _dependency_calls(dependant):
 
 
 def test_rag_routes_are_registered_under_api_v1():
-    routes = {
-        (route.path, method)
-        for route in app.routes
-        if isinstance(route, APIRoute)
-        for method in route.methods
-    }
-    assert ("/api/v1/rag/documents", "POST") in routes
-    assert ("/api/v1/rag/documents", "GET") in routes
-    assert ("/api/v1/rag/documents/{document_id}/chunks", "GET") in routes
-    assert ("/api/v1/rag/documents/{document_id}", "DELETE") in routes
-    assert ("/api/v1/rag/query", "POST") in routes
+    paths = app.openapi()["paths"]
+    assert "post" in paths["/api/v1/rag/documents"]
+    assert "get" in paths["/api/v1/rag/documents"]
+    assert "get" in paths["/api/v1/rag/documents/{document_id}/chunks"]
+    assert "delete" in paths["/api/v1/rag/documents/{document_id}"]
+    assert "post" in paths["/api/v1/rag/query"]
 
 
 def test_every_rag_endpoint_requires_authenticated_user_context():
