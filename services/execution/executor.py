@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from services.api.app.models import ExecutionRequest
 from services.secrets.broker import SecretGrantSpec
