@@ -4,9 +4,15 @@
 Maintain a versioned JSONL set with one record per query: `case_id`, `tenant_id`, `query`, `relevant_chunk_ids`, expected answer claims, required source IDs, language, risk category, and reviewer notes. Do not include production personal data in fixtures.
 
 ## Retrieval metrics
-- Recall@k = relevant retrieved chunks / all known relevant chunks.
+- Precision@k = relevant retrieved chunks divided by requested k.
+- Recall@k = relevant retrieved chunks divided by all known relevant chunks.
 - Reciprocal rank = 1 / rank of the first relevant chunk, or zero if none is found.
+- NDCG@k discounts relevant results lower in the ranked list.
 - Also report empty-result rate, per-tenant isolation tests, and latency percentiles.
+- Compare each strategy per query, then average over the same judged query set; a missing ranking counts as an empty result.
+
+## Ranking experiment record
+Record the dataset version/hash, query set, tenant filter, candidate-generation source, BM25 k1/b, lexical/dense weights, RRF rank constant and weights, diversity limit, top-k, code revision, and environment. Keep a baseline run unchanged. Separate tuning data from final evaluation data and do not claim a ranking improvement until results have been computed on a reviewed dataset.
 
 ## Answer metrics
 - Citation coverage: fraction of factual answer claims with citations.
