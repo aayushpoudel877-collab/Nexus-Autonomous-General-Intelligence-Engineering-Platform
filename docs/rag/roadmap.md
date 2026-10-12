@@ -1,5 +1,7 @@
 # RAG Knowledge Intelligence Roadmap
 
+**Phase numbering is local to the RAG subsystem** and is independent of the platform-wide phase numbers in `docs/roadmap.md`.
+
 This is a multi-phase research and engineering program. A large commit count is not a quality metric; changes should represent reviewable, tested improvements.
 
 - **Phase 26 — Retrieval core (implemented):** contracts, normalization/chunking, tenant-scoped lexical retrieval, optional dense-score fusion, evidence packaging, citation structure checks, baseline metrics and tests.
