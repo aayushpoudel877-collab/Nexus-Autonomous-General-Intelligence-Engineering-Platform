@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import pytest
+from fastapi.routing import APIRoute
 from pydantic import ValidationError
 from services.api.app.main import app
 from services.api.app.routes.rag import router
