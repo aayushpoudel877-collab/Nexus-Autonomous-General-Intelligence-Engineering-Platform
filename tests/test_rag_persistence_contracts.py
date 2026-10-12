@@ -26,7 +26,7 @@ class RagPersistenceContractTests(unittest.IsolatedAsyncioTestCase):
         session = AsyncMock()
         with self.assertRaises(ValueError):
             await ingest_document(session, organization_id=uuid4(), title=None, text="text")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             await ingest_document(session, organization_id=uuid4(), title="title", text="text", source_uri=None)
         with self.assertRaises(ValueError):
             await ingest_document(
