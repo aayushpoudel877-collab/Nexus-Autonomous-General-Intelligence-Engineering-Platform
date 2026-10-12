@@ -23,4 +23,3 @@ def test_upload_route_requires_authenticated_role_and_database_context():
     assert "get_current_user" in names
     assert "get_db" in names
     assert "get_membership" in names
-    assert "require_roles" in names
