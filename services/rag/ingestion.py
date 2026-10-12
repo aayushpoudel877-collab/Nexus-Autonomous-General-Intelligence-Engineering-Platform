@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from html.parser import HTMLParser
 from io import BytesIO
 from pathlib import PurePosixPath
+from typing import ClassVar
 from zipfile import BadZipFile, ZipFile
 
 SUPPORTED_FORMATS = {
@@ -41,7 +42,7 @@ class ExtractionResult:
 class _VisibleHTMLText(HTMLParser):
     """Collect visible HTML text while ignoring active or non-content elements."""
 
-    _IGNORED = {"script", "style", "noscript", "template", "svg", "head"}
+    _IGNORED: ClassVar[set[str]] = {"script", "style", "noscript", "template", "svg", "head"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -158,10 +159,12 @@ def extract_document(
         raise DocumentExtractionError(f"unsupported file extension: {suffix or '(none)'}")
 
     declared_type = (content_type or "").split(";", 1)[0].strip().lower()
-    if declared_type not in _GENERIC_MIME_TYPES and declared_type != expected_type:
-        # Browsers commonly label Markdown as text/plain.
-        if not (suffix == ".md" and declared_type == "text/plain"):
-            raise DocumentExtractionError("declared content type does not match the file extension")
+    if (
+        declared_type not in _GENERIC_MIME_TYPES
+        and declared_type != expected_type
+        and not (suffix == ".md" and declared_type == "text/plain")
+    ):
+        raise DocumentExtractionError("declared content type does not match the file extension")
 
     if suffix in {".txt", ".md"}:
         text = _decode_text(data)
