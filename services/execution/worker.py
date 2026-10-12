@@ -29,7 +29,7 @@ async def _heartbeat_loop(request_id, stop_event: asyncio.Event) -> None:
         try:
             await asyncio.wait_for(stop_event.wait(), timeout=interval)
             return
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pass
 
         async with SessionLocal() as heartbeat_db:
