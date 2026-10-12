@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import math
 import re
 from collections import Counter
-from typing import Iterable
+from collections.abc import Iterable
 from .chunking import Chunk
 
 _TOKEN = re.compile(r"[a-z0-9_]+", re.I)
