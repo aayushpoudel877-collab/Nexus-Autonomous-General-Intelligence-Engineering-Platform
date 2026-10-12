@@ -34,7 +34,7 @@ NEXUS-Ω is a research-driven monorepo for building governed autonomous AI syste
 - **Governed execution:** approved installations/releases, artifact trust and content-addressed staging, optional isolated OCI runtime, cooperative cancellation, controlled egress mediation, and secret-grant checks. Runtime launch is disabled by default; secret-enabled execution remains fail-closed without a configured external provider.
 - **Durable workflows:** tenant-scoped DAGs, persisted runs and node state, worker leases/retries, ordered event history, deterministic replay/drift analysis, and read-only governed recovery recommendations.
 - **RAG retrieval core:** normalized text chunking, tenant-scoped lexical retrieval with tunable BM25, dense-score fusion, document filters, source-diversity limits, evidence packaging, provider-neutral embedding contracts, bounded batching, model-version validation, tenant-scoped LRU caching, weighted reciprocal-rank fusion, and offline precision/recall/MRR/NDCG metrics.
-- **RAG persistent corpus (feature branch foundation):** organization-scoped document/chunk records, exact-content SHA-256 deduplication, bounded metadata and text ingestion, and monotonic lifecycle transitions. Phase 28 adds authenticated, organization-scoped corpus routes and bounded lexical query responses. Hosted embedding providers, durable vector indexing, API integration of semantic retrieval, binary document parsing, grounded LLM generation, semantic entailment evaluation and deletion propagation to external indexes are not yet implemented. The in-memory vector store is for tests/local demos only.
+- **RAG persistent corpus (feature branch foundation):** organization-scoped document/chunk records, exact-content SHA-256 deduplication, bounded metadata and text ingestion, and monotonic lifecycle transitions. Phase 28 adds authenticated, organization-scoped corpus routes and bounded lexical query responses. Phase 31 adds bounded TXT/Markdown/HTML/PDF/DOCX extraction through an authenticated multipart upload endpoint, with parser provenance and upload audit details. Malware scanning, OCR, durable dead-letter processing, hosted embedding providers, durable vector indexing, API integration of semantic retrieval, grounded LLM generation, semantic entailment evaluation and deletion propagation to external indexes remain open. The in-memory vector store is for tests/local demos only.
 
 These are scoped foundations, not a claim that the complete long-term platform is production-ready. Full distributed rate limiting, tracing, secret rotation, disaster recovery, binary multimodal processing, verified benchmark execution, vector indexing, semantic entailment evaluation, and multilingual/low-resource retrieval remain future work.
 
@@ -45,7 +45,7 @@ Python requirements and optional development dependencies are defined in `pyproj
 Typical checks from the repository root:
 
 ```bash
-pip install -e '.[dev]'
+pip install -e '.[documents,dev]'
 ruff check .
 pytest
 cd apps/web
