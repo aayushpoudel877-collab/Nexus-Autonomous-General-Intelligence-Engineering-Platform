@@ -23,6 +23,7 @@ from .integration import IntegrationConnection, PluginInstallation, PluginReleas
 from .execution import ExecutionRequest
 from .trust import PluginTrustRoot
 from .secrets import SecretGrant
+from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
 from .workflow_event import WorkflowEvent
 from .rag import RAGDocument, RAGChunk
 
@@ -73,4 +74,3 @@ __all__ = [
     "WorkflowRun",
 ]
 
-from .workflow import WorkflowDefinition, WorkflowNode, WorkflowRun, WorkflowNodeRun, WorkflowApproval
