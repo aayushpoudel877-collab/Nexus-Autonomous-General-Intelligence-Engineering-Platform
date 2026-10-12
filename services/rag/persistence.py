@@ -5,6 +5,7 @@ read/update is still scoped by organization_id to reduce accidental cross-tenant
 """
 from __future__ import annotations
 
+import json
 from hashlib import sha256
 from uuid import UUID
 
@@ -14,9 +15,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from services.api.app.models.rag import RAGChunk, RAGDocument
 from .chunking import Chunk, chunk_text
 
+MAX_DOCUMENT_CHARS = 2_000_000
+MAX_CHUNK_CHARS = 12_000
+MAX_METADATA_BYTES = 16_384
+
 
 class DocumentAlreadyArchived(ValueError):
-    """Raised when an archived document is selected for a new ingestion operation."""
+    """Raised when an archived or deleted document is selected for new ingestion."""
 
 
 async def ingest_document(
@@ -34,12 +39,29 @@ async def ingest_document(
 
     Returns (document, created). The caller owns the transaction and commit boundary.
     """
-    if not title.strip():
-        raise ValueError("title must not be empty")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("title must be a non-empty string")
     if not isinstance(text, str) or not text.strip():
-        raise ValueError("document text must not be empty")
+        raise ValueError("document text must be a non-empty string")
+    if not isinstance(source_uri, str):
+        raise ValueError("source_uri must be a string")
     if len(title) > 300 or len(source_uri) > 2048:
         raise ValueError("title or source_uri exceeds the supported length")
+    if len(text) > MAX_DOCUMENT_CHARS:
+        raise ValueError(f"document text exceeds {MAX_DOCUMENT_CHARS} characters")
+    if not 100 <= max_chars <= MAX_CHUNK_CHARS or not 0 <= overlap < max_chars:
+        raise ValueError(f"require 100 <= max_chars <= {MAX_CHUNK_CHARS} and 0 <= overlap < max_chars")
+
+    metadata_value = {} if metadata is None else metadata
+    if not isinstance(metadata_value, dict):
+        raise ValueError("metadata must be a JSON object")
+    try:
+        metadata_size = len(json.dumps(metadata_value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+    except (TypeError, ValueError, UnicodeError) as exc:
+        raise ValueError("metadata must contain JSON-serializable values") from exc
+    if metadata_size > MAX_METADATA_BYTES:
+        raise ValueError(f"metadata exceeds {MAX_METADATA_BYTES} bytes")
+
     digest = sha256(text.encode("utf-8")).hexdigest()
     existing = await session.scalar(
         select(RAGDocument).where(
@@ -58,7 +80,7 @@ async def ingest_document(
         source_uri=source_uri,
         content_sha256=digest,
         content_chars=len(text),
-        metadata_json=metadata or {},
+        metadata_json=metadata_value,
     )
     chunks: list[Chunk] = chunk_text(
         text, str(document.id or "pending"), str(organization_id),
@@ -66,7 +88,6 @@ async def ingest_document(
     )
     session.add(document)
     await session.flush()
-    # Re-key chunks to the database-generated document UUID after flush.
     for part in chunks:
         session.add(RAGChunk(
             organization_id=organization_id,
@@ -104,14 +125,24 @@ async def list_document_chunks(
 async def set_document_status(
     session: AsyncSession, *, organization_id: UUID, document_id: UUID, status: str,
 ) -> bool:
-    """Update lifecycle state with tenant-scoped predicates; return whether a row matched."""
+    """Apply monotonic lifecycle transitions; return whether a tenant-scoped row matched.
+
+    Allowed transitions are active -> archived/deleted and archived -> deleted.
+    Repeating the current status is idempotent. Deleted documents cannot be restored.
+    """
     if status not in {"active", "archived", "deleted"}:
         raise ValueError("unsupported document status")
+    allowed_current = {
+        "active": ("active",),
+        "archived": ("active", "archived"),
+        "deleted": ("active", "archived", "deleted"),
+    }[status]
     result = await session.execute(
         update(RAGDocument)
         .where(
             RAGDocument.id == document_id,
             RAGDocument.organization_id == organization_id,
+            RAGDocument.status.in_(allowed_current),
         )
         .values(status=status)
     )
