@@ -86,7 +86,7 @@ class ProviderGeneration:
 
     def __post_init__(self) -> None:
         if not isinstance(self.output, str):
-            raise ValueError("provider output must be a string")
+            raise TypeError("provider output must be a string")
         for label, count in (("input_tokens", self.input_tokens), ("output_tokens", self.output_tokens)):
             if count is not None and (not isinstance(count, int) or count < 0):
                 raise ValueError(f"{label} must be a non-negative integer")
@@ -228,9 +228,8 @@ async def generate_grounded_answer(
             if result.output_tokens is not None and result.output_tokens > request.max_output_tokens:
                 raise InvalidGenerationOutput("provider output token usage exceeded budget")
             return _parse_output(result, allowed_ids=allowed_ids, request=request, attempt=attempt)
-        except asyncio.TimeoutError as exc:
+        except TimeoutError:
             last_error = TransientGenerationError("generation provider timed out")
-            last_error.__cause__ = exc
         except TransientGenerationError as exc:
             last_error = exc
         except InvalidGenerationOutput:
