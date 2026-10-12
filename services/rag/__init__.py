@@ -13,6 +13,7 @@ from .generation import (
 )
 from .grounding import (
     ClaimEvidence,
+    ClaimGroundingReport,
     ClaimGroundingVerifier,
     CitationValidationReport,
     GroundingAssessment,
@@ -36,6 +37,7 @@ from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, Vector
 __all__ = [
     "Chunk",
     "ClaimEvidence",
+    "ClaimGroundingReport",
     "ClaimGroundingVerifier",
     "CitationValidationReport",
     "EmbeddingCache",
