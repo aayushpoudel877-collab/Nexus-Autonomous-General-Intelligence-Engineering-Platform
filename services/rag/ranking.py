@@ -50,13 +50,16 @@ def reciprocal_rank_fusion(
             raise ValueError("weights must be finite and non-negative")
     scores: dict[str, float] = {}
     for ranking, weight in zip(rankings, effective_weights):
+        unique_ids: list[str] = []
         seen: set[str] = set()
-        for position, candidate_id in enumerate(ranking, start=1):
+        for candidate_id in ranking:
             if not isinstance(candidate_id, str) or not candidate_id.strip():
                 raise ValueError("ranking IDs must be non-empty strings")
             if candidate_id in seen:
                 continue
             seen.add(candidate_id)
+            unique_ids.append(candidate_id)
+        for position, candidate_id in enumerate(unique_ids, start=1):
             scores[candidate_id] = scores.get(candidate_id, 0.0) + weight / (
                 rank_constant + position
             )
