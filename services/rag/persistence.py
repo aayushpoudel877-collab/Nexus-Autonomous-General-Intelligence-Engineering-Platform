@@ -56,7 +56,7 @@ async def ingest_document(
     if not isinstance(metadata_value, dict):
         raise ValueError("metadata must be a JSON object")
     try:
-        metadata_size = len(json.dumps(metadata_value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        metadata_size = len(json.dumps(metadata_value, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8"))
     except (TypeError, ValueError, UnicodeError) as exc:
         raise ValueError("metadata must contain JSON-serializable values") from exc
     if metadata_size > MAX_METADATA_BYTES:
