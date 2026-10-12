@@ -72,7 +72,7 @@ class GroundingAssessment:
 
 
 @dataclass(frozen=True, slots=True)
-class GroundingReport:
+class ClaimGroundingReport:
     assessments: tuple[GroundingAssessment, ...]
     claim_count: int
     grounded_count: int
@@ -92,7 +92,7 @@ class ClaimGroundingVerifier(Protocol):
         self,
         claims: Sequence[GroundingClaim],
         evidence: Sequence[ClaimEvidence],
-    ) -> GroundingReport:
+    ) -> ClaimGroundingReport:
         """Assess claim support without changing the supplied source records."""
 
 
@@ -197,7 +197,7 @@ class LexicalGroundingVerifier:
         contradictory = sum(item.status == "contradictory" for item in assessments)
         inconclusive = sum(item.status == "inconclusive" for item in assessments)
         cited_count = sum(bool(item.cited_evidence_ids) for item in assessments)
-        return GroundingReport(
+        return ClaimGroundingReport(
             assessments=tuple(assessments),
             claim_count=count,
             grounded_count=grounded,
@@ -211,14 +211,17 @@ class LexicalGroundingVerifier:
 
 
 @dataclass(frozen=True, slots=True)
-class CitationValidationReport:
-    """Structural citation check; it does not determine whether claims are true."""
+class GroundingReport:
+    """Backward-compatible structural citation-validation result."""
 
     valid: bool
     cited_evidence: tuple[str, ...]
     unknown_citations: tuple[str, ...]
     has_citation: bool
     reason: str
+
+
+CitationValidationReport = GroundingReport
 
 
 _CITATION_RE = re.compile(r"\[(E[1-9][0-9]*)\]")
@@ -229,13 +232,13 @@ def validate_citations(
     evidence: Sequence[Evidence],
     *,
     require_citation: bool = True,
-) -> CitationValidationReport:
+) -> GroundingReport:
     """Validate bracketed evidence references without claiming semantic support."""
     allowed = {item.evidence_id for item in evidence}
     cited = tuple(dict.fromkeys(_CITATION_RE.findall(answer)))
     unknown = tuple(ref for ref in cited if ref not in allowed)
     if unknown:
-        return CitationValidationReport(
+        return GroundingReport(
             False, cited, unknown, bool(cited),
             "answer contains citations absent from supplied evidence",
         )
