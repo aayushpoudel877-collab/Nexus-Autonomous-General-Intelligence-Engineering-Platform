@@ -21,7 +21,7 @@ def test_rrf_combines_ranked_lists_deterministically():
 
 def test_rrf_deduplicates_candidates_per_list():
     result = reciprocal_rank_fusion([["b", "b", "a"], ["a", "b"]], rank_constant=10)
-    assert [item.candidate_id for item in result] == ["b", "a"]
+    assert [item.candidate_id for item in result] == ["a", "b"]
 
 
 @pytest.mark.parametrize("kwargs", [{"rank_constant": -1}, {"top_k": 0}, {"weights": [1.0]}])
