@@ -61,13 +61,15 @@ class InMemoryVectorStore:
         self._model: EmbeddingModel | None = None
 
     async def upsert(self, records: Sequence[VectorRecord]) -> None:
-        for record in records:
-            self._check_model(record.embedding.model)
+        if not records:
+            return
+        model = self._model or records[0].embedding.model
+        if any(record.embedding.model != model for record in records):
+            raise ValueError("vector store cannot mix embedding model versions")
         for record in records:
             key = (record.tenant_id, record.chunk_id)
             self._records[key] = record
-        if records and self._model is None:
-            self._model = records[0].embedding.model
+        self._model = model
 
     async def search(
         self, *, tenant_id: str, query: EmbeddingVector, top_k: int = 5
@@ -102,10 +104,6 @@ class InMemoryVectorStore:
 
     def __len__(self) -> int:
         return len(self._records)
-
-    def _check_model(self, model: EmbeddingModel) -> None:
-        if self._model is not None and model != self._model:
-            raise ValueError("vector store cannot mix embedding model versions")
 
     @staticmethod
     def _cosine(left: Iterable[float], right: Iterable[float]) -> float:
