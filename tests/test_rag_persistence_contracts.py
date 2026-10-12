@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
+from services.api.app.models.rag import RAGChunk, RAGDocument
 from services.rag.persistence import (
     MAX_DOCUMENT_CHARS,
     MAX_METADATA_BYTES,
@@ -14,6 +15,12 @@ from services.rag.persistence import (
 
 
 class RagPersistenceContractTests(unittest.IsolatedAsyncioTestCase):
+    def test_chunk_foreign_key_enforces_matching_organization(self):
+        document_constraints = {constraint.name for constraint in RAGDocument.__table__.constraints}
+        chunk_constraints = {constraint.name for constraint in RAGChunk.__table__.constraints}
+        self.assertIn("uq_rag_documents_id_org", document_constraints)
+        self.assertIn("fk_rag_chunks_document_org", chunk_constraints)
+
     async def test_rejects_empty_title_and_text_before_database_access(self):
         session = AsyncMock()
         with self.assertRaises(ValueError):
