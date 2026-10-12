@@ -108,12 +108,15 @@ def _extract_pdf(data: bytes) -> str:
 def _extract_docx(data: bytes) -> str:
     try:
         with ZipFile(BytesIO(data)) as archive:
-            names = set(archive.namelist())
+            entries = archive.infolist()
+            names = {entry.filename for entry in entries}
             if "word/document.xml" not in names:
                 raise DocumentExtractionError("file content does not match DOCX format")
             info = archive.getinfo("word/document.xml")
             if info.file_size > 20 * 1024 * 1024:
                 raise DocumentExtractionError("DOCX document XML exceeds the supported size")
+            if sum(entry.file_size for entry in entries) > 50 * 1024 * 1024:
+                raise DocumentExtractionError("DOCX expanded archive exceeds the supported size")
     except BadZipFile as exc:
         raise DocumentExtractionError("file content does not match DOCX format") from exc
     try:
