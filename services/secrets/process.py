@@ -11,7 +11,7 @@ import signal
 import sys
 import uuid
 
-from .broker import SecretGrantSpec, SecretBroker
+from .broker import SecretGrantSpec
 
 BROKER_START_TIMEOUT_SECONDS = 5
 BROKER_STOP_TIMEOUT_SECONDS = 5
