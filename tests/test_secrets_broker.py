@@ -11,7 +11,6 @@ from services.secrets.broker import (
     MAX_SECRET_VALUE_BYTES,
     SecretBroker,
     SecretGrantSpec,
-    SecretPolicyError,
     secret_ref_matches,
     secret_ref_sha256,
 )
