@@ -1,6 +1,22 @@
-"""NEXUS RAG intelligence package (Phase 26)."""
+"""NEXUS RAG intelligence package."""
 
 from .chunking import Chunk, chunk_text
+from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
 from .retrieval import Evidence, RetrievalHit, hybrid_retrieve
+from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, VectorStore
 
-__all__ = ["Chunk", "Evidence", "RetrievalHit", "chunk_text", "hybrid_retrieve"]
+__all__ = [
+    "Chunk",
+    "EmbeddingModel",
+    "EmbeddingProvider",
+    "EmbeddingVector",
+    "Evidence",
+    "InMemoryVectorStore",
+    "RetrievalHit",
+    "VectorMatch",
+    "VectorRecord",
+    "VectorStore",
+    "chunk_text",
+    "embed_batched",
+    "hybrid_retrieve",
+]
