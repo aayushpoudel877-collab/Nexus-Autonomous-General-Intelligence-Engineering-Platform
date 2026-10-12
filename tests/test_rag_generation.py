@@ -161,9 +161,9 @@ async def test_timeout_is_bounded_and_retried():
 
 @pytest.mark.asyncio
 async def test_oversized_answer_is_rejected():
-    provider = FakeGenerator([response(answer="x" * 30)])
+    provider = FakeGenerator([response(answer="x" * 101)])
     with pytest.raises(InvalidGenerationOutput, match="max_answer_chars"):
-        await generate_grounded_answer(provider, request(max_answer_chars=20))
+        await generate_grounded_answer(provider, request(max_answer_chars=100))
 
 
 def test_generation_request_validates_budgets_timeout_and_attempts():
