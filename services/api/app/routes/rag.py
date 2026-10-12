@@ -156,7 +156,6 @@ async def delete_document(
         resource_id=str(document_id),
     )
     await db.commit()
-    return None
 
 
 @router.post("/query", response_model=RAGQueryResponse)
