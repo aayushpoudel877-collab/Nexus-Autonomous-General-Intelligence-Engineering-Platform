@@ -132,6 +132,7 @@ async def test_secret_broker_subprocess_uses_external_provider_without_secrets_i
         ],
     )
     try:
+        assert Path(token_path).stat().st_mode & 0o777 == 0o600
         token = Path(token_path).read_text(encoding="ascii")
         reader, writer = await asyncio.open_unix_connection(broker.socket_path)
         writer.write(
