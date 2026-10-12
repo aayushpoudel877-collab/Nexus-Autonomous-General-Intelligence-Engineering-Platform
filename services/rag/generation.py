@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -72,6 +72,9 @@ class GenerationRequest:
             raise ValueError("max_attempts must be between 1 and 3")
         if not self.prompt_version.strip():
             raise ValueError("prompt_version is required")
+        evidence_ids = [item.evidence_id for item in self.evidence]
+        if len(evidence_ids) != len(set(evidence_ids)):
+            raise ValueError("evidence IDs must be unique within a generation request")
 
 
 @dataclass(frozen=True, slots=True)
