@@ -2,7 +2,8 @@
 
 from .chunking import Chunk, chunk_text
 from .embedding_cache import EmbeddingCache
-from .grounding import (\n    ClaimEvidence,\n    ClaimGroundingVerifier,\n    CitationValidationReport,\n    GroundingAssessment,\n    GroundingClaim,\n    GroundingReport,\n    LexicalGroundingVerifier,\n    evidence_prompt_block,\n    validate_citations,\n)\nfrom .generation import (
+from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
+from .generation import (
     GenerationAnswer,
     GenerationEvidence,
     GenerationProvider,
@@ -10,7 +11,17 @@ from .grounding import (\n    ClaimEvidence,\n    ClaimGroundingVerifier,\n    C
     ProviderGeneration,
     generate_grounded_answer,
 )
-from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
+from .grounding import (
+    ClaimEvidence,
+    ClaimGroundingVerifier,
+    CitationValidationReport,
+    GroundingAssessment,
+    GroundingClaim,
+    GroundingReport,
+    LexicalGroundingVerifier,
+    evidence_prompt_block,
+    validate_citations,
+)
 from .ranking import (
     RankedCandidate,
     compare_ranking_runs,
@@ -24,6 +35,9 @@ from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, Vector
 
 __all__ = [
     "Chunk",
+    "ClaimEvidence",
+    "ClaimGroundingVerifier",
+    "CitationValidationReport",
     "EmbeddingCache",
     "EmbeddingModel",
     "EmbeddingProvider",
@@ -33,7 +47,11 @@ __all__ = [
     "GenerationEvidence",
     "GenerationProvider",
     "GenerationRequest",
+    "GroundingAssessment",
+    "GroundingClaim",
+    "GroundingReport",
     "InMemoryVectorStore",
+    "LexicalGroundingVerifier",
     "ProviderGeneration",
     "RankedCandidate",
     "RetrievalHit",
@@ -44,9 +62,11 @@ __all__ = [
     "compare_ranking_runs",
     "diversify_by_group",
     "embed_batched",
+    "evidence_prompt_block",
     "filter_candidates",
     "generate_grounded_answer",
     "hybrid_retrieve",
     "ranking_metrics",
     "reciprocal_rank_fusion",
+    "validate_citations",
 ]
