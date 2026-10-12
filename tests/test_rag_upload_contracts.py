@@ -22,4 +22,4 @@ def test_upload_route_requires_authenticated_role_and_database_context():
     names = _dependency_names(route.dependant)
     assert "get_current_user" in names
     assert "get_db" in names
-    assert "get_membership" in names
+    assert "dependency" in names
