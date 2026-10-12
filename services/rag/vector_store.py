@@ -3,6 +3,8 @@
 The in-memory implementation is intended for local development and tests only.
 Production deployments should implement VectorStore using a durable backend with
 tenant filtering enforced by the storage query, not by application-side filtering.
+The reference backend deliberately accepts one model version per store instance so
+vectors from incompatible spaces can never be compared accidentally.
 """
 from __future__ import annotations
 
@@ -56,12 +58,16 @@ class InMemoryVectorStore:
 
     def __init__(self) -> None:
         self._records: dict[tuple[str, str], VectorRecord] = {}
+        self._model: EmbeddingModel | None = None
 
     async def upsert(self, records: Sequence[VectorRecord]) -> None:
         for record in records:
             self._check_model(record.embedding.model)
+        for record in records:
             key = (record.tenant_id, record.chunk_id)
             self._records[key] = record
+        if records and self._model is None:
+            self._model = records[0].embedding.model
 
     async def search(
         self, *, tenant_id: str, query: EmbeddingVector, top_k: int = 5
@@ -70,13 +76,12 @@ class InMemoryVectorStore:
             raise ValueError("tenant_id is required")
         if not 1 <= top_k <= 100:
             raise ValueError("top_k must be between 1 and 100")
+        if self._model is not None and query.model != self._model:
+            raise ValueError("cannot compare embeddings from different model versions")
         matches = []
         for record in self._records.values():
             if record.tenant_id != tenant_id:
                 continue
-            self._check_model(record.embedding.model)
-            if record.embedding.model != query.model:
-                raise ValueError("cannot compare embeddings from different model versions")
             score = self._cosine(query.values, record.embedding.values)
             matches.append(VectorMatch(record=record, score=score))
         matches.sort(key=lambda match: (-match.score, match.record.document_id, match.record.chunk_id))
@@ -91,18 +96,16 @@ class InMemoryVectorStore:
         ]
         for key in keys:
             del self._records[key]
+        if not self._records:
+            self._model = None
         return len(keys)
 
     def __len__(self) -> int:
         return len(self._records)
 
     def _check_model(self, model: EmbeddingModel) -> None:
-        if any(
-            record.embedding.model != model
-            for record in self._records.values()
-            if record.embedding.model.dimensions != model.dimensions
-        ):
-            raise ValueError("vector dimension mismatch")
+        if self._model is not None and model != self._model:
+            raise ValueError("vector store cannot mix embedding model versions")
 
     @staticmethod
     def _cosine(left: Iterable[float], right: Iterable[float]) -> float:
