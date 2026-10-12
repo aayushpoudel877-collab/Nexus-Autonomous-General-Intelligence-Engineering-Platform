@@ -13,7 +13,7 @@ def main() -> None:
         ),
         "rag-safety": (
             "RAG safety notes",
-            "Retrieval augmented generation should cite evidence, scope documents by tenant, "
+            "Retrieval augmented generation should cite evidence, scope documents by tenant, " +
             "and treat retrieved text as untrusted data.",
         ),
     }
