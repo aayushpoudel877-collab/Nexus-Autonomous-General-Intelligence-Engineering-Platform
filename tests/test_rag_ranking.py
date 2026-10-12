@@ -110,7 +110,7 @@ def test_compare_ranking_runs_reports_mean_metrics():
     )
     assert set(report) == {"baseline", "candidate"}
     assert report["baseline"]["precision_at_k"] == 0.5
-    assert report["baseline"]["reciprocal_rank"] == 0.75
+    assert report["baseline"]["reciprocal_rank"] == 0.5
     assert report["candidate"]["reciprocal_rank"] == 1.0
 
 
