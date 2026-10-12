@@ -130,9 +130,9 @@ async def test_retries_only_transient_provider_errors_within_bound():
 
 @pytest.mark.asyncio
 async def test_provider_token_usage_cannot_exceed_budget():
-    provider = FakeGenerator([response(input_tokens=1000)])
+    provider = FakeGenerator([response(input_tokens=1001)])
     with pytest.raises(InvalidGenerationOutput, match="input token usage"):
-        await generate_grounded_answer(provider, request(max_input_tokens=200))
+        await generate_grounded_answer(provider, request(max_input_tokens=1000))
 
 
 @pytest.mark.asyncio
