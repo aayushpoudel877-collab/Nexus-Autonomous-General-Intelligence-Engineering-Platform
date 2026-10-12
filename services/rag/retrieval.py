@@ -7,7 +7,7 @@ from collections import Counter
 from collections.abc import Iterable
 from .chunking import Chunk
 
-_TOKEN = re.compile(r"[a-z0-9_]+", re.I)
+_TOKEN = re.compile(r"[a-z0-9_]+", re.IGNORECASE)
 def tokenize(text: str) -> list[str]:
     return [t.lower() for t in _TOKEN.findall(text)]
 
