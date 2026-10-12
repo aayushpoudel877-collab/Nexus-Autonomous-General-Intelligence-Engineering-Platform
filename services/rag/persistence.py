@@ -10,6 +10,7 @@ from hashlib import sha256
 from uuid import UUID
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.api.app.models.rag import RAGChunk, RAGDocument
@@ -86,19 +87,37 @@ async def ingest_document(
         text, str(document.id or "pending"), str(organization_id),
         max_chars=max_chars, overlap=overlap,
     )
-    session.add(document)
-    await session.flush()
-    for part in chunks:
-        session.add(RAGChunk(
-            organization_id=organization_id,
-            document_id=document.id,
-            ordinal=part.ordinal,
-            text=part.text,
-            start_char=part.start_char,
-            end_char=part.end_char,
-            token_count=len(part.text.split()),
-        ))
-    await session.flush()
+    try:
+        # A savepoint keeps a uniqueness race from invalidating the caller's outer
+        # transaction. The API still owns the outer commit/rollback boundary.
+        async with session.begin_nested():
+            session.add(document)
+            await session.flush()
+            for part in chunks:
+                session.add(RAGChunk(
+                    organization_id=organization_id,
+                    document_id=document.id,
+                    ordinal=part.ordinal,
+                    text=part.text,
+                    start_char=part.start_char,
+                    end_char=part.end_char,
+                    token_count=len(part.text.split()),
+                ))
+            await session.flush()
+    except IntegrityError:
+        # Under PostgreSQL READ COMMITTED, the winning concurrent insert is visible
+        # after its uniqueness conflict resolves. Re-raise unrelated integrity errors.
+        existing = await session.scalar(
+            select(RAGDocument).where(
+                RAGDocument.organization_id == organization_id,
+                RAGDocument.content_sha256 == digest,
+            )
+        )
+        if existing is None:
+            raise
+        if existing.status != "active":
+            raise DocumentAlreadyArchived("matching document exists but is not active")
+        return existing, False
     return document, True
 
 
