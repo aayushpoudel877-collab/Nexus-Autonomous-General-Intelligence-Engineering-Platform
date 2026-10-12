@@ -102,7 +102,7 @@ def _tokens(text: str) -> set[str]:
     return {
         token.casefold()
         for token in _TOKEN_RE.findall(text)
-        if token.casefold() not in _STOP_WORDS
+        if token.casefold() not in _STOP_WORDS and token.casefold() not in _NEGATION_WORDS
     }
 
 
