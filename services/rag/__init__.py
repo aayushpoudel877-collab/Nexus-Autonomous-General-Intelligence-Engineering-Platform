@@ -12,10 +12,10 @@ from .generation import (
     generate_grounded_answer,
 )
 from .grounding import (
+    CitationValidationReport,
     ClaimEvidence,
     ClaimGroundingReport,
     ClaimGroundingVerifier,
-    CitationValidationReport,
     GroundingAssessment,
     GroundingClaim,
     GroundingReport,
@@ -36,10 +36,10 @@ from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, Vector
 
 __all__ = [
     "Chunk",
+    "CitationValidationReport",
     "ClaimEvidence",
     "ClaimGroundingReport",
     "ClaimGroundingVerifier",
-    "CitationValidationReport",
     "EmbeddingCache",
     "EmbeddingModel",
     "EmbeddingProvider",
