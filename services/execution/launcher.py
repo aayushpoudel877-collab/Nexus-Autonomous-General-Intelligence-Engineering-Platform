@@ -6,7 +6,7 @@ import asyncio
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 import signal
 import uuid
 
@@ -89,7 +89,7 @@ async def _terminate_process(process: asyncio.subprocess.Process, grace_seconds:
     try:
         await asyncio.wait_for(process.wait(), timeout=grace_seconds)
         return
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass
     try:
         os.killpg(process.pid, signal.SIGKILL)
@@ -126,7 +126,7 @@ async def _cleanup_container(
             timeout=timeout_seconds,
         )
         await asyncio.wait_for(cleanup.wait(), timeout=timeout_seconds)
-    except (OSError, asyncio.TimeoutError):
+    except (OSError, TimeoutError):
         return
 
 

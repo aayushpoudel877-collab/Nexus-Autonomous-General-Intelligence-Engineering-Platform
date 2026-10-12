@@ -11,7 +11,7 @@ import signal
 import sys
 import uuid
 
-from .broker import SecretGrantSpec, SecretBroker
+from .broker import SecretGrantSpec
 
 BROKER_START_TIMEOUT_SECONDS = 5
 BROKER_STOP_TIMEOUT_SECONDS = 5
@@ -47,7 +47,7 @@ class SecretBrokerProcess:
                     self.process.wait(),
                     timeout=BROKER_STOP_TIMEOUT_SECONDS,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 try:
                     self.process.kill()
                 except ProcessLookupError:
@@ -74,7 +74,7 @@ async def create_secret_broker(
     token_path = root / f"{execution_id}.token"
     config_path = root / f"{execution_id}.json"
     token_path.write_text(token, encoding="ascii")
-    token_path.chmod(0o644)
+    token_path.chmod(0o600)
     config_path.write_text(
         json.dumps(
             {

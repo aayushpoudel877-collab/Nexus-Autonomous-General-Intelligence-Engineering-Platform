@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.dependencies import (
-    get_developer_api_key,
     get_membership,
     require_api_key_scopes,
     require_roles,

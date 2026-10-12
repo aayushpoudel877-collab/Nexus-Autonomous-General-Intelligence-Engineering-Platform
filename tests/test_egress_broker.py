@@ -222,6 +222,7 @@ async def test_egress_broker_subprocess_lifecycle(tmp_path):
         max_response_bytes=4096,
     )
     try:
+        assert Path(token_path).stat().st_mode & 0o777 == 0o600
         token = Path(token_path).read_text(encoding="ascii")
         reader, writer = await asyncio.open_unix_connection(broker.socket_path)
         writer.write(

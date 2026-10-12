@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from ..core.dependencies import get_current_user, get_membership, require_roles
 from ..db.session import get_db
 from ..models import ResearchPlan, User, WorkbenchProject
-from ..models.workflow import WorkflowApproval, WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
+from ..models.workflow import WorkflowDefinition, WorkflowNode, WorkflowNodeRun, WorkflowRun
 from ..schemas.workflow import WorkflowApprovalDecision, WorkflowCreate, WorkflowEventRead, WorkflowRead, WorkflowReplayRead, WorkflowRecoveryPlanRead, WorkflowRunCreate, WorkflowRunRead
 from ..services.audit import record_audit
 from services.orchestrator.engine import tick_run

@@ -48,9 +48,9 @@ async def get_current_user(
     selected_org = request.cookies.get("nexus_organization_id")
     if selected_org:
         try:
-            setattr(user, "_selected_organization_id", UUID(selected_org))
+            user._selected_organization_id = UUID(selected_org)
         except ValueError:
-            setattr(user, "_selected_organization_id", None)
+            user._selected_organization_id = None
     return user
 
 

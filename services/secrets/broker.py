@@ -90,7 +90,7 @@ async def resolve_secret(secret_ref: str) -> str:
             provider.communicate(input=request),
             timeout=5,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         try:
             provider.kill()
         except ProcessLookupError:
@@ -206,7 +206,7 @@ class SecretBroker:
             OSError,
             ValueError,
             TypeError,
-            asyncio.TimeoutError,
+            TimeoutError,
         ) as exc:
             response = {"ok": False, "error": str(exc)[:500]}
         except asyncio.CancelledError:

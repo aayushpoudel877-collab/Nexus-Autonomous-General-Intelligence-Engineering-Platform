@@ -43,7 +43,7 @@ class EgressBrokerProcess:
                     self.process.wait(),
                     timeout=BROKER_STOP_TIMEOUT_SECONDS,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 try:
                     self.process.kill()
                 except ProcessLookupError:
@@ -77,7 +77,7 @@ async def create_egress_broker(
     config_path = root / f"{execution_token}.json"
 
     token_path.write_text(token, encoding="ascii")
-    token_path.chmod(0o644)
+    token_path.chmod(0o600)
     config_path.write_text(
         json.dumps(
             {

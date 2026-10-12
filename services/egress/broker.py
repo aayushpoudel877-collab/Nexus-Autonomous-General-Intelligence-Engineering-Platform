@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
-import hashlib
 import hmac
 from dataclasses import dataclass
 import ipaddress
@@ -345,7 +344,7 @@ async def perform_http_request(
         except EgressPolicyError:
             raise
         except (
-            asyncio.TimeoutError,
+            TimeoutError,
             ConnectionError,
             OSError,
             ssl.SSLError,
@@ -497,7 +496,7 @@ class EgressBroker:
             ValueError,
             TypeError,
             ConnectionError,
-            asyncio.TimeoutError,
+            TimeoutError,
             binascii.Error,
             ssl.SSLError,
         ):
