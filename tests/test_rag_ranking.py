@@ -101,17 +101,21 @@ def test_ranking_metrics_validate_inputs():
 
 def test_compare_ranking_runs_reports_mean_metrics():
     report = compare_ranking_runs(
-        {"baseline": ["x", "a"], "candidate": ["a", "x"]},
+        {
+            "baseline": {"query-1": ["x", "a"], "query-2": ["a", "x"]},
+            "candidate": {"query-1": ["a", "x"], "query-2": ["x", "a"]},
+        },
         {"query-1": {"a"}, "query-2": {"x"}},
         k=2,
     )
     assert set(report) == {"baseline", "candidate"}
     assert report["baseline"]["precision_at_k"] == 0.5
-    assert report["candidate"]["reciprocal_rank"] == 0.75
+    assert report["baseline"]["reciprocal_rank"] == 0.75
+    assert report["candidate"]["reciprocal_rank"] == 1.0
 
 
 def test_compare_ranking_runs_requires_inputs():
     with pytest.raises(ValueError):
         compare_ranking_runs({}, {"q": {"a"}})
     with pytest.raises(ValueError):
-        compare_ranking_runs({"baseline": ["a"]}, {})
+        compare_ranking_runs({"baseline": {"q": ["a"]}}, {})
