@@ -132,7 +132,7 @@ def test_report_metrics_cover_all_claim_statuses():
         [
             claim("The platform supports encrypted storage", ("E1",), "C1"),
             claim("Penguins operate underwater elevators", ("E1",), "C2"),
-            claim("platform supports encrypted database storage", ("E1",), "C3"),
+            claim("platform supports database encryption", ("E1",), "C3"),
             claim("The system is not secure", ("E2",), "C4"),
         ],
         [
