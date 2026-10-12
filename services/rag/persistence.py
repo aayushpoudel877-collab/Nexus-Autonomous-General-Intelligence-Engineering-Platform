@@ -44,7 +44,7 @@ async def ingest_document(
     if not isinstance(text, str) or not text.strip():
         raise ValueError("document text must be a non-empty string")
     if not isinstance(source_uri, str):
-        raise ValueError("source_uri must be a string")
+        raise TypeError("source_uri must be a string")
     if len(title) > 300 or len(source_uri) > 2048:
         raise ValueError("title or source_uri exceeds the supported length")
     if len(text) > MAX_DOCUMENT_CHARS:
@@ -54,7 +54,7 @@ async def ingest_document(
 
     metadata_value = {} if metadata is None else metadata
     if not isinstance(metadata_value, dict):
-        raise ValueError("metadata must be a JSON object")
+        raise TypeError("metadata must be a JSON object")
     try:
         metadata_size = len(json.dumps(metadata_value, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8"))
     except (TypeError, ValueError, UnicodeError) as exc:
