@@ -57,3 +57,19 @@ abstention quality; retain difficult examples and language/risk slices; report c
 matrices and per-slice precision/recall; and compare any future model-backed verifier
 against this deterministic baseline on the same fixed dataset. Do not claim semantic
 grounding improvements from lexical metrics alone.
+
+
+## Offline golden-set harness (Phase 34)
+
+The executable implementation is documented in `docs/rag/evaluation-harness.md`.
+Use reviewed JSONL labels and separate per-run ranked-ID predictions; never place
+production personal data in fixtures. Missing predictions count as empty results, while
+unknown case IDs and duplicate run/case records are errors. Reports include aggregate
+precision@k, recall@k, reciprocal rank, NDCG@k, empty-result rate, and language/risk/tenant
+slices. Candidate-vs-baseline gates apply configurable maximum drops to precision, recall,
+and NDCG at aggregate and slice levels.
+
+The CI fixture is synthetic and only validates the evaluation machinery. It is not a
+reviewed benchmark and does not justify claims about real retrieval quality. Keep
+benchmark curation, query-generation review, latency collection, semantic faithfulness,
+and source-ownership leakage testing as separately tracked acceptance work.

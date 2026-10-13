@@ -14,6 +14,15 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest
+      - name: Run offline RAG evaluation release gate
+        run: python -m services.rag.evaluation_cli --dataset tests/fixtures/rag/golden.jsonl --predictions tests/fixtures/rag/predictions.jsonl --grounding-dataset tests/fixtures/rag/grounding.jsonl --output rag-evaluation-report.json --k 1 --baseline baseline --candidate candidate
+      - name: Archive RAG evaluation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-evaluation-report
+          path: rag-evaluation-report.json
+          if-no-files-found: ignore
   web:
     runs-on: ubuntu-latest
     defaults:
