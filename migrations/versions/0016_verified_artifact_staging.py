@@ -5,7 +5,7 @@ import sqlalchemy as sa
 
 
 revision = "0016_verified_artifact_staging"
-down_revision = "0015_plugin_artifact_verification"
+down_revision = "0015_plugin_artifact_verify"
 branch_labels = None
 depends_on = None
 
