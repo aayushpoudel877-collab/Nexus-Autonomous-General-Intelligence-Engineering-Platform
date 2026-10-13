@@ -67,3 +67,14 @@ jobs:
         run: alembic upgrade head
       - name: Confirm one current migration head
         run: alembic current
+
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image with document extraction dependencies
+        run: docker build -f services/api/Dockerfile -t nexus-api-ci .
+      - name: Build execution worker image
+        run: docker build -f services/execution/Dockerfile -t nexus-execution-ci .
+      - name: Build workflow orchestrator image
+        run: docker build -f services/orchestrator/Dockerfile -t nexus-orchestrator-ci .
