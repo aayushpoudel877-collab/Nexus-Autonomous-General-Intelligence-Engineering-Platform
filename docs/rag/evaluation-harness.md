@@ -70,3 +70,20 @@ test cross-tenant leakage without document ownership labels, or connect to a hos
 database. Future work should add a larger human-reviewed benchmark, query-generation
 review workflow, explicit source-ownership leakage checks, retrieval latency measurements,
 and semantic-answer faithfulness evaluation.
+
+
+## Claim-support and citation-quality evaluation
+
+An optional claim-level JSONL file can be supplied with `--grounding-dataset`. Each
+record includes a unique case ID, claim text, evidence ID/text, cited evidence IDs, and
+a human-reviewed binary `expected_supported` label, with optional language and risk
+slices. The report includes a confusion matrix, precision, recall, false-positive and
+false-negative rates, IDs of false-positive/negative cases, citation-validity rate, and
+language/risk slices. Missing or unknown citation IDs fail closed as unsupported.
+
+The checked-in grounding examples are deliberately synthetic edge cases designed to
+exercise false-positive, false-negative, and citation-integrity accounting. They are
+not a representative or independently reviewed benchmark. Lexical overlap may wrongly
+accept qualified claims or miss valid paraphrases; use the report to expose those errors,
+not to claim semantic correctness. Production use requires a substantially larger,
+human-reviewed and versioned dataset.
