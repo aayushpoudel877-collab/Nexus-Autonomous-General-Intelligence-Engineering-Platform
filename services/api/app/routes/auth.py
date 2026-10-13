@@ -96,6 +96,9 @@ async def login(payload: LoginRequest, request: Request, response: Response, db:
     _set_auth_cookies(response, tokens)
     if len(memberships) == 1:
         response.set_cookie("nexus_organization_id", str(memberships[0].organization_id), httponly=False, secure=settings.is_production, samesite="lax", max_age=30 * 86400, path="/")
+    else:
+        # Never retain a previously selected tenant when the authenticated account changes.
+        response.delete_cookie("nexus_organization_id", path="/")
     return tokens
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -103,7 +106,11 @@ async def refresh(request: Request, response: Response, refresh_token: str | Non
     token = refresh_token or request.cookies.get("nexus_refresh_token")
     if not token:
         raise HTTPException(status_code=401, detail="Refresh token required")
-    session = await db.scalar(select(RefreshSession).where(RefreshSession.token_hash == hash_refresh_token(token)))
+    session = await db.scalar(
+        select(RefreshSession)
+        .where(RefreshSession.token_hash == hash_refresh_token(token))
+        .with_for_update()
+    )
     now = datetime.now(timezone.utc)
     if not session or session.revoked_at or session.expires_at <= now:
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
