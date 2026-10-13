@@ -1,5 +1,3 @@
-[object Object]
-
 ## Phase 19 secret grants
 
 The governance API introduces:
