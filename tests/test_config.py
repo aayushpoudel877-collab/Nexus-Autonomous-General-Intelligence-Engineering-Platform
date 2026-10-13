@@ -23,6 +23,16 @@ def test_production_rejects_placeholder_or_padded_secrets(secret):
         )
 
 
+def test_production_environment_detection_trims_whitespace():
+    with pytest.raises(ValidationError, match="NEXUS_SECRET_KEY"):
+        Settings(
+            nexus_env=" Production ",
+            nexus_secret_key="replace-with-a-development-secret",
+            cors_origins="https://app.example.com",
+            allowed_hosts="api.example.com",
+        )
+
+
 def test_production_rejects_wildcard_cors():
     with pytest.raises(ValidationError, match="CORS_ORIGINS"):
         Settings(
