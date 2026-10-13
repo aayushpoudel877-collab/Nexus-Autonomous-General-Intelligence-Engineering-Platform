@@ -4,6 +4,25 @@ from pydantic import ValidationError
 from services.api.app.core.config import Settings
 
 
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "development-only-change-this-secret",
+        "replace-with-a-development-secret",
+        "replace-with-a-long-random-secret",
+        "  " + "a" * 32 + "  ",
+    ],
+)
+def test_production_rejects_placeholder_or_padded_secrets(secret):
+    with pytest.raises(ValidationError, match="NEXUS_SECRET_KEY"):
+        Settings(
+            nexus_env="production",
+            nexus_secret_key=secret,
+            cors_origins="https://app.example.com",
+            allowed_hosts="api.example.com",
+        )
+
+
 def test_production_rejects_wildcard_cors():
     with pytest.raises(ValidationError, match="CORS_ORIGINS"):
         Settings(
