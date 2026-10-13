@@ -12,8 +12,7 @@ import json
 import re
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable
-from uuid import UUID
+from typing import Any
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
