@@ -29,10 +29,10 @@ class GroundingEvaluationCase:
                 raise ValueError(f"{name} must be a non-empty string")
         if not isinstance(self.expected_supported, bool):
             raise ValueError("expected_supported must be boolean")
-        if len(set(self.cited_evidence_ids)) != len(self.cited_evidence_ids):
-            raise ValueError("cited evidence IDs must be unique")
         if any(not isinstance(item, str) or not item.strip() for item in self.cited_evidence_ids):
             raise ValueError("cited evidence IDs must be non-empty strings")
+        if len(set(self.cited_evidence_ids)) != len(self.cited_evidence_ids):
+            raise ValueError("cited evidence IDs must be unique")
 
 
 def load_grounding_dataset(path: str | Path) -> tuple[GroundingEvaluationCase, ...]:
