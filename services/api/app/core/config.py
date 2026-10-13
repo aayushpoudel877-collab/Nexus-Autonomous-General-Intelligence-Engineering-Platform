@@ -54,7 +54,7 @@ class Settings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return self.nexus_env.lower() == "production"
+        return self.nexus_env.strip().lower() == "production"
 
 
 @lru_cache
