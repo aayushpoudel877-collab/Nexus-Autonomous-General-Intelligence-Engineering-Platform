@@ -1,0 +1,4 @@
+{"case_id":"en-general-1","tenant_id":"tenant-a","query":"How is encryption configured?","relevant_chunk_ids":["chunk-encryption"],"language":"en","risk_category":"general","reviewer_notes":"Reviewed synthetic fixture; no production data."}
+{"case_id":"en-security-2","tenant_id":"tenant-a","query":"What are the authentication controls?","relevant_chunk_ids":["chunk-auth"],"language":"en","risk_category":"security","reviewer_notes":"Reviewed synthetic fixture; no production data."}
+{"case_id":"ne-general-3","tenant_id":"tenant-b","query":"कागजात कसरी सुरक्षित गरिन्छ?","relevant_chunk_ids":["chunk-docs"],"language":"ne","risk_category":"general","reviewer_notes":"Reviewed synthetic fixture; no production data."}
+{"case_id":"en-security-4","tenant_id":"tenant-b","query":"How is tenant isolation enforced?","relevant_chunk_ids":["chunk-tenant"],"language":"en","risk_category":"security","reviewer_notes":"Reviewed synthetic fixture; no production data."}
