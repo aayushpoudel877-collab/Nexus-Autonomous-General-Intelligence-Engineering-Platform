@@ -35,11 +35,11 @@ empty result instead of silently excluding that case.
 From the repository root:
 
 ```bash
-python -m services.rag.evaluation_cli \\
-  --dataset tests/fixtures/rag/golden.jsonl \\
-  --predictions tests/fixtures/rag/predictions.jsonl \\
-  --grounding-dataset tests/fixtures/rag/grounding.jsonl \\
-  --output rag-evaluation-report.json \\
+python -m services.rag.evaluation_cli \
+  --dataset tests/fixtures/rag/golden.jsonl \
+  --predictions tests/fixtures/rag/predictions.jsonl \
+  --grounding-dataset tests/fixtures/rag/grounding.jsonl \
+  --output rag-evaluation-report.json \
   --k 1 --baseline baseline --candidate candidate
 ```
 
