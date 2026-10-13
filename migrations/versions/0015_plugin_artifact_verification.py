@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 
-revision = "0015_plugin_artifact_verification"
+revision = "0015_plugin_artifact_verify"
 down_revision = "0014_execution_worker_leases"
 branch_labels = None
 depends_on = None
