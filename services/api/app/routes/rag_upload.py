@@ -26,6 +26,9 @@ async def upload_document(
     """Extract a supported document and persist it with parser provenance."""
     if not file.filename:
         raise HTTPException(status_code=422, detail="A filename is required")
+    if overlap >= max_chars:
+        await file.close()
+        raise HTTPException(status_code=422, detail="overlap must be smaller than max_chars")
     data = await file.read(MAX_UPLOAD_BYTES + 1)
     await file.close()
     try:
