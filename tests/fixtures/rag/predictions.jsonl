@@ -1,0 +1,8 @@
+{"run_name":"baseline","case_id":"en-general-1","ranked_chunk_ids":["chunk-old","chunk-encryption"]}
+{"run_name":"baseline","case_id":"en-security-2","ranked_chunk_ids":["chunk-auth"]}
+{"run_name":"baseline","case_id":"ne-general-3","ranked_chunk_ids":["chunk-docs"]}
+{"run_name":"baseline","case_id":"en-security-4","ranked_chunk_ids":["chunk-tenant"]}
+{"run_name":"candidate","case_id":"en-general-1","ranked_chunk_ids":["chunk-encryption","chunk-old"]}
+{"run_name":"candidate","case_id":"en-security-2","ranked_chunk_ids":["chunk-auth"]}
+{"run_name":"candidate","case_id":"ne-general-3","ranked_chunk_ids":["chunk-docs"]}
+{"run_name":"candidate","case_id":"en-security-4","ranked_chunk_ids":["chunk-tenant"]}
