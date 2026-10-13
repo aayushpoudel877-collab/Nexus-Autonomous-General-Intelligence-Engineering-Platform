@@ -270,34 +270,57 @@ def compare_runs(
     candidate_name: str,
     thresholds: EvaluationThresholds | None = None,
 ) -> dict[str, Any]:
-    """Build a deterministic release-gate report for aggregate metric regressions."""
+    """Gate aggregate and matching language/risk/tenant slices against regressions."""
     thresholds = thresholds or EvaluationThresholds()
     runs = report.get("runs", {})
     if baseline_name not in runs or candidate_name not in runs:
         raise ValueError("baseline and candidate runs must both exist in report")
-    baseline = runs[baseline_name]["aggregate"]
-    candidate = runs[candidate_name]["aggregate"]
     limits = {
         "precision_at_k": thresholds.max_precision_drop,
         "recall_at_k": thresholds.max_recall_drop,
         "ndcg_at_k": thresholds.max_ndcg_drop,
     }
-    checks = {
-        metric: {
-            "baseline": baseline[metric],
-            "candidate": candidate[metric],
-            "delta": candidate[metric] - baseline[metric],
-            "maximum_drop": limit,
-            "passed": candidate[metric] - baseline[metric] >= -limit,
+
+    def make_checks(baseline: Mapping[str, Any], candidate: Mapping[str, Any]) -> dict[str, Any]:
+        return {
+            metric: {
+                "baseline": baseline[metric],
+                "candidate": candidate[metric],
+                "delta": candidate[metric] - baseline[metric],
+                "maximum_drop": limit,
+                "passed": candidate[metric] - baseline[metric] >= -limit,
+            }
+            for metric, limit in limits.items()
         }
-        for metric, limit in limits.items()
-    }
+
+    baseline = runs[baseline_name]
+    candidate = runs[candidate_name]
+    aggregate_checks = make_checks(baseline["aggregate"], candidate["aggregate"])
+    slice_checks: dict[str, Any] = {}
+    for dimension, baseline_groups in baseline["slices"].items():
+        candidate_groups = candidate["slices"].get(dimension, {})
+        for group_name, baseline_metrics in baseline_groups.items():
+            if group_name not in candidate_groups:
+                slice_checks[f"{dimension}:{group_name}"] = {
+                    "passed": False, "reason": "candidate report is missing a baseline slice"
+                }
+                continue
+            checks = make_checks(baseline_metrics, candidate_groups[group_name])
+            slice_checks[f"{dimension}:{group_name}"] = {
+                "checks": checks,
+                "passed": all(check["passed"] for check in checks.values()),
+            }
+    passed = (
+        all(item["passed"] for item in aggregate_checks.values())
+        and all(item["passed"] for item in slice_checks.values())
+    )
     return {
         "baseline": baseline_name,
         "candidate": candidate_name,
         "thresholds": asdict(thresholds),
-        "checks": checks,
-        "passed": all(item["passed"] for item in checks.values()),
+        "checks": aggregate_checks,
+        "slice_checks": slice_checks,
+        "passed": passed,
     }
 
 
