@@ -44,6 +44,15 @@ class Settings(BaseSettings):
             raise ValueError("CORS_ORIGINS cannot contain '*' when credentials are enabled")
         if self.is_production and "*" in self.allowed_host_list:
             raise ValueError("NEXUS_ALLOWED_HOSTS cannot contain '*' in production")
+        if self.is_production and not self.cors_origin_list:
+            raise ValueError("CORS_ORIGINS must contain at least one origin in production")
+        if self.is_production and not self.allowed_host_list:
+            raise ValueError("NEXUS_ALLOWED_HOSTS must contain at least one host in production")
+        if self.is_production and (
+            not self.database_url.strip()
+            or self.database_url == "postgresql+asyncpg://nexus:nexus@localhost:5432/nexus"
+        ):
+            raise ValueError("DATABASE_URL must be explicitly configured in production")
         return self
 
     @property
