@@ -22,9 +22,21 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_security_settings(self) -> "Settings":
-        if self.is_production and self.nexus_secret_key == "development-only-change-this-secret":
+        normalized_secret = self.nexus_secret_key.strip().lower()
+        placeholder_markers = (
+            "development-only",
+            "replace-with",
+            "change-this",
+            "your-secret",
+            "example-secret",
+            "placeholder",
+        )
+        if self.is_production and (
+            normalized_secret != self.nexus_secret_key
+            or any(marker in normalized_secret for marker in placeholder_markers)
+        ):
             raise ValueError(
-                "NEXUS_SECRET_KEY must be set to a unique secret in production"
+                "NEXUS_SECRET_KEY must be a real, non-placeholder secret in production"
             )
         if "*" in self.cors_origin_list:
             raise ValueError("CORS_ORIGINS cannot contain '*' when credentials are enabled")
