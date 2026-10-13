@@ -244,6 +244,9 @@ def evaluate_golden_runs(
     unknown = sorted({item.case_id for item in predictions} - set(case_by_id))
     if unknown:
         raise ValueError(f"predictions reference unknown case IDs: {unknown}")
+    prediction_keys = [(item.run_name, item.case_id) for item in predictions]
+    if len(prediction_keys) != len(set(prediction_keys)):
+        raise ValueError("duplicate prediction for run/case")
     run_names = sorted({item.run_name for item in predictions})
     if not run_names:
         raise ValueError("at least one named run is required")
