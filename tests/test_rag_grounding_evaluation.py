@@ -26,7 +26,7 @@ def test_grounding_benchmark_reports_false_positives_negatives_and_citation_vali
     assert report["citation_validity_rate"] == pytest.approx(0.8)
     assert "language" in report["slices"]
     assert "security" in report["slices"]["risk_category"]
-    assert "not proof" in report["interpretation"]
+    assert "do not establish semantic entailment" in report["interpretation"]
 
 
 def test_invalid_citation_is_counted_as_failed_support_not_crashing():
