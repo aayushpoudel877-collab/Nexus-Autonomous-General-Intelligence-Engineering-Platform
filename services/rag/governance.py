@@ -202,7 +202,7 @@ class RetentionPolicy:
             if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 3650:
                 raise ValueError(f"{name} must be between 1 and 3650 days")
         if not isinstance(self.delete_source_on_request, bool):
-            raise ValueError("delete_source_on_request must be boolean")
+            raise TypeError("delete_source_on_request must be boolean")
 
 
 def retention_expired(*, created_at: datetime, now: datetime, retention_days: int) -> bool:
@@ -238,7 +238,7 @@ def validate_model_card(card: RAGModelCard) -> RAGModelCard:
     if card.approval_status not in {"draft", "review", "approved", "rejected"}:
         raise ValueError("unsupported model-card approval status")
     try:
-        datetime.fromisoformat(card.evaluation_date.replace("Z", "+00:00"))
+        datetime.fromisoformat(card.evaluation_date)
     except ValueError as exc:
         raise ValueError("evaluation_date must be ISO-8601") from exc
     return card
