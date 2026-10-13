@@ -52,7 +52,7 @@ def test_grounding_loader_rejects_duplicate_case_ids_and_bad_types(tmp_path):
     with pytest.raises(ValueError, match="duplicate grounding case_id"):
         load_grounding_dataset(path)
     path.write_text(json.dumps({**row, "expected_supported": "yes"}) + "\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="expected_supported must be boolean"):
+    with pytest.raises(TypeError, match="expected_supported must be boolean"):
         load_grounding_dataset(path)
 
 
