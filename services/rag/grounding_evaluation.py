@@ -28,7 +28,7 @@ class GroundingEvaluationCase:
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{name} must be a non-empty string")
         if not isinstance(self.expected_supported, bool):
-            raise ValueError("expected_supported must be boolean")
+            raise TypeError("expected_supported must be boolean")
         if any(not isinstance(item, str) or not item.strip() for item in self.cited_evidence_ids):
             raise ValueError("cited evidence IDs must be non-empty strings")
         if len(set(self.cited_evidence_ids)) != len(self.cited_evidence_ids):
@@ -50,7 +50,7 @@ def load_grounding_dataset(path: str | Path) -> tuple[GroundingEvaluationCase, .
         if unknown or missing:
             raise ValueError(f"grounding record has unknown or missing fields: {sorted(unknown | missing)}")
         if not isinstance(row["cited_evidence_ids"], list):
-            raise ValueError("cited_evidence_ids must be a JSON array")
+            raise TypeError("cited_evidence_ids must be a JSON array")
         case = GroundingEvaluationCase(
             case_id=row["case_id"],
             claim_text=row["claim_text"],
