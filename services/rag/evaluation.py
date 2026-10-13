@@ -51,6 +51,8 @@ class EvaluationCase:
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{name} must be a non-empty string")
+        if not isinstance(self.reviewer_notes, str):
+            raise ValueError("reviewer_notes must be a string")
         if len(self.query) > MAX_TEXT_LENGTH or len(self.reviewer_notes) > MAX_TEXT_LENGTH:
             raise ValueError("query or reviewer_notes exceeds maximum length")
         if not self.relevant_chunk_ids:
