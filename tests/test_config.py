@@ -78,6 +78,15 @@ def test_production_rejects_missing_deployment_settings(overrides, message):
         Settings(**values)
 
 
+def test_nexus_prefixed_environment_aliases_are_respected():
+    settings = Settings(
+        NEXUS_ALLOWED_HOSTS="api.example.com,admin.example.com",
+        NEXUS_ARTIFACT_ROOT="/tmp/nexus-custom-artifacts",
+    )
+    assert settings.allowed_host_list == ["api.example.com", "admin.example.com"]
+    assert settings.artifact_root == "/tmp/nexus-custom-artifacts"
+
+
 def test_production_accepts_explicit_origins_and_hosts():
     settings = Settings(
         nexus_env="production",
