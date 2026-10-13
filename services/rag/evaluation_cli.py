@@ -4,7 +4,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .grounding_evaluation import evaluate_grounding_cases, load_grounding_dataset\nfrom .evaluation import (
+from .grounding_evaluation import evaluate_grounding_cases, load_grounding_dataset
+from .evaluation import (
     EvaluationThresholds,
     build_evaluation_report,
     load_golden_dataset,
@@ -16,7 +17,8 @@ from .grounding_evaluation import evaluate_grounding_cases, load_grounding_datas
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", required=True, help="Reviewed golden-set JSONL path")
-    parser.add_argument("--predictions", required=True, help="Ranked predictions JSONL path")\n    parser.add_argument("--grounding-dataset", help="Optional human-labeled claim grounding JSONL path")
+    parser.add_argument("--predictions", required=True, help="Ranked predictions JSONL path")
+    parser.add_argument("--grounding-dataset", help="Optional human-labeled claim grounding JSONL path")
     parser.add_argument("--output", required=True, help="Destination for JSON evaluation report")
     parser.add_argument("--k", type=int, default=5, help="Ranking cutoff (1..100)")
     parser.add_argument("--baseline", help="Name of the baseline run")
@@ -45,7 +47,11 @@ def main(argv: list[str] | None = None) -> int:
             candidate_name=args.candidate,
             thresholds=thresholds,
         )
-        if args.grounding_dataset:\n            report["grounding_evaluation"] = evaluate_grounding_cases(\n                load_grounding_dataset(args.grounding_dataset)\n            )\n        write_report(report, args.output)
+        if args.grounding_dataset:
+            report["grounding_evaluation"] = evaluate_grounding_cases(
+                load_grounding_dataset(args.grounding_dataset)
+            )
+        write_report(report, args.output)
     except (OSError, ValueError) as exc:
         print(f"evaluation failed: {exc}", file=sys.stderr)
         return 2
