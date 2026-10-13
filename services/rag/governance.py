@@ -1,0 +1,251 @@
+"""Privacy-safe observability and governance contracts for RAG.
+
+These pure contracts deliberately do not emit telemetry or contact external indexes.
+Callers must persist events and dispatch deletion work through an explicitly configured
+backend. Raw query text, retrieved text, credentials, and source contents are never
+accepted by the event builder.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_SHA256 = re.compile(r"^[a-f0-9]{64}$")
+_ALLOWED_EVENT_TYPES = {
+    "retrieval.completed",
+    "retrieval.abstained",
+    "ingestion.completed",
+    "ingestion.rejected",
+    "document.deleted",
+    "index.deletion.acknowledged",
+}
+_ALLOWED_OUTCOMES = {"success", "failure", "abstained", "rejected", "pending"}
+
+
+def _identifier(value: str, field: str) -> str:
+    if not isinstance(value, str) or not _IDENTIFIER.fullmatch(value):
+        raise ValueError(f"{field} must be a bounded opaque identifier")
+    return value
+
+
+@dataclass(frozen=True)
+class RAGAuditEvent:
+    event_id: str
+    event_type: str
+    occurred_at: str
+    organization_id: str
+    actor_id: str | None
+    resource_id: str | None
+    outcome: str
+    duration_ms: int | None
+    evidence_count: int | None
+    trace_id: str | None
+    schema_version: int = 1
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def build_audit_event(
+    *,
+    event_id: str,
+    event_type: str,
+    occurred_at: datetime,
+    organization_id: str,
+    outcome: str,
+    actor_id: str | None = None,
+    resource_id: str | None = None,
+    duration_ms: int | None = None,
+    evidence_count: int | None = None,
+    trace_id: str | None = None,
+) -> RAGAuditEvent:
+    """Create an allowlisted event with no fields for user text or source contents."""
+    if event_type not in _ALLOWED_EVENT_TYPES:
+        raise ValueError("unsupported RAG audit event type")
+    if outcome not in _ALLOWED_OUTCOMES:
+        raise ValueError("unsupported RAG audit outcome")
+    if occurred_at.tzinfo is None or occurred_at.utcoffset() is None:
+        raise ValueError("occurred_at must be timezone-aware")
+    for field, value in (
+        ("event_id", event_id),
+        ("organization_id", organization_id),
+        ("actor_id", actor_id),
+        ("resource_id", resource_id),
+        ("trace_id", trace_id),
+    ):
+        if value is not None:
+            _identifier(value, field)
+    if duration_ms is not None and (not isinstance(duration_ms, int) or isinstance(duration_ms, bool) or duration_ms < 0 or duration_ms > 86_400_000):
+        raise ValueError("duration_ms is outside the supported range")
+    if evidence_count is not None and (not isinstance(evidence_count, int) or isinstance(evidence_count, bool) or not 0 <= evidence_count <= 1000):
+        raise ValueError("evidence_count is outside the supported range")
+    return RAGAuditEvent(
+        event_id=event_id,
+        event_type=event_type,
+        occurred_at=occurred_at.astimezone(timezone.utc).isoformat(),
+        organization_id=organization_id,
+        actor_id=actor_id,
+        resource_id=resource_id,
+        outcome=outcome,
+        duration_ms=duration_ms,
+        evidence_count=evidence_count,
+        trace_id=trace_id,
+    )
+
+
+@dataclass(frozen=True)
+class SourceLineage:
+    organization_id: str
+    document_id: str
+    chunk_id: str
+    content_sha256: str
+    source_version: str
+    parser_version: str
+    indexed_at: str
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+def build_source_lineage(
+    *,
+    organization_id: str,
+    document_id: str,
+    chunk_id: str,
+    content_sha256: str,
+    source_version: str,
+    parser_version: str,
+    indexed_at: datetime,
+) -> SourceLineage:
+    """Build provenance metadata without storing document text or source URLs."""
+    for field, value in (
+        ("organization_id", organization_id),
+        ("document_id", document_id),
+        ("chunk_id", chunk_id),
+        ("source_version", source_version),
+        ("parser_version", parser_version),
+    ):
+        _identifier(value, field)
+    if not isinstance(content_sha256, str) or not _SHA256.fullmatch(content_sha256):
+        raise ValueError("content_sha256 must be a lowercase SHA-256 digest")
+    if indexed_at.tzinfo is None or indexed_at.utcoffset() is None:
+        raise ValueError("indexed_at must be timezone-aware")
+    return SourceLineage(
+        organization_id=organization_id,
+        document_id=document_id,
+        chunk_id=chunk_id,
+        content_sha256=content_sha256,
+        source_version=source_version,
+        parser_version=parser_version,
+        indexed_at=indexed_at.astimezone(timezone.utc).isoformat(),
+    )
+
+
+@dataclass(frozen=True)
+class IndexDeletionRequest:
+    request_id: str
+    idempotency_key: str
+    organization_id: str
+    document_id: str
+    content_sha256: str
+    requested_at: str
+    status: str = "pending"
+    attempts: int = 0
+
+
+def build_index_deletion_request(
+    *, organization_id: str, document_id: str, content_sha256: str, requested_at: datetime
+) -> IndexDeletionRequest:
+    """Create a deterministic, idempotent deletion-outbox contract."""
+    _identifier(organization_id, "organization_id")
+    _identifier(document_id, "document_id")
+    if not isinstance(content_sha256, str) or not _SHA256.fullmatch(content_sha256):
+        raise ValueError("content_sha256 must be a lowercase SHA-256 digest")
+    if requested_at.tzinfo is None or requested_at.utcoffset() is None:
+        raise ValueError("requested_at must be timezone-aware")
+    canonical = f"rag-index-delete:v1:{organization_id}:{document_id}:{content_sha256}"
+    key = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return IndexDeletionRequest(
+        request_id=key[:32],
+        idempotency_key=key,
+        organization_id=organization_id,
+        document_id=document_id,
+        content_sha256=content_sha256,
+        requested_at=requested_at.astimezone(timezone.utc).isoformat(),
+    )
+
+
+def acknowledge_deletion(request: IndexDeletionRequest, *, attempts: int = 1) -> IndexDeletionRequest:
+    """Return a validated acknowledgement snapshot; caller persists it atomically."""
+    if request.status not in {"pending", "failed"}:
+        raise ValueError("only pending or failed deletion requests can be acknowledged")
+    if not isinstance(attempts, int) or isinstance(attempts, bool) or not 1 <= attempts <= 1000:
+        raise ValueError("attempts must be between 1 and 1000")
+    return IndexDeletionRequest(**{**asdict(request), "status": "acknowledged", "attempts": attempts})
+
+
+@dataclass(frozen=True)
+class RetentionPolicy:
+    event_days: int = 90
+    trace_days: int = 14
+    lineage_days: int = 365
+    delete_source_on_request: bool = True
+
+    def __post_init__(self) -> None:
+        for name in ("event_days", "trace_days", "lineage_days"):
+            value = getattr(self, name)
+            if not isinstance(value, int) or isinstance(value, bool) or not 1 <= value <= 3650:
+                raise ValueError(f"{name} must be between 1 and 3650 days")
+        if not isinstance(self.delete_source_on_request, bool):
+            raise TypeError("delete_source_on_request must be boolean")
+
+
+def retention_expired(*, created_at: datetime, now: datetime, retention_days: int) -> bool:
+    """Evaluate expiry deterministically; no deletion is performed by this helper."""
+    if created_at.tzinfo is None or now.tzinfo is None:
+        raise ValueError("created_at and now must be timezone-aware")
+    if not isinstance(retention_days, int) or isinstance(retention_days, bool) or not 1 <= retention_days <= 3650:
+        raise ValueError("retention_days must be between 1 and 3650 days")
+    return now.astimezone(timezone.utc) >= created_at.astimezone(timezone.utc) + timedelta(days=retention_days)
+
+
+@dataclass(frozen=True)
+class RAGModelCard:
+    model_name: str
+    model_version: str
+    intended_use: str
+    limitations: str
+    evaluation_dataset: str
+    evaluation_date: str
+    owner: str
+    approval_status: str = "draft"
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+def validate_model_card(card: RAGModelCard) -> RAGModelCard:
+    """Validate documentation completeness; approval remains a human governance action."""
+    for field in ("model_name", "model_version", "intended_use", "limitations", "evaluation_dataset", "evaluation_date", "owner"):
+        value = getattr(card, field)
+        if not isinstance(value, str) or not value.strip() or len(value) > 2000:
+            raise ValueError(f"{field} must be non-empty and at most 2000 characters")
+    if card.approval_status not in {"draft", "review", "approved", "rejected"}:
+        raise ValueError("unsupported model-card approval status")
+    try:
+        datetime.fromisoformat(card.evaluation_date)
+    except ValueError as exc:
+        raise ValueError("evaluation_date must be ISO-8601") from exc
+    return card
+
+
+def stable_json(value: Any) -> str:
+    """Serialize contract objects deterministically for audit/outbox persistence."""
+    if hasattr(value, "to_dict"):
+        value = value.to_dict()
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
