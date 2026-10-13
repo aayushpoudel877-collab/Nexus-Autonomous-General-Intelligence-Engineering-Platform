@@ -52,7 +52,7 @@ class EvaluationCase:
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{name} must be a non-empty string")
         if not isinstance(self.reviewer_notes, str):
-            raise ValueError("reviewer_notes must be a string")
+            raise TypeError("reviewer_notes must be a string")
         if len(self.query) > MAX_TEXT_LENGTH or len(self.reviewer_notes) > MAX_TEXT_LENGTH:
             raise ValueError("query or reviewer_notes exceeds maximum length")
         if not self.relevant_chunk_ids:
@@ -116,7 +116,7 @@ def _read_jsonl(path: str | Path) -> list[dict[str, Any]]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"invalid JSON on line {line_number}") from exc
             if not isinstance(value, dict):
-                raise ValueError(f"line {line_number} must contain a JSON object")
+                raise TypeError(f"line {line_number} must contain a JSON object")
             records.append(value)
             if len(records) > MAX_CASES:
                 raise ValueError("JSONL input contains too many records")
@@ -136,7 +136,7 @@ def load_golden_dataset(path: str | Path) -> tuple[EvaluationCase, ...]:
             raise ValueError(f"dataset record has unknown or missing fields: {sorted(unknown | missing)}")
         labels = row["relevant_chunk_ids"]
         if not isinstance(labels, list):
-            raise ValueError("relevant_chunk_ids must be a JSON array")
+            raise TypeError("relevant_chunk_ids must be a JSON array")
         case = EvaluationCase(
             case_id=row["case_id"],
             tenant_id=row["tenant_id"],
