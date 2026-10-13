@@ -34,7 +34,7 @@ from .grounding import (
     evidence_prompt_block,
     validate_citations,
 )
-from .grounding_evaluation import (
+from .governance import (\n    IndexDeletionRequest,\n    RAGAuditEvent,\n    RAGModelCard,\n    RetentionPolicy,\n    SourceLineage,\n    acknowledge_deletion,\n    build_audit_event,\n    build_index_deletion_request,\n    build_source_lineage,\n    retention_expired,\n    stable_json,\n    validate_model_card,\n)\nfrom .grounding_evaluation import (
     GroundingEvaluationCase,
     evaluate_grounding_cases,
     load_grounding_dataset,
@@ -72,7 +72,7 @@ __all__ = [
     "GroundingClaim",
     "GroundingEvaluationCase",
     "GroundingReport",
-    "InMemoryVectorStore",
+    "InMemoryVectorStore",\n    "IndexDeletionRequest",\n    "RAGAuditEvent",\n    "RAGModelCard",\n    "RetentionPolicy",\n    "SourceLineage",
     "LexicalGroundingVerifier",
     "ProviderGeneration",
     "RankedCandidate",
@@ -80,7 +80,7 @@ __all__ = [
     "VectorMatch",
     "VectorRecord",
     "VectorStore",
-    "build_evaluation_report",
+    "acknowledge_deletion",\n    "build_audit_event",\n    "build_evaluation_report",\n    "build_index_deletion_request",\n    "build_source_lineage",
     "chunk_text",
     "compare_ranking_runs",
     "compare_runs",
@@ -95,7 +95,7 @@ __all__ = [
     "load_golden_dataset",
     "load_grounding_dataset",
     "load_predictions",
-    "ranking_metrics",
+    "ranking_metrics",\n    "retention_expired",\n    "stable_json",\n    "validate_model_card",
     "reciprocal_rank_fusion",
     "validate_citations",
     "write_report",
