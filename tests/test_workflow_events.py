@@ -15,6 +15,24 @@ def test_workflow_event_payload_rejects_credentials():
         _validate_payload({"api_token": "do-not-store"})
 
 
+def test_workflow_event_payload_rejects_nested_credentials():
+    with pytest.raises(ValueError, match="credential"):
+        _validate_payload({"context": [{"metadata": {"password_hash": "do-not-store"}}]})
+
+
+def test_workflow_event_payload_rejects_excessive_nesting():
+    payload = {"value": "leaf"}
+    for _ in range(18):
+        payload = {"nested": payload}
+    with pytest.raises(ValueError, match="nested too deeply"):
+        _validate_payload(payload)
+
+
+def test_workflow_event_payload_rejects_non_json_values():
+    with pytest.raises(ValueError, match="valid JSON"):
+        _validate_payload({"metric": float("nan")})
+
+
 def test_workflow_event_payload_is_bounded():
     with pytest.raises(ValueError, match="too large"):
         _validate_payload({"result": "x" * 20_000})
