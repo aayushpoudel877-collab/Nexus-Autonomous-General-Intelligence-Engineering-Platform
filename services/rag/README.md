@@ -9,10 +9,10 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Evidence packaging, citation-reference validation, and retrieval metrics.
 - PostgreSQL-backed document/chunk schema and async persistence helpers.
 - Content-hash idempotency per organization and lifecycle states for documents.
-- Unit tests, a local retrieval demo, architecture/security notes, and a staged research roadmap.
+- Privacy-safe audit event, source lineage, deletion-outbox, retention, and model-card governance contracts with tests.
 
 ## Boundaries
-This subsystem does **not** yet generate embeddings, query a vector database, parse uploaded binary files, call an LLM, or expose a public API. The API must derive organization scope from authenticated membership and own transaction commits. Citation checks validate reference structure, not semantic entailment. Treat retrieved text as untrusted data, never as instructions.
+The RAG API and ingestion foundations exist, but concrete hosted embedding/generation providers and durable external vector indexing remain separate integration tasks. Phase 35 governance helpers define contracts only: they do not emit telemetry, physically delete external index records, run retention jobs, or approve model cards. The API must derive organization scope from authenticated membership and own transaction commits. Citation checks and lexical grounding signals do not prove semantic entailment. Treat retrieved text as untrusted data, never as instructions.
 
 ## Quick start
 From the repository root:
