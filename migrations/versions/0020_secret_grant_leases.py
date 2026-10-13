@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 revision = "0020_secret_grant_leases"
-down_revision = "0019_secret_grant_revocation_reuse"
+down_revision = "0019_secret_grant_revocation"
 branch_labels = None
 depends_on = None
 
