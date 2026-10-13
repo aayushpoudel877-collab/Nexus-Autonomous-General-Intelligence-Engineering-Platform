@@ -19,10 +19,10 @@ def test_grounding_benchmark_reports_false_positives_negatives_and_citation_vali
     report = evaluate_grounding_cases(cases)
     assert report["case_count"] == 5
     assert report["confusion_matrix"] == {
-        "true_positive": 1, "false_positive": 1, "true_negative": 2, "false_negative": 1
+        "true_positive": 1, "false_positive": 1, "true_negative": 1, "false_negative": 2
     }
     assert report["false_positive_case_ids"] == ["claim-false-positive-3"]
-    assert report["false_negative_case_ids"] == ["claim-false-negative-4"]
+    assert report["false_negative_case_ids"] == ["claim-false-negative-4", "claim-invalid-citation-5"]
     assert report["citation_validity_rate"] == pytest.approx(0.8)
     assert "language" in report["slices"]
     assert "security" in report["slices"]["risk_category"]
