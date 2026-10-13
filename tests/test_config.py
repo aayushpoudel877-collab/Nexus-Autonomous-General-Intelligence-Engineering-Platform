@@ -12,6 +12,7 @@ VALID_PRODUCTION_SECRET = "K9m!pQ7v#2xR8sL4wN6cT1zY5bH3dF0a"
         "development-only-change-this-secret",
         "replace-with-a-development-secret",
         "replace-with-a-long-random-secret",
+        "short-but-not-a-placeholder-secret",
         "a" * 32,
         "  " + VALID_PRODUCTION_SECRET + "  ",
     ],
