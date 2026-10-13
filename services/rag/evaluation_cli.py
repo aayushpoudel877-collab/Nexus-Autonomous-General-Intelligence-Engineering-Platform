@@ -52,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
                 load_grounding_dataset(args.grounding_dataset)
             )
         write_report(report, args.output)
-    except (OSError, ValueError) as exc:
+    except (OSError, TypeError, ValueError) as exc:
         print(f"evaluation failed: {exc}", file=sys.stderr)
         return 2
     gate = report.get("release_gate")
