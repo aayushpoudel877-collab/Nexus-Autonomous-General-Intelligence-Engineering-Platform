@@ -78,7 +78,7 @@ async def append_workflow_event(
         from_status=from_status,
         to_status=to_status,
         attempt=attempt,
-        payload_json=_validate_payload(payload or {}),
+        payload_json=_validate_payload(payload if payload is not None else {}),
         actor=actor,
     )
     db.add(event)
