@@ -90,6 +90,7 @@ def test_nexus_prefixed_environment_aliases_are_respected():
 def test_production_accepts_explicit_origins_and_hosts():
     settings = Settings(
         nexus_env="production",
+        database_url="postgresql+asyncpg://nexus:strong-db-password@db.example.com:5432/nexus",
         nexus_secret_key=VALID_PRODUCTION_SECRET,
         cors_origins="https://app.example.com,https://admin.example.com",
         allowed_hosts="api.example.com,admin.example.com",
