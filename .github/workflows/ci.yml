@@ -14,6 +14,8 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest
+      - name: Run offline RAG evaluation release gate
+        run: python -m services.rag.evaluation_cli --dataset tests/fixtures/rag/golden.jsonl --predictions tests/fixtures/rag/predictions.jsonl --output rag-evaluation-report.json --k 1 --baseline baseline --candidate candidate
   web:
     runs-on: ubuntu-latest
     defaults:
