@@ -3,7 +3,7 @@
 from .chunking import Chunk, chunk_text
 from .embedding_cache import EmbeddingCache
 from .embeddings import EmbeddingModel, EmbeddingProvider, EmbeddingVector, embed_batched
-from .generation import (
+from .evaluation import (\n    EvaluationCase,\n    EvaluationPrediction,\n    EvaluationThresholds,\n    build_evaluation_report,\n    compare_runs,\n    evaluate_golden_runs,\n    load_golden_dataset,\n    load_predictions,\n    write_report,\n)\nfrom .generation import (
     GenerationAnswer,
     GenerationEvidence,
     GenerationProvider,
