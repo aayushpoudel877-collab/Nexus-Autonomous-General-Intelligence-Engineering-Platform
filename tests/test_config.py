@@ -57,6 +57,27 @@ def test_production_rejects_wildcard_hosts():
         )
 
 
+@pytest.mark.parametrize(
+    "overrides, message",
+    [
+        ({"database_url": "postgresql+asyncpg://nexus:nexus@localhost:5432/nexus"}, "DATABASE_URL"),
+        ({"cors_origins": ""}, "CORS_ORIGINS"),
+        ({"allowed_hosts": ""}, "NEXUS_ALLOWED_HOSTS"),
+    ],
+)
+def test_production_rejects_missing_deployment_settings(overrides, message):
+    values = {
+        "nexus_env": "production",
+        "database_url": "postgresql+asyncpg://nexus:strong-db-password@db.example.com:5432/nexus",
+        "nexus_secret_key": VALID_PRODUCTION_SECRET,
+        "cors_origins": "https://app.example.com",
+        "allowed_hosts": "api.example.com",
+    }
+    values.update(overrides)
+    with pytest.raises(ValidationError, match=message):
+        Settings(**values)
+
+
 def test_production_accepts_explicit_origins_and_hosts():
     settings = Settings(
         nexus_env="production",
