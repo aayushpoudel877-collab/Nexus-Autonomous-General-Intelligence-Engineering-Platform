@@ -32,7 +32,7 @@ class Settings(BaseSettings):
             "placeholder",
         )
         if self.is_production and (
-            normalized_secret != self.nexus_secret_key
+            self.nexus_secret_key.strip() != self.nexus_secret_key
             or len(normalized_secret) < 32
             or len(set(normalized_secret)) < 8
             or any(marker in normalized_secret for marker in placeholder_markers)
