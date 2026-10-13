@@ -11,7 +11,7 @@ from .evaluation import (\n    EvaluationCase,\n    EvaluationPrediction,\n    E
     ProviderGeneration,
     generate_grounded_answer,
 )
-from .grounding import (
+from .grounding_evaluation import (\n    GroundingEvaluationCase,\n    evaluate_grounding_cases,\n    load_grounding_dataset,\n)\nfrom .grounding import (
     CitationValidationReport,
     ClaimEvidence,
     ClaimGroundingReport,
