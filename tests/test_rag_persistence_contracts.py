@@ -84,6 +84,7 @@ class RagPersistenceContractTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_concurrent_duplicate_ingestion_reuses_the_winning_document(self):
         session = AsyncMock()
+        session.add = MagicMock()
         existing = SimpleNamespace(status="active")
         session.scalar.side_effect = [None, existing]
         session.flush.side_effect = [None, IntegrityError("insert", {}, Exception("unique conflict"))]
