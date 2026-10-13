@@ -22,11 +22,6 @@ from .generation import (
     ProviderGeneration,
     generate_grounded_answer,
 )
-from .grounding_evaluation import (
-    GroundingEvaluationCase,
-    evaluate_grounding_cases,
-    load_grounding_dataset,
-)
 from .grounding import (
     CitationValidationReport,
     ClaimEvidence,
@@ -38,6 +33,11 @@ from .grounding import (
     LexicalGroundingVerifier,
     evidence_prompt_block,
     validate_citations,
+)
+from .grounding_evaluation import (
+    GroundingEvaluationCase,
+    evaluate_grounding_cases,
+    load_grounding_dataset,
 )
 from .ranking import (
     RankedCandidate,
@@ -60,6 +60,9 @@ __all__ = [
     "EmbeddingModel",
     "EmbeddingProvider",
     "EmbeddingVector",
+    "EvaluationCase",
+    "EvaluationPrediction",
+    "EvaluationThresholds",
     "Evidence",
     "GenerationAnswer",
     "GenerationEvidence",
@@ -67,6 +70,7 @@ __all__ = [
     "GenerationRequest",
     "GroundingAssessment",
     "GroundingClaim",
+    "GroundingEvaluationCase",
     "GroundingReport",
     "InMemoryVectorStore",
     "LexicalGroundingVerifier",
@@ -76,15 +80,23 @@ __all__ = [
     "VectorMatch",
     "VectorRecord",
     "VectorStore",
+    "build_evaluation_report",
     "chunk_text",
+    "compare_runs",
     "compare_ranking_runs",
     "diversify_by_group",
     "embed_batched",
+    "evaluate_golden_runs",
+    "evaluate_grounding_cases",
     "evidence_prompt_block",
     "filter_candidates",
     "generate_grounded_answer",
     "hybrid_retrieve",
+    "load_golden_dataset",
+    "load_grounding_dataset",
+    "load_predictions",
     "ranking_metrics",
     "reciprocal_rank_fusion",
     "validate_citations",
+    "write_report",
 ]
