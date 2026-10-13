@@ -58,6 +58,7 @@ def test_production_accepts_custom_secret():
     settings = Settings(
         _env_file=None,
         nexus_env="production",
+        database_url="postgresql+asyncpg://nexus:strong-db-password@db.example.com:5432/nexus",
         nexus_secret_key="a-unique-production-secret-value",
     )
     assert settings.is_production
