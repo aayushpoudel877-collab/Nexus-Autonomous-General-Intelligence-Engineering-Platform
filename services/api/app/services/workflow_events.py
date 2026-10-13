@@ -4,6 +4,7 @@ Events contain workflow control metadata only. Secret values and credential-like
 payloads are deliberately rejected before persistence.
 """
 
+import json
 from uuid import UUID
 
 from sqlalchemy import select
@@ -15,17 +16,43 @@ _FORBIDDEN_KEYS = {"secret", "token", "password", "credential", "api_key"}
 
 
 def _validate_payload(payload: dict) -> dict:
+    """Validate and normalize JSON event data, including every nested key/value."""
     if not isinstance(payload, dict):
         raise TypeError("Workflow event payload must be an object")
-    for key, value in payload.items():
-        lowered = str(key).lower()
-        if any(term in lowered for term in _FORBIDDEN_KEYS):
-            raise ValueError("Workflow event payload cannot contain credential-like fields")
-        if isinstance(value, (dict, list)) and len(str(value)) > 8_192:
-            raise ValueError("Workflow event payload contains an oversized value")
-    if len(str(payload)) > 16_384:
+
+    def inspect(value, depth: int = 0) -> None:
+        if depth > 16:
+            raise ValueError("Workflow event payload is nested too deeply")
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if not isinstance(key, str):
+                    raise TypeError("Workflow event payload keys must be strings")
+                lowered = key.lower()
+                if any(term in lowered for term in _FORBIDDEN_KEYS):
+                    raise ValueError(
+                        "Workflow event payload cannot contain credential-like fields"
+                    )
+                inspect(child, depth + 1)
+        elif isinstance(value, list):
+            for child in value:
+                inspect(child, depth + 1)
+        elif value is not None and not isinstance(value, (str, int, float, bool)):
+            raise TypeError("Workflow event payload must contain only JSON values")
+
+    inspect(payload)
+    try:
+        encoded = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    except (TypeError, ValueError, UnicodeError) as exc:
+        raise ValueError("Workflow event payload must contain valid JSON values") from exc
+    if len(encoded.encode("utf-8")) > 16_384:
         raise ValueError("Workflow event payload is too large")
-    return dict(payload)
+    return json.loads(encoded)
 
 
 async def append_workflow_event(
@@ -51,7 +78,7 @@ async def append_workflow_event(
         from_status=from_status,
         to_status=to_status,
         attempt=attempt,
-        payload_json=_validate_payload(payload or {}),
+        payload_json=_validate_payload(payload if payload is not None else {}),
         actor=actor,
     )
     db.add(event)

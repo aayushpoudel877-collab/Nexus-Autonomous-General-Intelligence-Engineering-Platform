@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
@@ -19,6 +20,13 @@ from ..schemas.auth import (
 from ..services.audit import record_audit
 
 router = APIRouter(tags=["auth"])
+
+
+def _organization_slug(name: str, suffix: str) -> str:
+    """Return a normalized organization slug within the database's 80-char limit."""
+    base = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "organization"
+    safe_suffix = re.sub(r"[^a-z0-9]", "", suffix.lower())[:8] or "org"
+    return f"{base[:70 - len(safe_suffix) - 1].rstrip('-')}-{safe_suffix}"
 
 def _set_auth_cookies(response: Response, tokens: TokenResponse) -> None:
     secure = settings.is_production
@@ -47,7 +55,7 @@ async def register(payload: RegisterRequest, request: Request, response: Respons
         role = Role(name="owner", description="Organization owner")
         db.add(role)
         await db.flush()
-    slug = f"{payload.organization_name.lower().replace(' ', '-')}-{create_refresh_token()[:8]}"
+    slug = _organization_slug(payload.organization_name, create_refresh_token()[:8])
     org = Organization(name=payload.organization_name, slug=slug)
     user = User(email=email, full_name=payload.full_name, password_hash=hash_password(payload.password))
     db.add_all([org, user])
@@ -96,6 +104,9 @@ async def login(payload: LoginRequest, request: Request, response: Response, db:
     _set_auth_cookies(response, tokens)
     if len(memberships) == 1:
         response.set_cookie("nexus_organization_id", str(memberships[0].organization_id), httponly=False, secure=settings.is_production, samesite="lax", max_age=30 * 86400, path="/")
+    else:
+        # Never retain a previously selected tenant when the authenticated account changes.
+        response.delete_cookie("nexus_organization_id", path="/")
     return tokens
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -103,7 +114,11 @@ async def refresh(request: Request, response: Response, refresh_token: str | Non
     token = refresh_token or request.cookies.get("nexus_refresh_token")
     if not token:
         raise HTTPException(status_code=401, detail="Refresh token required")
-    session = await db.scalar(select(RefreshSession).where(RefreshSession.token_hash == hash_refresh_token(token)))
+    session = await db.scalar(
+        select(RefreshSession)
+        .where(RefreshSession.token_hash == hash_refresh_token(token))
+        .with_for_update()
+    )
     now = datetime.now(timezone.utc)
     if not session or session.revoked_at or session.expires_at <= now:
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")

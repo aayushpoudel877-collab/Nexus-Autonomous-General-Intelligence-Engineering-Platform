@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class RAGDocumentCreate(BaseModel):
@@ -15,6 +15,26 @@ class RAGDocumentCreate(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     max_chars: int = Field(default=1200, ge=100, le=12_000)
     overlap: int = Field(default=160, ge=0, le=11_999)
+
+    @field_validator("title")
+    @classmethod
+    def title_must_contain_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("title must contain non-whitespace characters")
+        return value
+
+    @field_validator("text")
+    @classmethod
+    def text_must_contain_content(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("text must contain non-whitespace characters")
+        return value
+
+    @model_validator(mode="after")
+    def validate_chunk_overlap(self) -> "RAGDocumentCreate":
+        if self.overlap >= self.max_chars:
+            raise ValueError("overlap must be smaller than max_chars")
+        return self
 
 
 class RAGDocumentRead(BaseModel):
@@ -63,6 +83,14 @@ class RAGQueryRequest(BaseModel):
 
     query: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=5, ge=1, le=20)
+
+    @field_validator("query")
+    @classmethod
+    def normalize_query(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("query must contain non-whitespace characters")
+        return normalized
 
 
 class RAGEvidenceRead(BaseModel):

@@ -4,7 +4,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision = "0022_durable_workflow_orchestration"
+revision = "0022_workflow_orchestration"
 down_revision = "0021_secret_reference_binding"
 branch_labels = None
 depends_on = None

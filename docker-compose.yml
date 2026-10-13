@@ -5,7 +5,7 @@ services:
       POSTGRES_USER: nexus
       POSTGRES_PASSWORD: nexus
       POSTGRES_DB: nexus
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: [nexus_pg:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nexus -d nexus"]
@@ -14,12 +14,13 @@ services:
       retries: 10
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    ports: ["127.0.0.1:6379:6379"]
   api:
     build:
       context: .
       dockerfile: services/api/Dockerfile
     environment:
+      NEXUS_ENV: ${NEXUS_ENV:-development}
       DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
       REDIS_URL: redis://redis:6379/0
       NEXUS_SECRET_KEY: ${NEXUS_SECRET_KEY:-replace-with-a-development-secret}
@@ -28,9 +29,15 @@ services:
       NEXUS_ARTIFACT_ROOT: /var/lib/nexus/artifacts
       NEXUS_RUNTIME_ROOT: /var/lib/nexus/runtime
     command: ["sh", "-c", "alembic upgrade head && uvicorn services.api.app.main:app --host 0.0.0.0 --port 8000"]
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]
     volumes:
       - nexus_artifacts:/var/lib/nexus/artifacts
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; host=os.environ.get('NEXUS_ALLOWED_HOSTS', 'localhost').split(',')[0].strip(); request=urllib.request.Request('http://127.0.0.1:8000/api/v1/health/ready', headers={'Host': host}); urllib.request.urlopen(request, timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,7 +66,7 @@ services:
       postgres:
         condition: service_healthy
       api:
-        condition: service_started
+        condition: service_healthy
 
   orchestrator:
     build:

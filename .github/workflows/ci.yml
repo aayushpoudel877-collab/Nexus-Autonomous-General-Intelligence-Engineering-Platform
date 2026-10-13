@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -e '.[dev]'
@@ -33,3 +35,46 @@ jobs:
         with: {node-version: "22"}
       - run: npm install --no-audit --no-fund
       - run: npm run build
+
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: nexus
+          POSTGRES_DB: nexus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nexus -d nexus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://nexus:nexus@localhost:5432/nexus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -e .
+      - name: Upgrade the complete schema
+        run: alembic upgrade head
+      - name: Verify every migration can be downgraded
+        run: alembic downgrade base
+      - name: Rebuild the schema from a clean database
+        run: alembic upgrade head
+      - name: Confirm one current migration head
+        run: alembic current
+
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image with document extraction dependencies
+        run: docker build -f services/api/Dockerfile -t nexus-api-ci .
+      - name: Build execution worker image
+        run: docker build -f services/execution/Dockerfile -t nexus-execution-ci .
+      - name: Build workflow orchestrator image
+        run: docker build -f services/orchestrator/Dockerfile -t nexus-orchestrator-ci .

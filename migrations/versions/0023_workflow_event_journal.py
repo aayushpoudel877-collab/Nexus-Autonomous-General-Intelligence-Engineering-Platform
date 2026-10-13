@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "0023_workflow_event_journal"
-down_revision = "0022_durable_workflow_orchestration"
+down_revision = "0022_workflow_orchestration"
 branch_labels = None
 depends_on = None
 

@@ -1,5 +1,3 @@
-[object Object]
-
 ## Phase 19 mediated secrets
 
 Secret-enabled executions require the `secret.read` capability and one or more approved `SecretGrant` IDs.

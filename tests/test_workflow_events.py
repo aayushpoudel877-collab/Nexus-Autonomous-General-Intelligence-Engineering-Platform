@@ -1,9 +1,12 @@
+from uuid import uuid4
+from unittest.mock import AsyncMock
+
 import pytest
 
 from services.api.app.db.base import Base
 from services.api.app.models.workflow_event import WorkflowEvent
 from services.api.app.schemas.workflow import WorkflowEventRead
-from services.api.app.services.workflow_events import _validate_payload
+from services.api.app.services.workflow_events import _validate_payload, append_workflow_event
 
 
 def test_workflow_event_table_is_registered():
@@ -13,6 +16,32 @@ def test_workflow_event_table_is_registered():
 def test_workflow_event_payload_rejects_credentials():
     with pytest.raises(ValueError, match="credential"):
         _validate_payload({"api_token": "do-not-store"})
+
+
+def test_workflow_event_payload_rejects_nested_credentials():
+    with pytest.raises(ValueError, match="credential"):
+        _validate_payload({"context": [{"metadata": {"password_hash": "do-not-store"}}]})
+
+
+def test_workflow_event_payload_rejects_excessive_nesting():
+    payload = {"value": "leaf"}
+    for _ in range(18):
+        payload = {"nested": payload}
+    with pytest.raises(ValueError, match="nested too deeply"):
+        _validate_payload(payload)
+
+
+def test_workflow_event_payload_rejects_non_json_values():
+    with pytest.raises(ValueError, match="valid JSON"):
+        _validate_payload({"metric": float("nan")})
+
+
+@pytest.mark.asyncio
+async def test_append_rejects_falsey_non_object_payload():
+    with pytest.raises(TypeError, match="object"):
+        await append_workflow_event(
+            AsyncMock(), run_id=uuid4(), event_type="workflow.tick", payload=[]
+        )
 
 
 def test_workflow_event_payload_is_bounded():
