@@ -33,7 +33,7 @@ services:
     volumes:
       - nexus_artifacts:/var/lib/nexus/artifacts
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=2)"]
+      test: ["CMD", "python", "-c", "import os, urllib.request; host=os.environ.get('NEXUS_ALLOWED_HOSTS', 'localhost').split(',')[0].strip(); request=urllib.request.Request('http://127.0.0.1:8000/api/v1/health/ready', headers={'Host': host}); urllib.request.urlopen(request, timeout=2)"]
       interval: 10s
       timeout: 3s
       retries: 10
