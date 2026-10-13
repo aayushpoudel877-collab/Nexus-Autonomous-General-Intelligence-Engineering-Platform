@@ -45,10 +45,10 @@ def test_audit_event_is_allowlisted_and_deterministic():
     {"evidence_count": 1001},
 ])
 def test_audit_event_rejects_invalid_fields(kwargs):
-    values = dict(
-        event_id="evt-1", event_type="retrieval.completed", occurred_at=NOW,
-        organization_id="org-1", outcome="success",
-    )
+    values = {
+        "event_id": "evt-1", "event_type": "retrieval.completed", "occurred_at": NOW,
+        "organization_id": "org-1", "outcome": "success",
+    }
     values.update(kwargs)
     with pytest.raises(ValueError):
         build_audit_event(**values)
