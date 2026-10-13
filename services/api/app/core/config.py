@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,9 +16,15 @@ class Settings(BaseSettings):
     jwt_access_minutes: int = Field(default=30, ge=1, le=1440)
     jwt_refresh_days: int = Field(default=14, ge=1, le=365)
     cors_origins: str = "http://localhost:3000"
-    allowed_hosts: str = "localhost,127.0.0.1"
+    allowed_hosts: str = Field(
+        default="localhost,127.0.0.1",
+        validation_alias=AliasChoices("NEXUS_ALLOWED_HOSTS", "allowed_hosts"),
+    )
     max_request_bytes: int = Field(default=10_485_760, ge=1024, le=104_857_600)
-    artifact_root: str = "/var/lib/nexus/artifacts"
+    artifact_root: str = Field(
+        default="/var/lib/nexus/artifacts",
+        validation_alias=AliasChoices("NEXUS_ARTIFACT_ROOT", "artifact_root"),
+    )
 
     @model_validator(mode="after")
     def validate_production_security_settings(self) -> "Settings":
