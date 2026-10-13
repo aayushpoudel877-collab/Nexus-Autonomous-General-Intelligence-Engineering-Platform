@@ -51,7 +51,7 @@ def test_production_rejects_wildcard_hosts():
     with pytest.raises(ValidationError, match="NEXUS_ALLOWED_HOSTS"):
         Settings(
             nexus_env="production",
-            nexus_secret_key="a" * 32,
+            nexus_secret_key=VALID_PRODUCTION_SECRET,
             cors_origins="https://app.example.com",
             allowed_hosts="*",
         )
