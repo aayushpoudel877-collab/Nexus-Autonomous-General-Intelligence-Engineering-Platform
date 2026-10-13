@@ -8,7 +8,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0019_secret_grant_revocation_reuse"
+revision = "0019_secret_grant_revocation"
 down_revision = "0018_execution_secret_grants"
 branch_labels = None
 depends_on = None
