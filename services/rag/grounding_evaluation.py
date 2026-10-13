@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .evaluation import MAX_CASES, MAX_DATASET_BYTES, MAX_LINE_BYTES, _read_jsonl
+from .evaluation import _read_jsonl
 from .grounding import ClaimEvidence, GroundingClaim, LexicalGroundingVerifier
 
 
@@ -142,29 +142,31 @@ def _evaluate_slice(
     cases: list[GroundingEvaluationCase],
     verifier: LexicalGroundingVerifier,
 ) -> dict[str, float | int]:
-    report = evaluate_grounding_cases(cases, verifier=verifier) if len(cases) > 1 else None
-    if report is not None:
-        return {
-            "case_count": report["case_count"],
-            "accuracy": report["accuracy"],
-            "false_positive_rate": report["false_positive_rate"],
-            "false_negative_rate": report["false_negative_rate"],
-            "citation_validity_rate": report["citation_validity_rate"],
-        }
-    case = cases[0]
-    valid = bool(case.cited_evidence_ids) and set(case.cited_evidence_ids) <= {case.evidence_id}
-    status = (
-        verifier.assess(
-            [GroundingClaim(case.case_id, case.claim_text, case.cited_evidence_ids)],
-            [ClaimEvidence(case.evidence_id, case.evidence_text)],
-        ).assessments[0].status
-        if valid else "unsupported"
-    )
-    correct = (status == "grounded") == case.expected_supported
+    tp = fp = tn = fn = valid_citations = 0
+    for case in cases:
+        valid = bool(case.cited_evidence_ids) and set(case.cited_evidence_ids) <= {case.evidence_id}
+        valid_citations += int(valid)
+        status = (
+            verifier.assess(
+                [GroundingClaim(case.case_id, case.claim_text, case.cited_evidence_ids)],
+                [ClaimEvidence(case.evidence_id, case.evidence_text)],
+            ).assessments[0].status
+            if valid else "unsupported"
+        )
+        predicted = status == "grounded"
+        if predicted and case.expected_supported:
+            tp += 1
+        elif predicted and not case.expected_supported:
+            fp += 1
+        elif not predicted and case.expected_supported:
+            fn += 1
+        else:
+            tn += 1
+    count = len(cases)
     return {
-        "case_count": 1,
-        "accuracy": float(correct),
-        "false_positive_rate": float(status == "grounded" and not case.expected_supported),
-        "false_negative_rate": float(status != "grounded" and case.expected_supported),
-        "citation_validity_rate": float(valid),
+        "case_count": count,
+        "accuracy": (tp + tn) / count,
+        "false_positive_rate": fp / (fp + tn) if fp + tn else 0.0,
+        "false_negative_rate": fn / (fn + tp) if fn + tp else 0.0,
+        "citation_validity_rate": valid_citations / count,
     }
