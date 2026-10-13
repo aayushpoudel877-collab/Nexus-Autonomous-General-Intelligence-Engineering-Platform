@@ -20,6 +20,7 @@ services:
       context: .
       dockerfile: services/api/Dockerfile
     environment:
+      NEXUS_ENV: ${NEXUS_ENV:-development}
       DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
       REDIS_URL: redis://redis:6379/0
       NEXUS_SECRET_KEY: ${NEXUS_SECRET_KEY:-replace-with-a-development-secret}
