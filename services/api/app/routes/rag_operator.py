@@ -230,11 +230,13 @@ async def review_reindex_request(
     row = await db.scalar(select(RAGReindexRequest).where(
         RAGReindexRequest.id == request_id,
         RAGReindexRequest.organization_id == membership.organization_id,
-    ))
+    ).with_for_update())
     if row is None:
         raise HTTPException(status_code=404, detail="Reindex request not found")
     if row.status != "pending_approval":
         raise HTTPException(status_code=409, detail="Only pending reindex requests can be reviewed")
+    if row.requested_by_user_id == user.id:
+        raise HTTPException(status_code=403, detail="The requester cannot review their own reindex request")
     row.status = payload.decision
     row.reviewed_by_user_id = user.id
     await record_audit(
