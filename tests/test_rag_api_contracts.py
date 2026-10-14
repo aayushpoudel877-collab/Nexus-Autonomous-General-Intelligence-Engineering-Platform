@@ -5,6 +5,11 @@ from fastapi.routing import APIRoute
 from pydantic import ValidationError
 from services.api.app.main import app
 from services.api.app.routes.rag import router
+from services.api.app.routes.rag_operator import (
+    FeedbackCreate,
+    ReindexRequestCreate,
+    router as operator_router,
+)
 from services.api.app.schemas.rag import RAGDocumentCreate, RAGQueryRequest
 
 
@@ -57,3 +62,36 @@ def test_query_contract_has_strict_bounds_and_rejects_tenant_override():
     assert normalized.query == "what is this?"
     with pytest.raises(ValidationError, match="non-whitespace"):
         RAGQueryRequest(query="   ")
+
+
+
+def test_operator_routes_are_registered_and_authenticated():
+    paths = app.openapi()["paths"]
+    assert "get" in paths["/api/v1/rag/operator/health"]
+    assert "post" in paths["/api/v1/rag/operator/feedback"]
+    assert "get" in paths["/api/v1/rag/operator/feedback"]
+    assert "patch" in paths["/api/v1/rag/operator/feedback/{feedback_id}"]
+    assert "post" in paths["/api/v1/rag/operator/documents/{document_id}/reindex"]
+    assert "patch" in paths["/api/v1/rag/operator/reindex-requests/{request_id}"]
+    for route in operator_router.routes:
+        if not isinstance(route, APIRoute):
+            continue
+        calls = _dependency_calls(route.dependant)
+        assert "get_current_user" in calls, f"{route.path} does not require authenticated user context"
+
+
+def test_operator_feedback_contract_rejects_invalid_or_duplicate_evidence():
+    with pytest.raises(ValidationError):
+        FeedbackCreate(query="   ", rating="helpful")
+    with pytest.raises(ValidationError):
+        FeedbackCreate(query="question", rating="neutral")
+    with pytest.raises(ValidationError):
+        FeedbackCreate(query="question", rating="helpful", evidence_ids=["chunk-1", "chunk-1"])
+    with pytest.raises(ValidationError):
+        FeedbackCreate(query="question", rating="helpful", evidence_ids=[""])
+
+
+def test_reindex_request_requires_a_nonblank_reason():
+    with pytest.raises(ValidationError):
+        ReindexRequestCreate(reason="   ")
+    assert ReindexRequestCreate(reason=" refresh index ").reason == "refresh index"
