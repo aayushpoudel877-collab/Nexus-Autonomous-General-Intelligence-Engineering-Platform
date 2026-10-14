@@ -21,6 +21,7 @@ from .routes.execution import router as execution_router
 from .routes.workflow import router as workflow_router
 from .routes.rag import router as rag_router
 from .routes.rag_upload import router as rag_upload_router
+from .routes.rag_operator import router as rag_operator_router
 
 app = FastAPI(title="NEXUS-Ω API", version="0.25.0")
 
@@ -53,5 +54,6 @@ app.include_router(execution_router, prefix="/api/v1")
 app.include_router(workflow_router, prefix="/api/v1")
 app.include_router(rag_router, prefix="/api/v1")
 app.include_router(rag_upload_router, prefix="/api/v1")
+app.include_router(rag_operator_router, prefix="/api/v1")
 
 app.middleware("http")(security_middleware)
