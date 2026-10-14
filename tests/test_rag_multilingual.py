@@ -1,6 +1,7 @@
 import pytest
 
-from services.rag.retrieval import tokenize
+from services.rag.chunking import chunk_text
+from services.rag.retrieval import hybrid_retrieve, tokenize
 
 
 @pytest.mark.parametrize(
@@ -28,3 +29,20 @@ def test_unicode_tokenizer_handles_empty_and_punctuation_only_text():
 def test_unicode_tokenizer_requires_string_input():
     with pytest.raises(TypeError, match="text must be a string"):
         tokenize(None)
+
+
+def test_bm25_retrieves_devanagari_chunks_without_changing_tenant_scope():
+    nepali = chunk_text("नेपालको राजधानी काठमाडौं हो", "doc-ne", "org-a")
+    english = chunk_text("The capital of France is Paris", "doc-en", "org-a")
+    other_tenant = chunk_text("नेपालको राजधानी काठमाडौं हो", "doc-other", "org-b")
+
+    hits = hybrid_retrieve(
+        "काठमाडौं राजधानी",
+        [*english, *nepali, *other_tenant],
+        tenant_id="org-a",
+        top_k=5,
+    )
+
+    assert hits
+    assert hits[0].chunk.document_id == "doc-ne"
+    assert all(hit.chunk.tenant_id == "org-a" for hit in hits)
