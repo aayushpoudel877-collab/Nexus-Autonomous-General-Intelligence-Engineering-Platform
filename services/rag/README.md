@@ -3,7 +3,8 @@
 A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The current foundation includes deterministic retrieval, source attribution, persistent document/chunk records, and evaluation hooks. It is provider-independent and treats retrieved text as untrusted data.
 
 ## Capabilities
-- Stable text normalization and overlap-aware chunking with source offsets.
+- Unicode-aware NFC text tokenization and overlap-aware chunking with source offsets.
+- Multilingual lexical token support for scripts including Devanagari, Arabic, Cyrillic, Japanese, and Latin diacritics; language-specific segmentation and stemming are not yet provided.
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
