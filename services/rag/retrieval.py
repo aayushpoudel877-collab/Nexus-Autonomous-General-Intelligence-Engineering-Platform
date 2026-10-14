@@ -23,9 +23,7 @@ def tokenize(text: str) -> list[str]:
     current: list[str] = []
     for character in normalized:
         category = unicodedata.category(character)
-        if category[0] in {"L", "N"} or character == "_":
-            current.append(character)
-        elif category[0] == "M" and current:
+        if category[0] in {"L", "N"} or character == "_" or (category[0] == "M" and current):
             current.append(character)
         elif current:
             tokens.append("".join(current).casefold())
