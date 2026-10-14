@@ -64,3 +64,50 @@ class RAGChunk(Base):
     token_count: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     document: Mapped[RAGDocument] = relationship(back_populates="chunks")
+
+
+class RAGFeedback(Base):
+    """Tenant-scoped operator feedback; raw queries are never persisted."""
+    __tablename__ = "rag_feedback"
+    __table_args__ = (
+        CheckConstraint("rating IN ('helpful', 'unhelpful')", name="ck_rag_feedback_rating"),
+        CheckConstraint("status IN ('new', 'triaged', 'resolved', 'ignored')", name="ck_rag_feedback_status"),
+        Index("ix_rag_feedback_org_status_created", "organization_id", "status", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    actor_user_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    query_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    evidence_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    rating: Mapped[str] = mapped_column(String(16), nullable=False)
+    note: Mapped[str] = mapped_column(String(1000), default="", nullable=False)
+    status: Mapped[str] = mapped_column(String(16), default="new", nullable=False)
+    triaged_by_user_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class RAGReindexRequest(Base):
+    """Approval queue for bounded, explicitly requested document reindexing."""
+    __tablename__ = "rag_reindex_requests"
+    __table_args__ = (
+        CheckConstraint("status IN ('pending_approval', 'approved', 'rejected')", name="ck_rag_reindex_status"),
+        Index("ix_rag_reindex_org_status_created", "organization_id", "status", "created_at"),
+        ForeignKeyConstraint(
+            ["document_id", "organization_id"],
+            ["rag_documents.id", "rag_documents.organization_id"],
+            ondelete="CASCADE",
+            name="fk_rag_reindex_document_org",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    document_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    requested_by_user_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewed_by_user_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reason: Mapped[str] = mapped_column(String(1000), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), default="pending_approval", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
