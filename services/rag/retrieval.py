@@ -5,16 +5,34 @@ from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
 import math
-import re
+import unicodedata
 
 from .chunking import Chunk
 
-_TOKEN = re.compile(r"[a-z0-9_]+", re.IGNORECASE)
-
-
 def tokenize(text: str) -> list[str]:
-    """Return lowercase alphanumeric tokens for the baseline lexical ranker."""
-    return [token.lower() for token in _TOKEN.findall(text)]
+    """Tokenize Unicode text while preserving letters, digits, and combining marks.
+
+    This deterministic baseline supports scripts beyond Latin without a language
+    detector or external dependency. It does not perform stemming, translation,
+    or word segmentation for scripts that do not use whitespace.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    normalized = unicodedata.normalize("NFC", text)
+    tokens: list[str] = []
+    current: list[str] = []
+    for character in normalized:
+        category = unicodedata.category(character)
+        if category[0] in {"L", "N"} or character == "_":
+            current.append(character)
+        elif category[0] == "M" and current:
+            current.append(character)
+        elif current:
+            tokens.append("".join(current).casefold())
+            current = []
+    if current:
+        tokens.append("".join(current).casefold())
+    return tokens
 
 
 @dataclass(frozen=True)
