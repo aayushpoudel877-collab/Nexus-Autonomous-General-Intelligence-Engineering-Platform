@@ -13,6 +13,9 @@ from dataclasses import dataclass
 from .ranking import RankedCandidate
 
 MAX_GRAPH_EDGES = 20_000
+MAX_GRAPH_ENTITIES = 20_000
+MAX_GRAPH_SEEDS = 200
+MAX_ENTITY_CHUNK_ASSOCIATIONS = 100_000
 MAX_ENTITIES_PER_CHUNK = 32
 MAX_CHUNKS_PER_ENTITY = 500
 MAX_GRAPH_HOPS = 2
@@ -77,12 +80,25 @@ def graph_assisted_retrieve(
         raise ValueError("decay must be finite and in (0, 1]")
     if len(edges) > MAX_GRAPH_EDGES:
         raise ValueError("graph edge count exceeds the configured limit")
+    if len(seed_candidates) > MAX_GRAPH_SEEDS:
+        raise ValueError("seed candidate count exceeds the configured limit")
+    if len(entity_chunk_ids) > MAX_GRAPH_ENTITIES:
+        raise ValueError("graph entity count exceeds the configured limit")
+    association_count = 0
+    for chunk_ids in entity_chunk_ids.values():
+        if not isinstance(chunk_ids, Sequence) or isinstance(chunk_ids, (str, bytes)):
+            raise TypeError("entity chunk associations must be sequences of chunk IDs")
+        association_count += len(chunk_ids)
+        if association_count > MAX_ENTITY_CHUNK_ASSOCIATIONS:
+            raise ValueError("entity-to-chunk association count exceeds the configured limit")
 
     scoped_seeds: list[RankedCandidate] = []
     seen_seed_ids: set[str] = set()
     for candidate in seed_candidates:
         if not isinstance(candidate, RankedCandidate):
             raise TypeError("seed_candidates must contain RankedCandidate values")
+        if candidate.score < 0:
+            raise ValueError("seed candidate scores must be non-negative for graph decay")
         if candidate.candidate_id in seen_seed_ids:
             continue
         seen_seed_ids.add(candidate.candidate_id)
