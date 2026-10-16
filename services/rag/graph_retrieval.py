@@ -16,6 +16,7 @@ MAX_GRAPH_EDGES = 20_000
 MAX_GRAPH_ENTITIES = 20_000
 MAX_GRAPH_SEEDS = 200
 MAX_ENTITY_CHUNK_ASSOCIATIONS = 100_000
+MAX_GRAPH_TRAVERSAL_STEPS = 200_000
 MAX_ENTITIES_PER_CHUNK = 32
 MAX_CHUNKS_PER_ENTITY = 500
 MAX_GRAPH_HOPS = 2
@@ -140,6 +141,7 @@ def graph_assisted_retrieve(
         neighbors.sort(key=lambda item: (item[0], item[1]))
 
     best: dict[str, GraphCandidate] = {}
+    traversal_steps = 0
     for seed in scoped_seeds:
         base = GraphCandidate(seed.candidate_id, seed.score, seed.candidate_id, (), (), 0)
         previous = best.get(seed.candidate_id)
@@ -154,6 +156,9 @@ def graph_assisted_retrieve(
             if hops >= max_hops:
                 continue
             for neighbor_id, relation in adjacency.get(entity_id, []):
+                traversal_steps += 1
+                if traversal_steps > MAX_GRAPH_TRAVERSAL_STEPS:
+                    raise ValueError("graph traversal step budget exceeded")
                 if neighbor_id in visited:
                     continue
                 next_hops = hops + 1
