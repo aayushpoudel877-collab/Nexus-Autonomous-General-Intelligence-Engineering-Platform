@@ -138,3 +138,9 @@ def test_tool_policy_rejects_non_read_only_tools_and_invalid_limits():
         _tool(read_only=False)
     with pytest.raises(ValueError, match="max_steps"):
         AgenticRetrievalPolicy(max_steps=13)
+
+
+
+def test_tool_result_rejects_malformed_evidence_collections():
+    with pytest.raises(TypeError, match="evidence_ids must be a tuple"):
+        ToolResult("org-a", "result", "E1")
