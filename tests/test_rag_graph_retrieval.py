@@ -15,6 +15,7 @@ def test_graph_expands_seed_to_related_chunks_with_explanation():
         {"entity-a": ["chunk-1"], "entity-b": ["chunk-2"]},
         tenant_id="org-a",
         chunk_tenants={"chunk-1": "org-a", "chunk-2": "org-a"},
+        entity_tenants={"entity-a": "org-a", "entity-b": "org-a"},
     )
     assert [item.candidate_id for item in results] == ["chunk-1", "chunk-2"]
     expanded = results[1]
@@ -35,6 +36,7 @@ def test_graph_never_returns_cross_tenant_chunks_or_traverses_other_tenant_edges
             "seed": "org-a", "foreign-seed": "org-b",
             "foreign-result": "org-b", "local-result": "org-a",
         },
+        entity_tenants={"a": "org-a", "b": "org-b", "c": "org-a"},
     )
     ids = {item.candidate_id for item in results}
     assert "foreign-seed" not in ids
@@ -49,6 +51,7 @@ def test_multi_hop_is_bounded_and_score_decays():
         {"a": ["one"], "b": ["two"], "c": ["three"]},
         tenant_id="org-a",
         chunk_tenants={"one": "org-a", "two": "org-a", "three": "org-a"},
+        entity_tenants={"a": "org-a", "b": "org-a", "c": "org-a"},
         max_hops=2,
         decay=0.5,
     )
@@ -65,6 +68,7 @@ def test_duplicate_paths_keep_strongest_score_deterministically():
         {"a": ["seed"], "b": ["b-chunk"], "c": ["c-chunk"], "d": ["target"]},
         tenant_id="org-a",
         chunk_tenants={key: "org-a" for key in ("seed", "b-chunk", "c-chunk", "target")},
+        entity_tenants={key: "org-a" for key in ("a", "b", "c", "d")},
         max_hops=2,
     )
     target = next(item for item in results if item.candidate_id == "target")
@@ -85,7 +89,7 @@ def test_duplicate_paths_keep_strongest_score_deterministically():
 def test_invalid_search_bounds_are_rejected(kwargs):
     with pytest.raises(ValueError):
         graph_assisted_retrieve(
-            [RankedCandidate("seed", 1.0)], [], {}, chunk_tenants={"seed": "org-a"}, **kwargs
+            [RankedCandidate("seed", 1.0)], [], {}, chunk_tenants={"seed": "org-a"}, entity_tenants={}, **kwargs
         )
 
 
@@ -97,4 +101,5 @@ def test_rejects_malformed_edges_and_excessive_entity_fanout():
             [RankedCandidate("seed", 1.0)], [],
             {f"entity-{i}": ["seed"] for i in range(33)},
             tenant_id="org-a", chunk_tenants={"seed": "org-a"},
+            entity_tenants={f"entity-{i}": "org-a" for i in range(33)},
         )
