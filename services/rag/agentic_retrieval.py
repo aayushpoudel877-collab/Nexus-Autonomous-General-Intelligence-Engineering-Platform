@@ -56,6 +56,8 @@ class ToolResult:
             raise ValueError("tool result tenant_id is required and bounded")
         if not isinstance(self.text, str):
             raise TypeError("tool result text must be a string")
+        if not isinstance(self.evidence_ids, tuple):
+            raise TypeError("tool result evidence_ids must be a tuple")
         if len(self.evidence_ids) > MAX_EVIDENCE_IDS:
             raise ValueError("tool result has too many evidence IDs")
         if any(not isinstance(item, str) or not item.strip() or len(item) > 200 for item in self.evidence_ids):
