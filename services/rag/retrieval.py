@@ -96,6 +96,7 @@ class Evidence:
     start_char: int
     end_char: int
     score: float
+    character_ngram_score: float = 0.0
 
 
 def _lexical_scores(
@@ -243,6 +244,7 @@ def pack_evidence(
                 hit.chunk.start_char,
                 hit.chunk.end_char,
                 hit.fused_score,
+                hit.character_ngram_score,
             )
         )
     return evidence
