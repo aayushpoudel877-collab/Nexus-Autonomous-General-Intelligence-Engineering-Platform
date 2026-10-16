@@ -117,12 +117,12 @@ def test_synthetic_jsonl_fixture_runs_through_bounded_loader():
 def test_jsonl_loader_rejects_unknown_fields_and_invalid_json(tmp_path):
     dataset = tmp_path / "dataset.jsonl"
     dataset.write_text(
-        '{"case_id":"x","text":"normal","expected_attack":false,"tenant_id":"org-a"}\\n',
+        '{"case_id":"x","text":"normal","expected_attack":false,"tenant_id":"org-a"}' + chr(10),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="unknown or missing fields"):
         load_prompt_injection_cases(dataset)
 
-    dataset.write_text("{not-json}\\n", encoding="utf-8")
+    dataset.write_text("{not-json}" + chr(10), encoding="utf-8")
     with pytest.raises(ValueError, match="invalid JSON"):
         load_prompt_injection_cases(dataset)
