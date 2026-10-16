@@ -106,10 +106,12 @@ class RAGEvidenceRead(BaseModel):
     start_char: int
     end_char: int
     score: float
+    character_ngram_score: float = 0.0
 
 
 class RAGQueryResponse(BaseModel):
     query: str
     retrieval_mode: Literal["lexical"]
+    character_ngram_weight: float = 0.0
     evidence: list[RAGEvidenceRead]
     note: str
