@@ -169,3 +169,17 @@ def test_graph_entity_and_association_counts_are_bounded(monkeypatch):
             chunk_tenants={},
             entity_tenants={},
         )
+
+
+
+def test_graph_traversal_has_a_total_work_budget(monkeypatch):
+    monkeypatch.setattr(graph_retrieval, "MAX_GRAPH_TRAVERSAL_STEPS", 1)
+    with pytest.raises(ValueError, match="traversal step budget"):
+        graph_assisted_retrieve(
+            [RankedCandidate("seed", 1.0)],
+            [_edge("a", "b"), _edge("a", "c")],
+            {"a": ["seed"], "b": ["chunk-b"], "c": ["chunk-c"]},
+            tenant_id="org-a",
+            chunk_tenants={key: "org-a" for key in ("seed", "chunk-b", "chunk-c")},
+            entity_tenants={key: "org-a" for key in ("a", "b", "c")},
+        )
