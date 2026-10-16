@@ -73,7 +73,7 @@ def test_metadata_bounds_are_enforced():
     with pytest.raises(ValueError, match="too many fields"):
         _representation(metadata=tuple((f"k{i}", "v") for i in range(33)))
     with pytest.raises(ValueError, match="maximum encoded size"):
-        _representation(metadata=(("description", "x" * 9_000),))
+        _representation(metadata=tuple((f"field_{index}", "x" * 1_000) for index in range(9)))
 
 
 def test_chunk_bounds_are_validated():
