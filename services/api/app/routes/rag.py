@@ -194,7 +194,11 @@ async def query_corpus(
         for chunk, document in pairs
     ]
     hits = hybrid_retrieve(
-        payload.query.strip(), chunks, tenant_id=str(membership.organization_id), top_k=payload.top_k
+        payload.query.strip(),
+        chunks,
+        tenant_id=str(membership.organization_id),
+        top_k=payload.top_k,
+        character_ngram_weight=payload.character_ngram_weight,
     )
     documents = {str(document.id): document for _, document in pairs}
     evidence = pack_evidence(
@@ -219,5 +223,8 @@ async def query_corpus(
             )
             for item in evidence
         ],
-        note="Lexical retrieval only; embeddings and generated answers are not enabled in this phase.",
+        note=(
+            "Lexical retrieval only; optional character n-gram matching can assist scripts "
+            "without whitespace segmentation. Embeddings and generated answers are not enabled."
+        ),
     )
