@@ -1,5 +1,6 @@
 import pytest
 
+import services.rag.graph_retrieval as graph_retrieval
 from services.rag.graph_retrieval import (
     MAX_GRAPH_SEEDS,
     GraphEdge,
@@ -140,5 +141,31 @@ def test_graph_seed_count_is_bounded_before_expansion():
             {},
             tenant_id="org-a",
             chunk_tenants={item.candidate_id: "org-a" for item in seeds},
+            entity_tenants={},
+        )
+
+
+
+def test_graph_entity_and_association_counts_are_bounded(monkeypatch):
+    monkeypatch.setattr(graph_retrieval, "MAX_GRAPH_ENTITIES", 1)
+    with pytest.raises(ValueError, match="entity count"):
+        graph_assisted_retrieve(
+            [],
+            [],
+            {"entity-a": [], "entity-b": []},
+            tenant_id="org-a",
+            chunk_tenants={},
+            entity_tenants={},
+        )
+
+    monkeypatch.setattr(graph_retrieval, "MAX_GRAPH_ENTITIES", 10)
+    monkeypatch.setattr(graph_retrieval, "MAX_ENTITY_CHUNK_ASSOCIATIONS", 2)
+    with pytest.raises(ValueError, match="association count"):
+        graph_assisted_retrieve(
+            [],
+            [],
+            {"entity-a": ["one", "two"], "entity-b": ["three"]},
+            tenant_id="org-a",
+            chunk_tenants={},
             entity_tenants={},
         )
