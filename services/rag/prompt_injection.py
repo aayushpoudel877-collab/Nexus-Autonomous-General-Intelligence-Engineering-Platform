@@ -95,10 +95,13 @@ def detect_injection_markers(text: str) -> tuple[str, ...]:
     return tuple(sorted(category for category, pattern in _PATTERNS if pattern.search(normalized)))
 
 
-def _metrics(cases: Sequence[PromptInjectionCase]) -> dict[str, float | int]:
+def _metrics(
+    cases: Sequence[PromptInjectionCase],
+    predictions: dict[str, bool],
+) -> dict[str, float | int]:
     true_positive = false_positive = false_negative = true_negative = 0
     for case in cases:
-        predicted = bool(detect_injection_markers(case.text))
+        predicted = predictions[case.case_id]
         if predicted and case.expected_attack:
             true_positive += 1
         elif predicted:
@@ -141,8 +144,11 @@ def evaluate_prompt_injection_cases(
     by_risk: dict[str, list[PromptInjectionCase]] = defaultdict(list)
     false_positive_ids: list[str] = []
     false_negative_ids: list[str] = []
+    predictions = {
+        case.case_id: bool(detect_injection_markers(case.text)) for case in cases
+    }
     for case in cases:
-        predicted = bool(detect_injection_markers(case.text))
+        predicted = predictions[case.case_id]
         by_language[case.language].append(case)
         by_risk[case.risk_category].append(case)
         if predicted and not case.expected_attack:
@@ -153,12 +159,14 @@ def evaluate_prompt_injection_cases(
     return {
         "detector_version": DETECTOR_VERSION,
         "case_count": len(cases),
-        "aggregate": _metrics(cases),
+        "aggregate": _metrics(cases, predictions),
         "by_language": {
-            label: _metrics(group) for label, group in sorted(by_language.items())
+            label: _metrics(group, predictions)
+            for label, group in sorted(by_language.items())
         },
         "by_risk_category": {
-            label: _metrics(group) for label, group in sorted(by_risk.items())
+            label: _metrics(group, predictions)
+            for label, group in sorted(by_risk.items())
         },
         "false_positive_ids": sorted(false_positive_ids),
         "false_negative_ids": sorted(false_negative_ids),
