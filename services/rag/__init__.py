@@ -62,6 +62,7 @@ from .ranking import (
     reciprocal_rank_fusion,
 )
 from .retrieval import Evidence, RetrievalHit, hybrid_retrieve
+from .graph_retrieval import GraphCandidate, GraphEdge, graph_assisted_retrieve
 from .vector_store import InMemoryVectorStore, VectorMatch, VectorRecord, VectorStore
 
 __all__ = [
@@ -79,6 +80,8 @@ __all__ = [
     "EvaluationThresholds",
     "Evidence",
     "GenerationAnswer",
+    "GraphCandidate",
+    "GraphEdge",
     "GenerationEvidence",
     "GenerationProvider",
     "GenerationRequest",
@@ -114,6 +117,7 @@ __all__ = [
     "evidence_prompt_block",
     "filter_candidates",
     "generate_grounded_answer",
+    "graph_assisted_retrieve",
     "hybrid_retrieve",
     "load_golden_dataset",
     "load_grounding_dataset",
