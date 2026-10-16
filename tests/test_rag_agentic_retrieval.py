@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+from pydantic import BaseModel, ConfigDict
 
 from services.rag.agentic_retrieval import (
     AgenticRetrievalPolicy,
@@ -17,10 +18,18 @@ async def _search(tenant_id, arguments):
     return ToolResult(tenant_id, f"Found {arguments['query']}", ("E1",))
 
 
+class ToolArguments(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    query: str | None = None
+    prefix: str | None = None
+
+
 def _tool(executor=_search, **overrides):
     values = {
         "name": "lexical_search",
         "executor": executor,
+        "argument_model": ToolArguments,
         "required_scopes": frozenset({"rag:read"}),
         "max_calls": 2,
         "timeout_seconds": 1.0,
@@ -176,3 +185,23 @@ async def test_global_output_and_unique_evidence_budgets_are_enforced():
             actor_scopes=frozenset({"rag:read"}),
             policy=AgenticRetrievalPolicy(max_evidence_ids=3),
         )
+
+
+
+@pytest.mark.asyncio
+async def test_tool_specific_argument_schema_rejects_unknown_fields():
+    with pytest.raises(ToolPolicyError, match="failed the schema"):
+        await execute_bounded_tool_plan(
+            [ToolCall("lexical_search", {"query": "capital", "unexpected": "field"})],
+            tools={"lexical_search": _tool()},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+        )
+
+
+def test_retrieval_tool_requires_an_extra_forbidding_argument_model():
+    class PermissiveArguments(BaseModel):
+        query: str
+
+    with pytest.raises(ValueError, match="forbid extra fields"):
+        _tool(argument_model=PermissiveArguments)
