@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import pytest
 
 from services.rag import prompt_injection
+from services.rag.prompt_injection_cli import load_prompt_injection_cases
 from services.rag.prompt_injection import (
     MAX_TEXT_CHARS,
     PromptInjectionCase,
@@ -99,3 +102,27 @@ def test_detector_and_evaluator_reject_unbounded_or_malformed_inputs(monkeypatch
             PromptInjectionCase("one", "normal", False),
             PromptInjectionCase("two", "normal", False),
         ])
+
+
+
+def test_synthetic_jsonl_fixture_runs_through_bounded_loader():
+    fixture = Path(__file__).parent / "fixtures" / "rag" / "prompt-injection-eval.jsonl"
+    cases = load_prompt_injection_cases(fixture)
+    report = evaluate_prompt_injection_cases(cases)
+    assert len(cases) == 6
+    assert report["case_count"] == 6
+    assert report["false_negative_ids"] == ["nepali-attack"]
+
+
+def test_jsonl_loader_rejects_unknown_fields_and_invalid_json(tmp_path):
+    dataset = tmp_path / "dataset.jsonl"
+    dataset.write_text(
+        '{"case_id":"x","text":"normal","expected_attack":false,"tenant_id":"org-a"}\\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="unknown or missing fields"):
+        load_prompt_injection_cases(dataset)
+
+    dataset.write_text("{not-json}\\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid JSON"):
+        load_prompt_injection_cases(dataset)
