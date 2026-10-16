@@ -44,10 +44,7 @@ _SECRET_KEY_PARTS = (
 
 def _sensitive_metadata_key(key: str) -> bool:
     compact = "".join(character for character in key.casefold() if character.isalnum())
-    tokens = set(compact.split())
-    return any(part in compact for part in _SECRET_KEY_PARTS) or compact == "auth" or (
-        "api" in tokens and "key" in tokens
-    )
+    return any(part in compact for part in _SECRET_KEY_PARTS) or compact == "auth"
 
 
 def _representation_prefix(asset_id: str, representation_id: str) -> str:
