@@ -74,14 +74,20 @@ class RetrievalTool:
     max_calls: int = 2
     timeout_seconds: float = 5.0
     max_output_chars: int = 12_000
+    read_only: bool = True
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not _TOOL_NAME.fullmatch(self.name):
             raise ValueError("tool name must be a lowercase identifier")
         if not callable(self.executor):
             raise TypeError("tool executor must be callable")
+        if not isinstance(self.required_scopes, (set, frozenset)):
+            raise TypeError("required_scopes must be a set of scope names")
         if any(not isinstance(scope, str) or not scope.strip() for scope in self.required_scopes):
             raise ValueError("required scopes must be non-empty strings")
+        object.__setattr__(self, "required_scopes", frozenset(self.required_scopes))
+        if not isinstance(self.read_only, bool) or not self.read_only:
+            raise ValueError("retrieval tools must be explicitly read-only")
         if isinstance(self.max_calls, bool) or not isinstance(self.max_calls, int) or not 1 <= self.max_calls <= 10:
             raise ValueError("max_calls must be between 1 and 10")
         if not math.isfinite(self.timeout_seconds) or not 0 < self.timeout_seconds <= 30:
@@ -175,6 +181,8 @@ async def execute_bounded_tool_plan(
         raise ToolPolicyError("plan must be a sequence of tool calls")
     if len(plan) > policy.max_steps:
         raise ToolPolicyError("tool plan exceeds the maximum step count")
+    if not isinstance(actor_scopes, (set, frozenset)):
+        raise ToolPolicyError("actor_scopes must be a set of scope names")
     if any(not isinstance(scope, str) or not scope.strip() for scope in actor_scopes):
         raise ToolPolicyError("actor scopes must be non-empty strings")
 
@@ -186,8 +194,10 @@ async def execute_bounded_tool_plan(
     for call in plan:
         if not isinstance(call, ToolCall):
             raise ToolPolicyError("plan entries must be ToolCall values")
+        if not isinstance(call.tool_name, str) or not _TOOL_NAME.fullmatch(call.tool_name):
+            raise ToolPolicyError("tool call name is invalid")
         tool = tools.get(call.tool_name)
-        if tool is None or tool.name != call.tool_name:
+        if not isinstance(tool, RetrievalTool) or tool.name != call.tool_name:
             raise ToolPolicyError(f"tool {call.tool_name!r} is not allowlisted")
         if not tool.required_scopes.issubset(actor_scopes):
             raise ToolPolicyError(f"actor lacks required scope for tool {tool.name!r}")
