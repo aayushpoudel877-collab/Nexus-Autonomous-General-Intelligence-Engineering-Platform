@@ -34,6 +34,15 @@ jobs:
           name: prompt-injection-evaluation-report
           path: prompt-injection-report.json
           if-no-files-found: ignore
+      - name: Run offline tool-plan evaluation
+        run: python -m services.rag.tool_plan_evaluation_cli --dataset tests/fixtures/rag/tool-plan-eval.jsonl --output tool-plan-report.json
+      - name: Archive tool-plan evaluation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-plan-evaluation-report
+          path: tool-plan-report.json
+          if-no-files-found: ignore
   web:
     runs-on: ubuntu-latest
     defaults:
