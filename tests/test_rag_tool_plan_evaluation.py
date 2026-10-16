@@ -56,3 +56,17 @@ def test_tool_plan_evaluation_case_count_is_bounded(monkeypatch):
     case = ToolPlanEvaluationCase("one", (), (), ("lexical_search",))
     with pytest.raises(ValueError, match="case count"):
         evaluate_tool_plan_cases([case, ToolPlanEvaluationCase("two", (), (), ())])
+
+
+
+def test_synthetic_tool_plan_fixture_runs_through_bounded_loader():
+    fixture = Path(__file__).parent / "fixtures" / "rag" / "tool-plan-eval.jsonl"
+    cases = load_tool_plan_cases(fixture)
+    report = evaluate_tool_plan_cases(cases)
+    assert len(cases) == 6
+    assert report["case_count"] == 6
+    assert report["aggregate"]["forbidden_tool_attempts"] == 2
+    assert report["aggregate"]["forbidden_tool_case_ids"] == [
+        "nepali-external-fetch",
+        "shell-attempt",
+    ]
