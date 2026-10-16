@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-import math
 from typing import Literal
 
 from .chunking import Chunk, chunk_text
@@ -69,19 +68,32 @@ class MultimodalRepresentation:
         if (self.start_ms is None) != (self.end_ms is None):
             raise ValueError("start_ms and end_ms must be provided together")
         if self.start_ms is not None and (
-            self.start_ms < 0 or self.end_ms is None or self.end_ms <= self.start_ms
+            isinstance(self.start_ms, bool)
+            or isinstance(self.end_ms, bool)
+            or not isinstance(self.start_ms, int)
+            or not isinstance(self.end_ms, int)
+            or self.start_ms < 0
+            or self.end_ms <= self.start_ms
         ):
-            raise ValueError("timestamps must satisfy 0 <= start_ms < end_ms")
+            raise ValueError("timestamps must be integers satisfying 0 <= start_ms < end_ms")
         if self.page_number is not None and (
-            self.page_number < 1 or self.modality not in {"text", "image", "video", "structured"}
+            isinstance(self.page_number, bool)
+            or not isinstance(self.page_number, int)
+            or self.page_number < 1
+            or self.modality not in {"text", "image", "video", "structured"}
         ):
-            raise ValueError("page_number must be positive and used only for page-based modalities")
+            raise ValueError("page_number must be a positive integer for page-based modalities")
         if len(self.metadata) > MAX_METADATA_FIELDS:
             raise ValueError("metadata has too many fields")
         seen: set[str] = set()
-        for key, value in self.metadata:
+        for entry in self.metadata:
+            if not isinstance(entry, tuple) or len(entry) != 2:
+                raise ValueError("metadata entries must be key/value pairs")
+            key, value = entry
+            if not isinstance(key, str) or not isinstance(value, str):
+                raise ValueError("metadata keys and values must be strings")
             normalized_key = key.strip().casefold()
-            if not normalized_key or len(key) > 80 or not isinstance(value, str) or len(value) > 1024:
+            if not normalized_key or len(key) > 80 or len(value) > 1024:
                 raise ValueError("metadata keys and values exceed allowed bounds")
             if any(part in normalized_key for part in _SECRET_KEY_PARTS):
                 raise ValueError("credential-like metadata keys are not allowed")
@@ -117,10 +129,10 @@ def index_representation(
     overlap: int = 160,
 ) -> list[IndexedMultimodalChunk]:
     """Convert one representation into stable, bounded retrieval chunks."""
-    if not math.isfinite(float(max_chars)) or max_chars < 1:
-        raise ValueError("max_chars must be positive")
-    if overlap < 0 or overlap >= max_chars:
-        raise ValueError("overlap must be non-negative and smaller than max_chars")
+    if isinstance(max_chars, bool) or not isinstance(max_chars, int) or max_chars < 1:
+        raise ValueError("max_chars must be a positive integer")
+    if isinstance(overlap, bool) or not isinstance(overlap, int) or overlap < 0 or overlap >= max_chars:
+        raise ValueError("overlap must be an integer smaller than max_chars and not negative")
     internal_document_id = f"{representation.asset_id}:{representation.representation_id}"
     chunks = chunk_text(
         representation.text,
