@@ -132,3 +132,11 @@ def test_operator_feedback_contract_rejects_unknown_fields():
         FeedbackCreate(query="question", rating="helpful", organization_id=str(uuid4()))
     with pytest.raises(ValidationError):
         ReindexRequestCreate(reason="rebuild", execute_immediately=True)
+
+
+
+def test_multilingual_retrieval_controls_and_diagnostics_are_in_openapi():
+    schemas = app.openapi()["components"]["schemas"]
+    assert "character_ngram_weight" in schemas["RAGQueryRequest"]["properties"]
+    assert "character_ngram_weight" in schemas["RAGQueryResponse"]["properties"]
+    assert "character_ngram_score" in schemas["RAGEvidenceRead"]["properties"]
