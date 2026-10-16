@@ -13,6 +13,8 @@ import math
 import re
 from typing import Any
 
+from pydantic import BaseModel, ValidationError
+
 MAX_PLAN_STEPS = 12
 MAX_ARGUMENT_BYTES = 8_192
 MAX_ARGUMENT_DEPTH = 8
@@ -72,6 +74,7 @@ class RetrievalTool:
 
     name: str
     executor: Callable[[str, Mapping[str, Any]], Awaitable[ToolResult]]
+    argument_model: type[BaseModel]
     required_scopes: frozenset[str] = frozenset()
     max_calls: int = 2
     timeout_seconds: float = 5.0
@@ -83,6 +86,10 @@ class RetrievalTool:
             raise ValueError("tool name must be a lowercase identifier")
         if not callable(self.executor):
             raise TypeError("tool executor must be callable")
+        if not isinstance(self.argument_model, type) or not issubclass(self.argument_model, BaseModel):
+            raise TypeError("argument_model must be a Pydantic model class")
+        if self.argument_model.model_config.get("extra") != "forbid":
+            raise ValueError("tool argument models must forbid extra fields")
         if not isinstance(self.required_scopes, (set, frozenset)):
             raise TypeError("required_scopes must be a set of scope names")
         if any(not isinstance(scope, str) or not scope.strip() for scope in self.required_scopes):
@@ -208,6 +215,10 @@ async def execute_bounded_tool_plan(
             raise ToolPolicyError(f"tool {tool.name!r} exceeded its call budget")
 
         arguments = _validate_arguments(call.arguments)
+        try:
+            arguments = tool.argument_model.model_validate(arguments).model_dump(mode="json")
+        except ValidationError as exc:
+            raise ToolPolicyError(f"arguments failed the schema for tool {tool.name!r}") from exc
         try:
             result = await asyncio.wait_for(
                 tool.executor(tenant_id, arguments),
