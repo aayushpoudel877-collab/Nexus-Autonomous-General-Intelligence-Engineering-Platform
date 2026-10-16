@@ -162,13 +162,14 @@ async def test_global_output_and_unique_evidence_budgets_are_enforced():
         )
 
     async def many_evidence(tenant_id, arguments):
-        return ToolResult(tenant_id, "ok", ("E1", "E2"))
+        prefix = arguments["prefix"]
+        return ToolResult(tenant_id, "ok", (prefix + "-a", prefix + "-b"))
 
     with pytest.raises(ToolPolicyError, match="too many unique evidence"):
         await execute_bounded_tool_plan(
             [
-                ToolCall("lexical_search", {}),
-                ToolCall("lexical_search", {}),
+                ToolCall("lexical_search", {"prefix": "first"}),
+                ToolCall("lexical_search", {"prefix": "second"}),
             ],
             tools={"lexical_search": _tool(executor=many_evidence)},
             tenant_id="org-a",
