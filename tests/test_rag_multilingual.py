@@ -5,6 +5,7 @@ from services.rag.retrieval import (
     character_ngram_similarity,
     character_ngrams,
     hybrid_retrieve,
+    pack_evidence,
     tokenize,
 )
 
@@ -89,6 +90,7 @@ def test_character_ngram_retrieval_is_opt_in_and_respects_tenant_scope():
     assert hits
     assert hits[0].chunk.document_id == "doc-tokyo"
     assert hits[0].character_ngram_score == 1.0
+    assert pack_evidence(hits)[0].character_ngram_score == 1.0
     assert all(hit.chunk.tenant_id == "org-a" for hit in hits)
 
 
