@@ -91,7 +91,7 @@ class MultimodalRepresentation:
                 raise ValueError("metadata entries must be key/value pairs")
             key, value = entry
             if not isinstance(key, str) or not isinstance(value, str):
-                raise ValueError("metadata keys and values must be strings")
+                raise TypeError("metadata keys and values must be strings")
             normalized_key = key.strip().casefold()
             if not normalized_key or len(key) > 80 or len(value) > 1024:
                 raise ValueError("metadata keys and values exceed allowed bounds")
