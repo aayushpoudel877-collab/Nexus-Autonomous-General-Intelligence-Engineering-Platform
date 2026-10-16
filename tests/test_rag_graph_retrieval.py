@@ -1,6 +1,10 @@
 import pytest
 
-from services.rag.graph_retrieval import GraphEdge, graph_assisted_retrieve
+from services.rag.graph_retrieval import (
+    MAX_GRAPH_SEEDS,
+    GraphEdge,
+    graph_assisted_retrieve,
+)
 from services.rag.ranking import RankedCandidate
 
 
@@ -102,4 +106,39 @@ def test_rejects_malformed_edges_and_excessive_entity_fanout():
             {f"entity-{i}": ["seed"] for i in range(33)},
             tenant_id="org-a", chunk_tenants={"seed": "org-a"},
             entity_tenants={f"entity-{i}": "org-a" for i in range(33)},
+        )
+
+
+
+def test_graph_rejects_negative_seed_scores_and_non_sequence_associations():
+    with pytest.raises(ValueError, match="non-negative"):
+        graph_assisted_retrieve(
+            [RankedCandidate("seed", -0.1)],
+            [],
+            {},
+            tenant_id="org-a",
+            chunk_tenants={"seed": "org-a"},
+            entity_tenants={},
+        )
+    with pytest.raises(TypeError, match="sequences of chunk IDs"):
+        graph_assisted_retrieve(
+            [RankedCandidate("seed", 1.0)],
+            [],
+            {"entity-a": "seed"},
+            tenant_id="org-a",
+            chunk_tenants={"seed": "org-a"},
+            entity_tenants={"entity-a": "org-a"},
+        )
+
+
+def test_graph_seed_count_is_bounded_before_expansion():
+    seeds = [RankedCandidate(f"seed-{index}", 1.0) for index in range(MAX_GRAPH_SEEDS + 1)]
+    with pytest.raises(ValueError, match="seed candidate count"):
+        graph_assisted_retrieve(
+            seeds,
+            [],
+            {},
+            tenant_id="org-a",
+            chunk_tenants={item.candidate_id: "org-a" for item in seeds},
+            entity_tenants={},
         )
