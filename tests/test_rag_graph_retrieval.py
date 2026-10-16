@@ -1,6 +1,6 @@
 import pytest
 
-import services.rag.graph_retrieval as graph_retrieval
+from services.rag import graph_retrieval
 from services.rag.graph_retrieval import (
     MAX_GRAPH_SEEDS,
     GraphEdge,
