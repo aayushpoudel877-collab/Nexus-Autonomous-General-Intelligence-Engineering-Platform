@@ -55,6 +55,7 @@ def graph_assisted_retrieve(
     *,
     tenant_id: str,
     chunk_tenants: Mapping[str, str],
+    entity_tenants: Mapping[str, str],
     top_k: int = 10,
     max_hops: int = 1,
     decay: float = 0.65,
@@ -96,10 +97,11 @@ def graph_assisted_retrieve(
         if len(chunk_ids) > MAX_CHUNKS_PER_ENTITY:
             raise ValueError("an entity has too many associated chunks")
         clean_ids: list[str] = []
+        entity_is_scoped = entity_tenants.get(entity_id) == tenant_id
         for chunk_id in chunk_ids:
             if not isinstance(chunk_id, str) or not chunk_id.strip() or len(chunk_id) > 200:
                 raise ValueError("chunk IDs must be non-empty strings of at most 200 characters")
-            if chunk_tenants.get(chunk_id) == tenant_id and chunk_id not in clean_ids:
+            if entity_is_scoped and chunk_tenants.get(chunk_id) == tenant_id and chunk_id not in clean_ids:
                 clean_ids.append(chunk_id)
                 chunk_to_entities[chunk_id].append(entity_id)
                 if len(chunk_to_entities[chunk_id]) > MAX_ENTITIES_PER_CHUNK:
@@ -110,7 +112,11 @@ def graph_assisted_retrieve(
     for edge in edges:
         if not isinstance(edge, GraphEdge):
             raise TypeError("edges must contain GraphEdge values")
-        if edge.tenant_id != tenant_id:
+        if (
+            edge.tenant_id != tenant_id
+            or entity_tenants.get(edge.source_entity_id) != tenant_id
+            or entity_tenants.get(edge.target_entity_id) != tenant_id
+        ):
             continue
         adjacency[edge.source_entity_id].append((edge.target_entity_id, edge.relation_type))
         adjacency[edge.target_entity_id].append((edge.source_entity_id, edge.relation_type))
