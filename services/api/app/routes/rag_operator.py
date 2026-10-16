@@ -34,11 +34,12 @@ class FeedbackCreate(BaseModel):
     @field_validator("evidence_ids")
     @classmethod
     def evidence_ids_are_bounded(cls, values: list[str]) -> list[str]:
-        if any(not value or len(value) > 100 for value in values):
-            raise ValueError("evidence IDs must be non-empty and at most 100 characters")
-        if len(set(values)) != len(values):
+        normalized = [value.strip() for value in values]
+        if any(not value or len(value) > 100 for value in normalized):
+            raise ValueError("evidence IDs must be non-blank and at most 100 characters")
+        if len(set(normalized)) != len(normalized):
             raise ValueError("evidence IDs must be unique")
-        return values
+        return normalized
 
 
 class FeedbackStatusUpdate(BaseModel):
@@ -114,13 +115,14 @@ async def create_feedback(
         note=payload.note.strip(),
     )
     db.add(row)
+    await db.flush()
     await record_audit(
         db,
         action="rag.feedback.created",
         resource_type="rag_feedback",
         actor_user_id=user.id,
         organization_id=membership.organization_id,
-        resource_id=None,
+        resource_id=str(row.id),
         detail={"rating": payload.rating, "evidence_count": len(payload.evidence_ids)},
     )
     await db.commit()
@@ -155,9 +157,16 @@ async def update_feedback_status(
     row = await db.scalar(select(RAGFeedback).where(
         RAGFeedback.id == feedback_id,
         RAGFeedback.organization_id == membership.organization_id,
-    ))
+    ).with_for_update())
     if row is None:
         raise HTTPException(status_code=404, detail="Feedback not found")
+    if row.status == payload.status:
+        return _feedback_dict(row)
+    if payload.status not in _FEEDBACK_TRANSITIONS.get(row.status, set()):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Feedback cannot transition from {row.status} to {payload.status}",
+        )
     row.status = payload.status
     row.triaged_by_user_id = user.id
     await record_audit(
@@ -193,6 +202,7 @@ async def request_reindex(
         status="pending_approval",
     )
     db.add(row)
+    await db.flush()
     await record_audit(
         db, action="rag.reindex.requested", resource_type="rag_document",
         actor_user_id=user.id, organization_id=membership.organization_id,
@@ -247,6 +257,19 @@ async def review_reindex_request(
     await db.commit()
     await db.refresh(row)
     return _reindex_dict(row)
+
+
+_FEEDBACK_TRANSITIONS = {
+    "new": {"triaged", "resolved", "ignored"},
+    "triaged": {"resolved", "ignored"},
+    "resolved": set(),
+    "ignored": set(),
+}
+
+
+def _feedback_transition_allowed(current: str, target: str) -> bool:
+    """Allow idempotent updates and forward-only triage transitions."""
+    return current == target or target in _FEEDBACK_TRANSITIONS.get(current, set())
 
 
 def _feedback_dict(row: RAGFeedback) -> dict:

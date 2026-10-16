@@ -8,6 +8,7 @@ from services.api.app.routes.rag import router
 from services.api.app.routes.rag_operator import (
     FeedbackCreate,
     ReindexRequestCreate,
+    _feedback_transition_allowed,
     router as operator_router,
 )
 from services.api.app.schemas.rag import RAGDocumentCreate, RAGQueryRequest
@@ -95,3 +96,34 @@ def test_reindex_request_requires_a_nonblank_reason():
     with pytest.raises(ValidationError):
         ReindexRequestCreate(reason="   ")
     assert ReindexRequestCreate(reason=" refresh index ").reason == "refresh index"
+
+
+
+def test_operator_feedback_evidence_ids_are_normalized_and_blank_values_rejected():
+    payload = FeedbackCreate(
+        query="  question  ",
+        rating="helpful",
+        evidence_ids=[" chunk-1 "],
+    )
+    assert payload.query == "question"
+    assert payload.evidence_ids == ["chunk-1"]
+    with pytest.raises(ValidationError, match="non-blank"):
+        FeedbackCreate(query="question", rating="helpful", evidence_ids=["   "])
+
+
+def test_operator_feedback_status_transitions_are_forward_only():
+    assert _feedback_transition_allowed("new", "triaged")
+    assert _feedback_transition_allowed("new", "resolved")
+    assert _feedback_transition_allowed("triaged", "resolved")
+    assert _feedback_transition_allowed("triaged", "ignored")
+    assert _feedback_transition_allowed("resolved", "resolved")
+    assert not _feedback_transition_allowed("resolved", "triaged")
+    assert not _feedback_transition_allowed("ignored", "resolved")
+    assert not _feedback_transition_allowed("unknown", "resolved")
+
+
+def test_operator_feedback_contract_rejects_unknown_fields():
+    with pytest.raises(ValidationError):
+        FeedbackCreate(query="question", rating="helpful", organization_id=str(uuid4()))
+    with pytest.raises(ValidationError):
+        ReindexRequestCreate(reason="rebuild", execute_immediately=True)
