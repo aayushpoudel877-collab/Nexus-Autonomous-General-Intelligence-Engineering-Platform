@@ -111,7 +111,7 @@ async def test_argument_secrets_and_output_budgets_fail_closed():
 
     with pytest.raises(ToolPolicyError, match="output budget"):
         await execute_bounded_tool_plan(
-            [ToolCall("lexical_search", {})],
+            [ToolCall("lexical_search", {"query": "a very long query"})],
             tools={"lexical_search": _tool(max_output_chars=3)},
             tenant_id="org-a",
             actor_scopes=frozenset({"rag:read"}),
