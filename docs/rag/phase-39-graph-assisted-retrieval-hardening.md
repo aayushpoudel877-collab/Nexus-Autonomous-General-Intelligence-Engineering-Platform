@@ -5,7 +5,7 @@
 Graph expansion consumes explicit, caller-supplied entity/chunk associations. It does not extract entities automatically, issue arbitrary graph queries, or replace the seed retrieval strategy.
 
 This increment adds:
-- A maximum seed candidate count, entity count, total entity-to-chunk associations, and existing edge/fanout/hop limits.
+- A maximum seed candidate count, entity count, total entity-to-chunk associations, aggregate traversal-step budget, and existing edge/fanout/hop limits.
 - Validation that each entity's chunk associations are a sequence rather than an accidental string or bytes object.
 - Rejection of negative seed scores because multiplicative hop decay assumes non-negative ranking scores.
 - Regression tests for each new boundary and existing tenant-isolation behavior.
