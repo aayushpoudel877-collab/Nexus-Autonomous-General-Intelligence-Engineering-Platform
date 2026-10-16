@@ -194,7 +194,11 @@ async def query_corpus(
         for chunk, document in pairs
     ]
     hits = hybrid_retrieve(
-        payload.query.strip(), chunks, tenant_id=str(membership.organization_id), top_k=payload.top_k
+        payload.query.strip(),
+        chunks,
+        tenant_id=str(membership.organization_id),
+        top_k=payload.top_k,
+        character_ngram_weight=payload.character_ngram_weight,
     )
     documents = {str(document.id): document for _, document in pairs}
     evidence = pack_evidence(
@@ -205,6 +209,7 @@ async def query_corpus(
     return RAGQueryResponse(
         query=payload.query.strip(),
         retrieval_mode="lexical",
+        character_ngram_weight=payload.character_ngram_weight,
         evidence=[
             RAGEvidenceRead(
                 evidence_id=item.evidence_id,
@@ -216,8 +221,12 @@ async def query_corpus(
                 start_char=item.start_char,
                 end_char=item.end_char,
                 score=item.score,
+                character_ngram_score=item.character_ngram_score,
             )
             for item in evidence
         ],
-        note="Lexical retrieval only; embeddings and generated answers are not enabled in this phase.",
+        note=(
+            "Lexical retrieval only; optional character n-gram matching can assist scripts "
+            "without whitespace segmentation. Embeddings and generated answers are not enabled."
+        ),
     )

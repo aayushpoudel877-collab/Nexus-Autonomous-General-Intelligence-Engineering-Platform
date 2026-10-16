@@ -9,6 +9,49 @@ import unicodedata
 
 from .chunking import Chunk
 
+def character_ngrams(text: str, *, min_n: int = 2, max_n: int = 4) -> set[str]:
+    """Return deterministic character n-grams within Unicode letter/number runs.
+
+    This is an optional lexical fallback for scripts and languages where whitespace
+    tokenization does not separate words. It is not translation, stemming, or semantic
+    matching. Short runs are retained as whole units so single-character queries work.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    if not 1 <= min_n <= max_n <= 8:
+        raise ValueError("n-gram bounds must satisfy 1 <= min_n <= max_n <= 8")
+    normalized = unicodedata.normalize("NFKC", text).casefold()
+    runs: list[str] = []
+    current: list[str] = []
+    for character in normalized:
+        category = unicodedata.category(character)
+        if category[0] in {"L", "N"} or (category[0] == "M" and current):
+            current.append(character)
+        elif current:
+            runs.append("".join(current))
+            current = []
+    if current:
+        runs.append("".join(current))
+
+    grams: set[str] = set()
+    for run in runs:
+        if len(run) < min_n:
+            grams.add(run)
+            continue
+        for size in range(min_n, min(max_n, len(run)) + 1):
+            grams.update(run[index : index + size] for index in range(len(run) - size + 1))
+    return grams
+
+
+def character_ngram_similarity(query: str, text: str, *, min_n: int = 2, max_n: int = 4) -> float:
+    """Return query-gram coverage in a candidate text, in [0, 1]."""
+    query_grams = character_ngrams(query, min_n=min_n, max_n=max_n)
+    if not query_grams:
+        return 0.0
+    text_grams = character_ngrams(text, min_n=min_n, max_n=max_n)
+    return len(query_grams & text_grams) / len(query_grams)
+
+
 def tokenize(text: str) -> list[str]:
     """Tokenize Unicode text while preserving letters, digits, and combining marks.
 
@@ -39,6 +82,7 @@ class RetrievalHit:
     lexical_score: float
     dense_score: float
     fused_score: float
+    character_ngram_score: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -52,6 +96,7 @@ class Evidence:
     start_char: int
     end_char: int
     score: float
+    character_ngram_score: float = 0.0
 
 
 def _lexical_scores(
@@ -103,6 +148,7 @@ def hybrid_retrieve(
     top_k: int = 5,
     dense_scores: dict[str, float] | None = None,
     lexical_weight: float = 0.65,
+    character_ngram_weight: float = 0.0,
     bm25_k1: float = 1.2,
     bm25_b: float = 0.75,
     allowed_document_ids: set[str] | None = None,
@@ -121,6 +167,8 @@ def hybrid_retrieve(
         raise ValueError("query is required")
     if not 1 <= top_k <= 100 or not 0 <= lexical_weight <= 1:
         raise ValueError("invalid top_k or lexical_weight")
+    if not math.isfinite(character_ngram_weight) or not 0 <= character_ngram_weight <= 1:
+        raise ValueError("character_ngram_weight must be finite and between 0 and 1")
     if per_document_limit is not None and per_document_limit < 1:
         raise ValueError("per_document_limit must be positive")
     if not math.isfinite(lexical_weight):
@@ -142,9 +190,20 @@ def hybrid_retrieve(
             if chunk.chunk_id in dense_scores
             else 0.0
         )
-        fused_score = lexical_weight * lexical_score + (1 - lexical_weight) * dense_score
-        if lexical_score > 0 or chunk.chunk_id in dense_scores:
-            hits.append(RetrievalHit(chunk, lexical_score, dense_score, fused_score))
+        base_score = lexical_weight * lexical_score + (1 - lexical_weight) * dense_score
+        ngram_score = (
+            character_ngram_similarity(query, chunk.text)
+            if character_ngram_weight > 0
+            else 0.0
+        )
+        fused_score = (
+            (1 - character_ngram_weight) * base_score
+            + character_ngram_weight * ngram_score
+        )
+        if lexical_score > 0 or chunk.chunk_id in dense_scores or ngram_score > 0:
+            hits.append(
+                RetrievalHit(chunk, lexical_score, dense_score, fused_score, ngram_score)
+            )
     hits.sort(key=lambda hit: (-hit.fused_score, hit.chunk.document_id, hit.chunk.ordinal))
     if per_document_limit is None:
         return hits[:top_k]
@@ -185,6 +244,7 @@ def pack_evidence(
                 hit.chunk.start_char,
                 hit.chunk.end_char,
                 hit.fused_score,
+                hit.character_ngram_score,
             )
         )
     return evidence

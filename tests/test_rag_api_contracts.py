@@ -63,6 +63,11 @@ def test_query_contract_has_strict_bounds_and_rejects_tenant_override():
     assert normalized.query == "what is this?"
     with pytest.raises(ValidationError, match="non-whitespace"):
         RAGQueryRequest(query="   ")
+    assert RAGQueryRequest(query="東京").character_ngram_weight == 0.0
+    assert RAGQueryRequest(query="東京", character_ngram_weight=0.5).character_ngram_weight == 0.5
+    for weight in (-0.1, 1.1, float("nan"), float("inf")):
+        with pytest.raises(ValidationError):
+            RAGQueryRequest(query="東京", character_ngram_weight=weight)
 
 
 
@@ -127,3 +132,11 @@ def test_operator_feedback_contract_rejects_unknown_fields():
         FeedbackCreate(query="question", rating="helpful", organization_id=str(uuid4()))
     with pytest.raises(ValidationError):
         ReindexRequestCreate(reason="rebuild", execute_immediately=True)
+
+
+
+def test_multilingual_retrieval_controls_and_diagnostics_are_in_openapi():
+    schemas = app.openapi()["components"]["schemas"]
+    assert "character_ngram_weight" in schemas["RAGQueryRequest"]["properties"]
+    assert "character_ngram_weight" in schemas["RAGQueryResponse"]["properties"]
+    assert "character_ngram_score" in schemas["RAGEvidenceRead"]["properties"]

@@ -83,6 +83,9 @@ class RAGQueryRequest(BaseModel):
 
     query: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=5, ge=1, le=20)
+    character_ngram_weight: float = Field(
+        default=0.0, ge=0.0, le=1.0, allow_inf_nan=False
+    )
 
     @field_validator("query")
     @classmethod
@@ -103,10 +106,12 @@ class RAGEvidenceRead(BaseModel):
     start_char: int
     end_char: int
     score: float
+    character_ngram_score: float = 0.0
 
 
 class RAGQueryResponse(BaseModel):
     query: str
     retrieval_mode: Literal["lexical"]
+    character_ngram_weight: float = 0.0
     evidence: list[RAGEvidenceRead]
     note: str

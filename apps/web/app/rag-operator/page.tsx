@@ -13,8 +13,8 @@ type Health = {
   reindex_execution: string;
 };
 type Document = { id: string; title: string; source_uri: string; status: string; content_chars: number; created_at: string };
-type Evidence = { evidence_id: string; document_id: string; chunk_id: string; title: string; source_uri: string; text: string; start_char: number; end_char: number; score: number };
-type QueryResult = { query: string; retrieval_mode: string; evidence: Evidence[]; note: string };
+type Evidence = { evidence_id: string; document_id: string; chunk_id: string; title: string; source_uri: string; text: string; start_char: number; end_char: number; score: number; character_ngram_score?: number };
+type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: string; created_at: string };
 type ReindexRequest = { id: string; document_id: string; reason: string; status: string; requested_by_user_id: string | null; reviewed_by_user_id: string | null; created_at: string };
 
@@ -42,6 +42,7 @@ export default function RAGOperatorPage() {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
+  const [characterNgramWeight, setCharacterNgramWeight] = useState("0");
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [feedbackNote, setFeedbackNote] = useState("");
   const [reindexReasons, setReindexReasons] = useState<Record<string, string>>({});
@@ -76,7 +77,14 @@ export default function RAGOperatorPage() {
     if (!query.trim() || busy) return;
     setBusy("query"); setError(""); setNotice(""); setQueryResult(null);
     try {
-      setQueryResult(await request("/rag/query", { method: "POST", body: JSON.stringify({ query: query.trim(), top_k: 8 }) }) as QueryResult);
+      setQueryResult(await request("/rag/query", {
+        method: "POST",
+        body: JSON.stringify({
+          query: query.trim(),
+          top_k: 8,
+          character_ngram_weight: Number(characterNgramWeight),
+        }),
+      }) as QueryResult);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not run retrieval.");
     } finally {
@@ -151,9 +159,9 @@ export default function RAGOperatorPage() {
 
   return <main className="shell">
     <section className="hero">
-      <p className="eyebrow">NEXUS-Ω / RAG PHASE 36</p>
+      <p className="eyebrow">NEXUS-Ω / RAG PHASES 36–37</p>
       <h1>RAG Operator Workbench</h1>
-      <p className="lead">Inspect corpus health, run retrieval diagnostics, triage feedback and manage reindex approvals within your selected organization.</p>
+      <p className="lead">Inspect corpus health, compare multilingual lexical retrieval, triage feedback and manage reindex approvals within your selected organization.</p>
       <p><a href="/dashboard">Dashboard</a> · <a href="/audit">Audit stream</a> · <a href="/">Home</a> · <button className="secondary" onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh data"}</button></p>
     </section>
 
@@ -176,14 +184,24 @@ export default function RAGOperatorPage() {
           <label style={{ display: "grid", gap: 8 }}>Test query
             <textarea value={query} onChange={e => setQuery(e.target.value)} maxLength={2000} rows={3} required placeholder="Ask a question about your indexed documents…" />
           </label>
+          <label style={{ display: "grid", gap: 8, maxWidth: 420 }}>Character n-gram assist
+            <select value={characterNgramWeight} onChange={e => setCharacterNgramWeight(e.target.value)}>
+              <option value="0">Off — standard lexical matching</option>
+              <option value="0.25">Low — 25%</option>
+              <option value="0.5">Balanced — 50%</option>
+              <option value="0.75">High — 75%</option>
+              <option value="1">Character n-grams only</option>
+            </select>
+            <span className="muted">An optional lexical fallback for scripts without reliable whitespace word boundaries. This is not translation or semantic search.</span>
+          </label>
           <div><button type="submit" disabled={busy !== "" || !query.trim()}>{busy === "query" ? "Retrieving…" : "Run retrieval"}</button></div>
         </form>
         {queryResult && <div style={{ marginTop: 20 }}>
-          <p className="muted">Mode: <strong>{queryResult.retrieval_mode}</strong> · {queryResult.evidence.length} evidence item(s)</p>
+          <p className="muted">Mode: <strong>{queryResult.retrieval_mode}</strong> · character n-gram weight {((queryResult.character_ngram_weight ?? 0) * 100).toFixed(0)}% · {queryResult.evidence.length} evidence item(s)</p>
           <p>{queryResult.note}</p>
           <div style={{ display: "grid", gap: 12 }}>
             {queryResult.evidence.map(item => <article key={item.evidence_id}>
-              <p className="eyebrow">{item.title} · score {item.score.toFixed(4)}</p>
+              <p className="eyebrow">{item.title} · fused score {item.score.toFixed(4)} · n-gram coverage {(item.character_ngram_score ?? 0).toFixed(3)}</p>
               <p style={{ whiteSpace: "pre-wrap" }}>{item.text}</p>
               <small className="muted">Evidence {item.evidence_id} · chars {item.start_char}–{item.end_char}</small>
               {item.source_uri && <p><a href={item.source_uri} target="_blank" rel="noreferrer">Open source</a></p>}
