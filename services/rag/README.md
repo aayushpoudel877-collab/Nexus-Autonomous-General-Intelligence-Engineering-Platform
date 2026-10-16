@@ -9,6 +9,7 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
+- Validated multimodal text representations with source provenance, credential-like metadata filtering, and collision-safe representation IDs; OCR/transcription providers remain unconnected.
 - PostgreSQL-backed document/chunk schema and async persistence helpers.
 - Content-hash idempotency per organization and lifecycle states for documents.
 - Privacy-safe audit event, source lineage, deletion-outbox, retention, and model-card governance contracts with tests.
@@ -26,4 +27,4 @@ python -m services.rag.demo
 
 Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
 
-See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, and `docs/rag/roadmap.md`.
+See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, `docs/rag/phase-38-multimodal-ingestion-quality.md`, and `docs/rag/roadmap.md`.

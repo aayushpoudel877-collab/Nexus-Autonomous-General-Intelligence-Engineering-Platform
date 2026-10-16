@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from typing import Literal
+from urllib.parse import quote
 
 from .chunking import Chunk, chunk_text
 
@@ -25,7 +26,30 @@ _ALLOWED_KINDS: dict[str, set[str]] = {
     "video": {"transcript", "caption", "ocr", "metadata"},
     "structured": {"extracted_text", "metadata"},
 }
-_SECRET_KEY_PARTS = ("password", "secret", "token", "credential", "authorization", "api_key")
+_SECRET_KEY_PARTS = (
+    "password",
+    "passwd",
+    "secret",
+    "token",
+    "credential",
+    "authorization",
+    "apikey",
+    "privatekey",
+    "accesskey",
+    "bearer",
+    "cookie",
+    "session",
+)
+
+
+def _sensitive_metadata_key(key: str) -> bool:
+    compact = "".join(character for character in key.casefold() if character.isalnum())
+    return any(part in compact for part in _SECRET_KEY_PARTS) or compact == "auth"
+
+
+def _representation_prefix(asset_id: str, representation_id: str) -> str:
+    """Encode delimiters so distinct asset/representation pairs cannot collide."""
+    return f"{quote(asset_id, safe='')}:{quote(representation_id, safe='')}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,7 +119,7 @@ class MultimodalRepresentation:
             normalized_key = key.strip().casefold()
             if not normalized_key or len(key) > 80 or len(value) > 1024:
                 raise ValueError("metadata keys and values exceed allowed bounds")
-            if any(part in normalized_key for part in _SECRET_KEY_PARTS):
+            if _sensitive_metadata_key(normalized_key):
                 raise ValueError("credential-like metadata keys are not allowed")
             if normalized_key in seen:
                 raise ValueError("metadata keys must be unique")
@@ -133,7 +157,10 @@ def index_representation(
         raise ValueError("max_chars must be a positive integer")
     if isinstance(overlap, bool) or not isinstance(overlap, int) or overlap < 0 or overlap >= max_chars:
         raise ValueError("overlap must be an integer smaller than max_chars and not negative")
-    internal_document_id = f"{representation.asset_id}:{representation.representation_id}"
+    stable_prefix = _representation_prefix(
+        representation.asset_id, representation.representation_id
+    )
+    internal_document_id = stable_prefix
     chunks = chunk_text(
         representation.text,
         document_id=internal_document_id,
@@ -144,7 +171,7 @@ def index_representation(
     return [
         IndexedMultimodalChunk(
             chunk=Chunk(
-                chunk_id=f"{representation.asset_id}:{representation.representation_id}:{item.ordinal}",
+                chunk_id=f"{stable_prefix}:{item.ordinal}",
                 document_id=representation.asset_id,
                 tenant_id=representation.tenant_id,
                 text=item.text,

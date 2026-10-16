@@ -86,3 +86,28 @@ def test_representation_ids_keep_distinct_sources_for_same_asset():
     second = index_representation(_representation(representation_id="ocr", kind="ocr"))
     assert first[0].chunk.chunk_id != second[0].chunk.chunk_id
     assert first[0].chunk.document_id == second[0].chunk.document_id
+
+
+
+@pytest.mark.parametrize(
+    "key",
+    ["api-key", "API KEY", "auth", "bearer", "session_id", "private-key"],
+)
+def test_sensitive_metadata_key_aliases_are_rejected(key):
+    with pytest.raises(ValueError, match="credential-like"):
+        _representation(metadata=((key, "must-not-be-indexed"),))
+
+
+def test_non_sensitive_metadata_keys_are_not_overblocked():
+    item = _representation(metadata=(("author_name", "A. Researcher"),))
+    assert item.metadata == (("author_name", "A. Researcher"),)
+
+
+def test_encoded_representation_ids_prevent_delimiter_collisions():
+    first = index_representation(
+        _representation(asset_id="asset:group", representation_id="caption")
+    )
+    second = index_representation(
+        _representation(asset_id="asset", representation_id="group:caption")
+    )
+    assert first[0].chunk.chunk_id != second[0].chunk.chunk_id
