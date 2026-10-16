@@ -120,8 +120,8 @@ def graph_assisted_retrieve(
             continue
         adjacency[edge.source_entity_id].append((edge.target_entity_id, edge.relation_type))
         adjacency[edge.target_entity_id].append((edge.source_entity_id, edge.relation_type))
-    for entity_id in adjacency:
-        adjacency[entity_id].sort(key=lambda item: (item[0], item[1]))
+    for neighbors in adjacency.values():
+        neighbors.sort(key=lambda item: (item[0], item[1]))
 
     best: dict[str, GraphCandidate] = {}
     for seed in scoped_seeds:
