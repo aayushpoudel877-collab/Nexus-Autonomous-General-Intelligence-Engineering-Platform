@@ -63,6 +63,11 @@ def test_query_contract_has_strict_bounds_and_rejects_tenant_override():
     assert normalized.query == "what is this?"
     with pytest.raises(ValidationError, match="non-whitespace"):
         RAGQueryRequest(query="   ")
+    assert RAGQueryRequest(query="東京").character_ngram_weight == 0.0
+    assert RAGQueryRequest(query="東京", character_ngram_weight=0.5).character_ngram_weight == 0.5
+    for weight in (-0.1, 1.1, float("nan"), float("inf")):
+        with pytest.raises(ValidationError):
+            RAGQueryRequest(query="東京", character_ngram_weight=weight)
 
 
 
