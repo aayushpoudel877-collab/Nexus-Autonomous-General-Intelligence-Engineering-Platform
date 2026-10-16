@@ -7,8 +7,8 @@ The existing Unicode-aware tokenizer continues to support word-boundary lexical 
 - Character n-grams are generated from Unicode letter/number runs after NFKC normalization and case folding.
 - Query coverage is measured as the fraction of query n-grams present in a candidate chunk.
 - The retrieval library accepts `character_ngram_weight` from 0 through 1. A value of 0 is the default and preserves the prior ranking behavior; larger values blend the character n-gram score with the existing lexical/dense score.
-- The authenticated RAG query API validates the weight as finite and bounded.
-- The operator workbench exposes the setting for retrieval diagnostics.
+- The authenticated RAG query API validates the weight as finite and bounded, then returns the applied weight and per-evidence character n-gram coverage.
+- The operator workbench exposes the setting and displays both fused ranking score and n-gram coverage for retrieval diagnostics.
 - Regression tests cover Japanese text without spaces, Devanagari text, short strings, invalid weights, default behavior, and tenant scoping.
 
 ## Limits and safety
