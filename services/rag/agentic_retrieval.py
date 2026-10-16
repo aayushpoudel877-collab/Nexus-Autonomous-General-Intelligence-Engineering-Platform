@@ -15,6 +15,8 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from .prompt_injection import detect_injection_markers
+
 MAX_PLAN_STEPS = 12
 MAX_ARGUMENT_BYTES = 8_192
 MAX_ARGUMENT_DEPTH = 8
@@ -130,6 +132,8 @@ class ToolExecutionRecord:
     text: str
     evidence_ids: tuple[str, ...]
     output_chars: int
+    untrusted: bool = True
+    injection_markers: tuple[str, ...] = ()
 
 
 def _validate_json_value(value: Any, *, depth: int = 0) -> None:
@@ -241,8 +245,16 @@ async def execute_bounded_tool_plan(
         seen_evidence.update(result.evidence_ids)
         if len(seen_evidence) > policy.max_evidence_ids:
             raise ToolPolicyError("tool plan returned too many unique evidence IDs")
+        markers = detect_injection_markers(result.text)
         records.append(
-            ToolExecutionRecord(tool.name, result.text, result.evidence_ids, len(result.text))
+            ToolExecutionRecord(
+                tool.name,
+                result.text,
+                result.evidence_ids,
+                len(result.text),
+                untrusted=True,
+                injection_markers=markers,
+            )
         )
 
     return tuple(records)
