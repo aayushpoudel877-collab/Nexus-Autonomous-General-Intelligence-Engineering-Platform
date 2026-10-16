@@ -146,9 +146,9 @@ def _validate_json_value(value: Any, *, depth: int = 0) -> None:
     elif isinstance(value, str):
         if len(value) > MAX_ARGUMENT_BYTES:
             raise ToolPolicyError("tool argument string exceeds the configured limit")
-    elif value is None or isinstance(value, (bool, int)):
-        return
-    elif isinstance(value, float) and math.isfinite(value):
+    elif value is None or isinstance(value, (bool, int)) or (
+        isinstance(value, float) and math.isfinite(value)
+    ):
         return
     else:
         raise ToolPolicyError("tool arguments must contain JSON-compatible values")
