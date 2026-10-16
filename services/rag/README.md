@@ -4,7 +4,8 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 
 ## Capabilities
 - Unicode-aware NFC text tokenization and overlap-aware chunking with source offsets.
-- Multilingual lexical token support for scripts including Devanagari, Arabic, Cyrillic, Japanese, and Latin diacritics; language-specific segmentation and stemming are not yet provided.
+- Multilingual lexical token support for scripts including Devanagari, Arabic, Cyrillic, Japanese, and Latin diacritics.
+- Opt-in character n-gram retrieval weighting for scripts without reliable whitespace segmentation; default weight is zero, and this remains a lexical—not semantic—signal.
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
@@ -25,4 +26,4 @@ python -m services.rag.demo
 
 Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
 
-See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, and `docs/rag/roadmap.md`.
+See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, and `docs/rag/roadmap.md`.
