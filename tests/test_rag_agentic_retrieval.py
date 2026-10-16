@@ -144,3 +144,34 @@ def test_tool_policy_rejects_non_read_only_tools_and_invalid_limits():
 def test_tool_result_rejects_malformed_evidence_collections():
     with pytest.raises(TypeError, match="evidence_ids must be a tuple"):
         ToolResult("org-a", "result", "E1")
+
+
+
+@pytest.mark.asyncio
+async def test_global_output_and_unique_evidence_budgets_are_enforced():
+    with pytest.raises(ToolPolicyError, match="total output budget"):
+        await execute_bounded_tool_plan(
+            [
+                ToolCall("lexical_search", {"query": "one"}),
+                ToolCall("lexical_search", {"query": "two"}),
+            ],
+            tools={"lexical_search": _tool()},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            policy=AgenticRetrievalPolicy(max_total_output_chars=10),
+        )
+
+    async def many_evidence(tenant_id, arguments):
+        return ToolResult(tenant_id, "ok", ("E1", "E2"))
+
+    with pytest.raises(ToolPolicyError, match="too many unique evidence"):
+        await execute_bounded_tool_plan(
+            [
+                ToolCall("lexical_search", {}),
+                ToolCall("lexical_search", {}),
+            ],
+            tools={"lexical_search": _tool(executor=many_evidence)},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            policy=AgenticRetrievalPolicy(max_evidence_ids=3),
+        )
