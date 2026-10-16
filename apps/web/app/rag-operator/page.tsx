@@ -42,6 +42,7 @@ export default function RAGOperatorPage() {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
+  const [characterNgramWeight, setCharacterNgramWeight] = useState("0");
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [feedbackNote, setFeedbackNote] = useState("");
   const [reindexReasons, setReindexReasons] = useState<Record<string, string>>({});
@@ -76,7 +77,14 @@ export default function RAGOperatorPage() {
     if (!query.trim() || busy) return;
     setBusy("query"); setError(""); setNotice(""); setQueryResult(null);
     try {
-      setQueryResult(await request("/rag/query", { method: "POST", body: JSON.stringify({ query: query.trim(), top_k: 8 }) }) as QueryResult);
+      setQueryResult(await request("/rag/query", {
+        method: "POST",
+        body: JSON.stringify({
+          query: query.trim(),
+          top_k: 8,
+          character_ngram_weight: Number(characterNgramWeight),
+        }),
+      }) as QueryResult);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not run retrieval.");
     } finally {
@@ -175,6 +183,16 @@ export default function RAGOperatorPage() {
         <form onSubmit={runQuery} style={{ display: "grid", gap: 12 }}>
           <label style={{ display: "grid", gap: 8 }}>Test query
             <textarea value={query} onChange={e => setQuery(e.target.value)} maxLength={2000} rows={3} required placeholder="Ask a question about your indexed documents…" />
+          </label>
+          <label style={{ display: "grid", gap: 8, maxWidth: 420 }}>Character n-gram assist
+            <select value={characterNgramWeight} onChange={e => setCharacterNgramWeight(e.target.value)}>
+              <option value="0">Off — standard lexical matching</option>
+              <option value="0.25">Low — 25%</option>
+              <option value="0.5">Balanced — 50%</option>
+              <option value="0.75">High — 75%</option>
+              <option value="1">Character n-grams only</option>
+            </select>
+            <span className="muted">An optional lexical fallback for scripts without reliable whitespace word boundaries. This is not translation or semantic search.</span>
           </label>
           <div><button type="submit" disabled={busy !== "" || !query.trim()}>{busy === "query" ? "Retrieving…" : "Run retrieval"}</button></div>
         </form>
