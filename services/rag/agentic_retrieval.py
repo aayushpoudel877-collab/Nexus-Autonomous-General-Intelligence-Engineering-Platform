@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
+import hashlib
 import json
 import math
 import re
@@ -15,7 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from .prompt_injection import detect_injection_markers
+from .prompt_injection import DETECTOR_VERSION, detect_injection_markers
 
 MAX_PLAN_STEPS = 12
 MAX_ARGUMENT_BYTES = 8_192
@@ -134,6 +135,8 @@ class ToolExecutionRecord:
     output_chars: int
     untrusted: bool = True
     injection_markers: tuple[str, ...] = ()
+    content_sha256: str = ""
+    detector_version: str = DETECTOR_VERSION
 
 
 def _validate_json_value(value: Any, *, depth: int = 0) -> None:
@@ -254,6 +257,8 @@ async def execute_bounded_tool_plan(
                 len(result.text),
                 untrusted=True,
                 injection_markers=markers,
+                content_sha256=hashlib.sha256(result.text.encode("utf-8")).hexdigest(),
+                detector_version=DETECTOR_VERSION,
             )
         )
 

@@ -1,8 +1,10 @@
 import asyncio
+import hashlib
 
 import pytest
 from pydantic import BaseModel, ConfigDict
 
+from services.rag.prompt_injection import DETECTOR_VERSION
 from services.rag.agentic_retrieval import (
     AgenticRetrievalPolicy,
     RetrievalTool,
@@ -231,6 +233,9 @@ async def test_tool_outputs_are_tagged_as_untrusted_without_automatic_blocking()
     )
     assert len(records) == 2
     assert all(record.untrusted for record in records)
+    assert records[0].content_sha256 == hashlib.sha256(records[0].text.encode("utf-8")).hexdigest()
+    assert records[0].detector_version == DETECTOR_VERSION
+    assert len(records[0].content_sha256) == 64
     assert records[0].injection_markers == (
         "instruction_override",
         "prompt_or_secret_disclosure",
