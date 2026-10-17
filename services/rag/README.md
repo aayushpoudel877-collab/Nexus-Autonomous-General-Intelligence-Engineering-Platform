@@ -29,4 +29,4 @@ python -m services.rag.demo
 
 Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
 
-See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, `docs/rag/phase-38-multimodal-ingestion-quality.md`, `docs/rag/phase-39-graph-assisted-retrieval-hardening.md`, `docs/rag/phase-40-prompt-injection-evaluation.md`, `docs/rag/phase-43-untrusted-tool-output.md`, `docs/rag/phase-44-tool-output-provenance.md`, and `docs/rag/roadmap.md`.
+See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, `docs/rag/phase-38-multimodal-ingestion-quality.md`, `docs/rag/phase-39-graph-assisted-retrieval-hardening.md`, `docs/rag/phase-40-prompt-injection-evaluation.md`, `docs/rag/phase-43-untrusted-tool-output.md`, `docs/rag/phase-44-tool-output-provenance.md`, `docs/rag/phase-45-safe-provenance-serialization.md`, and `docs/rag/roadmap.md`.
