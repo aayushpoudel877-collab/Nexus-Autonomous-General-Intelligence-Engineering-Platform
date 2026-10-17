@@ -8,6 +8,7 @@ accepted by the event builder.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -309,5 +310,5 @@ def verify_tool_provenance_audit_details(envelope: dict[str, Any]) -> bool:
         expected = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
     except (TypeError, ValueError):
         return False
-    return hashlib.compare_digest(expected, digest)
+    return hmac.compare_digest(expected, digest)
 
