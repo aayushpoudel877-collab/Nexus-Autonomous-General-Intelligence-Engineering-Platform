@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from hashlib import sha256
-from typing import Any, Awaitable, Callable
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select, update
