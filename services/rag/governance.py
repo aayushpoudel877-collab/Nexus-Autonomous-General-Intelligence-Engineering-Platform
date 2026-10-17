@@ -8,6 +8,7 @@ accepted by the event builder.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -266,3 +267,70 @@ def build_tool_provenance_audit_details(records: tuple[Any, ...]) -> dict[str, A
         "tool_outputs": [item.to_dict() for item in provenance],
     }
 
+_AUDIT_ENVELOPE_KEYS = frozenset({"schema_version", "tool_outputs", "payload_sha256"})
+
+
+def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any]:
+    """Attach a deterministic checksum to a metadata-only provenance envelope.
+
+    The checksum detects accidental or unauthorized mutation only when compared with a
+    separately trusted copy. It is not a signature, identity proof, or substitute for
+    access control and durable append-only audit storage.
+    """
+    if not isinstance(details, dict) or set(details) != {"schema_version", "tool_outputs"}:
+        raise ValueError("audit details must contain only schema_version and tool_outputs")
+    if isinstance(details.get("schema_version"), bool) or details.get("schema_version") != 1:
+        raise ValueError("unsupported audit details schema_version")
+    outputs = details.get("tool_outputs")
+    if not isinstance(outputs, list) or len(outputs) > 12:
+        raise ValueError("tool_outputs must be a bounded list")
+    allowed_output_keys = {
+        "tool_name", "content_sha256", "detector_version", "injection_markers",
+        "output_chars", "evidence_count", "untrusted",
+    }
+    for item in outputs:
+        if not isinstance(item, dict) or set(item) != allowed_output_keys:
+            raise ValueError("tool output must match the metadata-only provenance schema")
+        if not isinstance(item["tool_name"], str) or not re.fullmatch(r"[a-z][a-z0-9_.-]{0,63}", item["tool_name"]):
+            raise ValueError("tool output contains an invalid tool_name")
+        if not isinstance(item["content_sha256"], str) or not _SHA256.fullmatch(item["content_sha256"]):
+            raise ValueError("tool output contains an invalid content_sha256")
+        if not isinstance(item["detector_version"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", item["detector_version"]):
+            raise ValueError("tool output contains an invalid detector_version")
+        markers = item["injection_markers"]
+        if not isinstance(markers, list) or len(markers) > 5 or any(
+            not isinstance(marker, str) or marker not in {
+                "instruction_override", "prompt_or_secret_disclosure", "tool_misuse",
+                "safety_bypass", "external_exfiltration",
+            }
+            for marker in markers
+        ) or len(set(markers)) != len(markers):
+            raise ValueError("tool output contains invalid injection markers")
+        if not isinstance(item["output_chars"], int) or isinstance(item["output_chars"], bool) or not 0 <= item["output_chars"] <= 20_000:
+            raise ValueError("tool output contains invalid output_chars")
+        if not isinstance(item["evidence_count"], int) or isinstance(item["evidence_count"], bool) or not 0 <= item["evidence_count"] <= 100:
+            raise ValueError("tool output contains invalid evidence_count")
+        if item["untrusted"] is not True:
+            raise ValueError("tool output must remain untrusted")
+    # Round-trip through stable JSON to ensure only deterministic JSON values are sealed.
+    canonical_details = json.loads(stable_json(details))
+    digest = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
+    return {**canonical_details, "payload_sha256": digest}
+
+
+def verify_tool_provenance_audit_details(envelope: dict[str, Any]) -> bool:
+    """Validate envelope shape, metadata schema, and checksum; fail closed on invalid input."""
+    if not isinstance(envelope, dict) or set(envelope) != _AUDIT_ENVELOPE_KEYS:
+        return False
+    digest = envelope.get("payload_sha256")
+    if not isinstance(digest, str) or not _SHA256.fullmatch(digest):
+        return False
+    details = {
+        "schema_version": envelope.get("schema_version"),
+        "tool_outputs": envelope.get("tool_outputs"),
+    }
+    try:
+        expected_envelope = seal_tool_provenance_audit_details(details)
+    except (TypeError, ValueError):
+        return False
+    return hmac.compare_digest(expected_envelope["payload_sha256"], digest)
