@@ -297,3 +297,21 @@ async def test_audited_execution_requires_explicit_audit_writer():
             audit_writer=None,
         )
 
+@pytest.mark.asyncio
+async def test_empty_audited_plan_does_not_write_provenance():
+    writes = []
+
+    async def audit_writer(tenant_id, envelope):
+        writes.append((tenant_id, envelope))
+
+    records = await execute_bounded_tool_plan_with_audit(
+        [],
+        tools={"lexical_search": _tool()},
+        tenant_id="org-a",
+        actor_scopes=frozenset({"rag:read"}),
+        audit_writer=audit_writer,
+    )
+
+    assert records == ()
+    assert writes == []
+
