@@ -284,6 +284,31 @@ def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any
     outputs = details.get("tool_outputs")
     if not isinstance(outputs, list) or len(outputs) > 12:
         raise ValueError("tool_outputs must be a bounded list")
+    allowed_output_keys = {
+        "tool_name", "content_sha256", "detector_version", "injection_markers",
+        "output_chars", "evidence_count", "untrusted",
+    }
+    for item in outputs:
+        if not isinstance(item, dict) or set(item) != allowed_output_keys:
+            raise ValueError("tool output must match the metadata-only provenance schema")
+        if not isinstance(item["tool_name"], str) or not re.fullmatch(r"[a-z][a-z0-9_.-]{0,63}", item["tool_name"]):
+            raise ValueError("tool output contains an invalid tool_name")
+        if not isinstance(item["content_sha256"], str) or not _SHA256.fullmatch(item["content_sha256"]):
+            raise ValueError("tool output contains an invalid content_sha256")
+        if not isinstance(item["detector_version"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", item["detector_version"]):
+            raise ValueError("tool output contains an invalid detector_version")
+        markers = item["injection_markers"]
+        if not isinstance(markers, list) or len(markers) > 5 or any(marker not in {
+            "instruction_override", "prompt_or_secret_disclosure", "tool_misuse",
+            "safety_bypass", "external_exfiltration",
+        } for marker in markers) or len(set(markers)) != len(markers):
+            raise ValueError("tool output contains invalid injection markers")
+        if not isinstance(item["output_chars"], int) or isinstance(item["output_chars"], bool) or not 0 <= item["output_chars"] <= 20_000:
+            raise ValueError("tool output contains invalid output_chars")
+        if not isinstance(item["evidence_count"], int) or isinstance(item["evidence_count"], bool) or not 0 <= item["evidence_count"] <= 100:
+            raise ValueError("tool output contains invalid evidence_count")
+        if item["untrusted"] is not True:
+            raise ValueError("tool output must remain untrusted")
     # Round-trip through stable JSON to ensure only deterministic JSON values are sealed.
     canonical_details = json.loads(stable_json(details))
     digest = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
