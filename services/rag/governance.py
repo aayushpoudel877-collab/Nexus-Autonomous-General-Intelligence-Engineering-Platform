@@ -279,7 +279,7 @@ def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any
     """
     if not isinstance(details, dict) or set(details) != {"schema_version", "tool_outputs"}:
         raise ValueError("audit details must contain only schema_version and tool_outputs")
-    if details.get("schema_version") != 1:
+    if isinstance(details.get("schema_version"), bool) or details.get("schema_version") != 1:
         raise ValueError("unsupported audit details schema_version")
     outputs = details.get("tool_outputs")
     if not isinstance(outputs, list) or len(outputs) > 12:
@@ -298,10 +298,13 @@ def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any
         if not isinstance(item["detector_version"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", item["detector_version"]):
             raise ValueError("tool output contains an invalid detector_version")
         markers = item["injection_markers"]
-        if not isinstance(markers, list) or len(markers) > 5 or any(marker not in {
-            "instruction_override", "prompt_or_secret_disclosure", "tool_misuse",
-            "safety_bypass", "external_exfiltration",
-        } for marker in markers) or len(set(markers)) != len(markers):
+        if not isinstance(markers, list) or len(markers) > 5 or any(
+            not isinstance(marker, str) or marker not in {
+                "instruction_override", "prompt_or_secret_disclosure", "tool_misuse",
+                "safety_bypass", "external_exfiltration",
+            }
+            for marker in markers
+        ) or len(set(markers)) != len(markers):
             raise ValueError("tool output contains invalid injection markers")
         if not isinstance(item["output_chars"], int) or isinstance(item["output_chars"], bool) or not 0 <= item["output_chars"] <= 20_000:
             raise ValueError("tool output contains invalid output_chars")
