@@ -1,9 +1,17 @@
+import hashlib
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
+from pydantic import BaseModel, ConfigDict
 
+from services.rag.agentic_retrieval import (
+    RetrievalTool,
+    ToolCall,
+    ToolResult,
+    execute_bounded_tool_plan_with_audit,
+)
 from services.rag.governance import seal_tool_provenance_audit_details
 from services.rag.persistence import build_database_tool_audit_writer
 
@@ -108,3 +116,52 @@ def test_database_writer_validates_captured_authenticated_context():
         build_database_tool_audit_writer(session, organization_id=uuid4(), actor_user_id="user")
     with pytest.raises(ValueError, match="request_id"):
         build_database_tool_audit_writer(session, organization_id=uuid4(), request_id="bad request id")
+
+class _SearchArguments(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    query: str
+
+
+async def _search(tenant_id, arguments):
+    return ToolResult(tenant_id, f"Found {arguments['query']}", ("E1",))
+
+
+@pytest.mark.asyncio
+async def test_execution_boundary_writes_sealed_envelope_through_database_adapter():
+    session = AsyncMock()
+    session.add = MagicMock()
+    organization_id = uuid4()
+    writer = build_database_tool_audit_writer(
+        session,
+        organization_id=organization_id,
+        actor_user_id=uuid4(),
+        request_id="req-integrated",
+    )
+    tool = RetrievalTool(
+        name="lexical_search",
+        executor=_search,
+        argument_model=_SearchArguments,
+        required_scopes=frozenset({"rag:read"}),
+        max_calls=1,
+        timeout_seconds=1.0,
+        max_output_chars=100,
+    )
+
+    records = await execute_bounded_tool_plan_with_audit(
+        [ToolCall("lexical_search", {"query": "capital"})],
+        tools={"lexical_search": tool},
+        tenant_id=str(organization_id),
+        actor_scopes=frozenset({"rag:read"}),
+        audit_writer=writer,
+    )
+
+    assert len(records) == 1
+    event = session.add.call_args.args[0]
+    assert event.organization_id == organization_id
+    assert event.action == "rag.tool_execution.completed"
+    assert event.detail["payload_sha256"]
+    assert "Found capital" not in str(event.detail)
+    assert "E1" not in str(event.detail)
+    session.flush.assert_awaited_once()
+
