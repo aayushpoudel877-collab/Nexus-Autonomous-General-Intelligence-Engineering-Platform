@@ -263,3 +263,44 @@ async def execute_bounded_tool_plan(
         )
 
     return tuple(records)
+
+async def execute_bounded_tool_plan_with_audit(
+    plan: Sequence[ToolCall],
+    *,
+    tools: Mapping[str, RetrievalTool],
+    tenant_id: str,
+    actor_scopes: frozenset[str],
+    audit_writer: Callable[[str, Mapping[str, Any]], Awaitable[None]],
+    policy: AgenticRetrievalPolicy = AgenticRetrievalPolicy(),
+) -> tuple[ToolExecutionRecord, ...]:
+    """Execute the bounded read-only plan and require an audit writer before returning.
+
+    The writer receives only tenant scope and a sealed metadata-only envelope. It must
+    authenticate/authorize that scope independently and durably persist the envelope.
+    Raw tool text and individual evidence IDs are never passed to the writer. If audit
+    persistence fails, this function raises rather than returning a successful result.
+    """
+    if not callable(audit_writer):
+        raise ToolPolicyError("an explicit audit_writer is required")
+
+    records = await execute_bounded_tool_plan(
+        plan,
+        tools=tools,
+        tenant_id=tenant_id,
+        actor_scopes=actor_scopes,
+        policy=policy,
+    )
+    from .governance import (
+        build_tool_provenance_audit_details,
+        seal_tool_provenance_audit_details,
+    )
+
+    envelope = seal_tool_provenance_audit_details(
+        build_tool_provenance_audit_details(records)
+    )
+    try:
+        await audit_writer(tenant_id, envelope)
+    except Exception as exc:
+        raise ToolExecutionError("tool plan audit persistence failed") from exc
+    return records
+
