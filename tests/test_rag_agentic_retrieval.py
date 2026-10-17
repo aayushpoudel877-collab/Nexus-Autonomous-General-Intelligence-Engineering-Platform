@@ -5,6 +5,7 @@ import pytest
 from pydantic import BaseModel, ConfigDict
 
 from services.rag.prompt_injection import DETECTOR_VERSION
+from services.rag.governance import verify_tool_provenance_audit_details
 from services.rag.agentic_retrieval import (
     AgenticRetrievalPolicy,
     RetrievalTool,
@@ -13,6 +14,7 @@ from services.rag.agentic_retrieval import (
     ToolPolicyError,
     ToolResult,
     execute_bounded_tool_plan,
+    execute_bounded_tool_plan_with_audit,
 )
 
 
@@ -243,3 +245,96 @@ async def test_tool_outputs_are_tagged_as_untrusted_without_automatic_blocking()
     assert records[1].injection_markers == ("tool_misuse",)
     assert "Ignore all previous instructions" in records[0].text
     assert "use the browser tool responsibly" in records[1].text
+
+@pytest.mark.asyncio
+async def test_audited_execution_persists_only_sealed_metadata_before_returning():
+    writes = []
+
+    async def audit_writer(tenant_id, envelope):
+        writes.append((tenant_id, envelope))
+
+    records = await execute_bounded_tool_plan_with_audit(
+        [ToolCall("lexical_search", {"query": "capital"})],
+        tools={"lexical_search": _tool()},
+        tenant_id="org-a",
+        actor_scopes=frozenset({"rag:read"}),
+        audit_writer=audit_writer,
+    )
+
+    assert len(records) == 1
+    assert len(writes) == 1
+    tenant_id, envelope = writes[0]
+    assert tenant_id == "org-a"
+    assert envelope["schema_version"] == 1
+    assert len(envelope["payload_sha256"]) == 64
+    assert verify_tool_provenance_audit_details(envelope)
+    assert envelope["tool_outputs"][0]["untrusted"] is True
+    assert "Found capital" not in str(envelope)
+    assert "E1" not in str(envelope)
+
+
+@pytest.mark.asyncio
+async def test_audited_execution_fails_closed_when_audit_writer_fails():
+    async def failing_writer(tenant_id, envelope):
+        raise OSError("storage unavailable")
+
+    with pytest.raises(ToolExecutionError, match="audit persistence failed"):
+        await execute_bounded_tool_plan_with_audit(
+            [ToolCall("lexical_search", {"query": "capital"})],
+            tools={"lexical_search": _tool()},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            audit_writer=failing_writer,
+        )
+
+
+@pytest.mark.asyncio
+async def test_audited_execution_requires_explicit_audit_writer():
+    with pytest.raises(ToolPolicyError, match="audit_writer"):
+        await execute_bounded_tool_plan_with_audit(
+            [ToolCall("lexical_search", {"query": "capital"})],
+            tools={"lexical_search": _tool()},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            audit_writer=None,
+        )
+
+@pytest.mark.asyncio
+async def test_empty_audited_plan_does_not_write_provenance():
+    writes = []
+
+    async def audit_writer(tenant_id, envelope):
+        writes.append((tenant_id, envelope))
+
+    records = await execute_bounded_tool_plan_with_audit(
+        [],
+        tools={"lexical_search": _tool()},
+        tenant_id="org-a",
+        actor_scopes=frozenset({"rag:read"}),
+        audit_writer=audit_writer,
+    )
+
+    assert records == ()
+    assert writes == []
+
+@pytest.mark.asyncio
+async def test_failed_tool_execution_does_not_write_an_audit_success_envelope():
+    writes = []
+
+    async def audit_writer(tenant_id, envelope):
+        writes.append((tenant_id, envelope))
+
+    async def broken_tool(tenant_id, arguments):
+        raise RuntimeError("private implementation details")
+
+    with pytest.raises(ToolExecutionError, match="failed"):
+        await execute_bounded_tool_plan_with_audit(
+            [ToolCall("lexical_search", {})],
+            tools={"lexical_search": _tool(executor=broken_tool)},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            audit_writer=audit_writer,
+        )
+
+    assert writes == []
+
