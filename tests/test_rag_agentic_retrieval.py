@@ -5,6 +5,7 @@ import pytest
 from pydantic import BaseModel, ConfigDict
 
 from services.rag.prompt_injection import DETECTOR_VERSION
+from services.rag.governance import verify_tool_provenance_audit_details
 from services.rag.agentic_retrieval import (
     AgenticRetrievalPolicy,
     RetrievalTool,
@@ -266,6 +267,7 @@ async def test_audited_execution_persists_only_sealed_metadata_before_returning(
     assert tenant_id == "org-a"
     assert envelope["schema_version"] == 1
     assert len(envelope["payload_sha256"]) == 64
+    assert verify_tool_provenance_audit_details(envelope)
     assert envelope["tool_outputs"][0]["untrusted"] is True
     assert "Found capital" not in str(envelope)
     assert "E1" not in str(envelope)
@@ -313,5 +315,26 @@ async def test_empty_audited_plan_does_not_write_provenance():
     )
 
     assert records == ()
+    assert writes == []
+
+@pytest.mark.asyncio
+async def test_failed_tool_execution_does_not_write_an_audit_success_envelope():
+    writes = []
+
+    async def audit_writer(tenant_id, envelope):
+        writes.append((tenant_id, envelope))
+
+    async def broken_tool(tenant_id, arguments):
+        raise RuntimeError("private implementation details")
+
+    with pytest.raises(ToolExecutionError, match="failed"):
+        await execute_bounded_tool_plan_with_audit(
+            [ToolCall("lexical_search", {})],
+            tools={"lexical_search": _tool(executor=broken_tool)},
+            tenant_id="org-a",
+            actor_scopes=frozenset({"rag:read"}),
+            audit_writer=audit_writer,
+        )
+
     assert writes == []
 
