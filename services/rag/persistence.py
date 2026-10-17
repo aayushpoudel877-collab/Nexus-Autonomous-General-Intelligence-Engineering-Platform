@@ -7,10 +7,10 @@ from __future__ import annotations
 
 import json
 import re
-from hashlib import sha256
-from uuid import UUID
 from collections.abc import Mapping
+from hashlib import sha256
 from typing import Any, Awaitable, Callable
+from uuid import UUID
 
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
