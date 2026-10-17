@@ -266,3 +266,48 @@ def build_tool_provenance_audit_details(records: tuple[Any, ...]) -> dict[str, A
         "tool_outputs": [item.to_dict() for item in provenance],
     }
 
+_AUDIT_ENVELOPE_KEYS = frozenset({"schema_version", "tool_outputs", "payload_sha256"})
+
+
+def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any]:
+    """Attach a deterministic checksum to a metadata-only provenance envelope.
+
+    The checksum detects accidental or unauthorized mutation only when compared with a
+    separately trusted copy. It is not a signature, identity proof, or substitute for
+    access control and durable append-only audit storage.
+    """
+    if not isinstance(details, dict) or set(details) != {"schema_version", "tool_outputs"}:
+        raise ValueError("audit details must contain only schema_version and tool_outputs")
+    if details.get("schema_version") != 1:
+        raise ValueError("unsupported audit details schema_version")
+    outputs = details.get("tool_outputs")
+    if not isinstance(outputs, list) or len(outputs) > 12:
+        raise ValueError("tool_outputs must be a bounded list")
+    # Round-trip through stable JSON to ensure only deterministic JSON values are sealed.
+    canonical_details = json.loads(stable_json(details))
+    digest = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
+    return {**canonical_details, "payload_sha256": digest}
+
+
+def verify_tool_provenance_audit_details(envelope: dict[str, Any]) -> bool:
+    """Validate envelope shape and checksum; return False for malformed or tampered data."""
+    if not isinstance(envelope, dict) or set(envelope) != _AUDIT_ENVELOPE_KEYS:
+        return False
+    if envelope.get("schema_version") != 1:
+        return False
+    outputs = envelope.get("tool_outputs")
+    digest = envelope.get("payload_sha256")
+    if not isinstance(outputs, list) or len(outputs) > 12:
+        return False
+    if not isinstance(digest, str) or not _SHA256.fullmatch(digest):
+        return False
+    try:
+        canonical_details = {
+            "schema_version": envelope["schema_version"],
+            "tool_outputs": envelope["tool_outputs"],
+        }
+        expected = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
+    except (TypeError, ValueError):
+        return False
+    return hashlib.compare_digest(expected, digest)
+
