@@ -86,3 +86,16 @@ def test_audit_envelope_rejects_boolean_counts():
 
     with pytest.raises(ValueError, match="output_chars"):
         seal_tool_provenance_audit_details(details)
+
+def test_audit_envelope_rejects_boolean_schema_version():
+    with pytest.raises(ValueError, match="schema_version"):
+        seal_tool_provenance_audit_details({"schema_version": True, "tool_outputs": []})
+
+
+def test_audit_envelope_rejects_non_string_markers_cleanly():
+    details = _details()
+    details["tool_outputs"][0]["injection_markers"] = [["instruction_override"]]
+
+    with pytest.raises(ValueError, match="injection markers"):
+        seal_tool_provenance_audit_details(details)
+
