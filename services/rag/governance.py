@@ -316,24 +316,18 @@ def seal_tool_provenance_audit_details(details: dict[str, Any]) -> dict[str, Any
 
 
 def verify_tool_provenance_audit_details(envelope: dict[str, Any]) -> bool:
-    """Validate envelope shape and checksum; return False for malformed or tampered data."""
+    """Validate envelope shape, metadata schema, and checksum; fail closed on invalid input."""
     if not isinstance(envelope, dict) or set(envelope) != _AUDIT_ENVELOPE_KEYS:
         return False
-    if envelope.get("schema_version") != 1:
-        return False
-    outputs = envelope.get("tool_outputs")
     digest = envelope.get("payload_sha256")
-    if not isinstance(outputs, list) or len(outputs) > 12:
-        return False
     if not isinstance(digest, str) or not _SHA256.fullmatch(digest):
         return False
+    details = {
+        "schema_version": envelope.get("schema_version"),
+        "tool_outputs": envelope.get("tool_outputs"),
+    }
     try:
-        canonical_details = {
-            "schema_version": envelope["schema_version"],
-            "tool_outputs": envelope["tool_outputs"],
-        }
-        expected = hashlib.sha256(stable_json(canonical_details).encode("utf-8")).hexdigest()
+        expected_envelope = seal_tool_provenance_audit_details(details)
     except (TypeError, ValueError):
         return False
-    return hmac.compare_digest(expected, digest)
-
+    return hmac.compare_digest(expected_envelope["payload_sha256"], digest)
