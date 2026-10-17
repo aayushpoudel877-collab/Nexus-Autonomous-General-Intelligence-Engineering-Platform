@@ -249,3 +249,20 @@ def stable_json(value: Any) -> str:
     if hasattr(value, "to_dict"):
         value = value.to_dict()
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+
+
+def build_tool_provenance_audit_details(records: tuple[Any, ...]) -> dict[str, Any]:
+    """Build a bounded, metadata-only audit detail payload from tool execution records.
+
+    The caller remains responsible for authenticated tenant scoping, transaction handling,
+    persistence, retention, and access control. Raw tool output and evidence IDs are never
+    included in this payload.
+    """
+    from .provenance import build_provenance_batch
+
+    provenance = build_provenance_batch(records)
+    return {
+        "schema_version": 1,
+        "tool_outputs": [item.to_dict() for item in provenance],
+    }
+

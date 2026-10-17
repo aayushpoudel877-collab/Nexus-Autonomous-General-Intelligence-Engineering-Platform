@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from services.rag.governance import build_tool_provenance_audit_details
+from services.rag.governance import build_tool_provenance_audit_details, stable_json
 from services.rag.prompt_injection import DETECTOR_VERSION
 
 
@@ -54,4 +54,17 @@ def test_audit_bridge_rejects_untrusted_flag_downgrade():
     record = _record()
     record = SimpleNamespace(**{**vars(record), "untrusted": False})
     with pytest.raises(ValueError, match="untrusted"):
+        build_tool_provenance_audit_details((record,))
+
+
+def test_audit_bridge_empty_batch_is_stable_and_versioned():
+    payload = build_tool_provenance_audit_details(())
+    assert payload == {"schema_version": 1, "tool_outputs": []}
+    assert stable_json(payload) == '{"schema_version":1,"tool_outputs":[]}'
+
+
+def test_audit_bridge_rejects_malformed_tool_identifier():
+    record = _record()
+    record = SimpleNamespace(**{**vars(record), "tool_name": "Invalid Tool Name"})
+    with pytest.raises(ValueError, match="tool_name"):
         build_tool_provenance_audit_details((record,))
