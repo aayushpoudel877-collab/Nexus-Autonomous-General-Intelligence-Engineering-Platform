@@ -6,14 +6,18 @@ read/update is still scoped by organization_id to reduce accidental cross-tenant
 from __future__ import annotations
 
 import json
+import re
 from hashlib import sha256
 from uuid import UUID
+from collections.abc import Mapping
+from typing import Any, Awaitable, Callable
 
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.api.app.models.rag import RAGChunk, RAGDocument
+from services.api.app.models.audit import AuditEvent
 from .chunking import Chunk, chunk_text
 
 MAX_DOCUMENT_CHARS = 2_000_000
@@ -166,3 +170,60 @@ async def set_document_status(
         .values(status=status)
     )
     return result.rowcount == 1
+
+_AUDIT_REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$")
+
+
+def build_database_tool_audit_writer(
+    session: AsyncSession,
+    *,
+    organization_id: UUID,
+    actor_user_id: UUID | None = None,
+    request_id: str | None = None,
+) -> Callable[[str, Mapping[str, Any]], Awaitable[None]]:
+    """Create an audit writer bound to authenticated context and the caller's transaction.
+
+    The returned async writer is compatible with execute_bounded_tool_plan_with_audit.
+    It validates the tenant against the organization captured from authenticated request
+    context, verifies the sealed metadata-only envelope, adds an existing AuditEvent,
+    and flushes without committing. The caller owns commit/rollback, so audit persistence
+    participates in the same database transaction as related application changes.
+    """
+    if not isinstance(organization_id, UUID):
+        raise TypeError("organization_id must be a UUID from authenticated context")
+    if actor_user_id is not None and not isinstance(actor_user_id, UUID):
+        raise TypeError("actor_user_id must be a UUID or None")
+    if request_id is not None and (
+        not isinstance(request_id, str) or not _AUDIT_REQUEST_ID.fullmatch(request_id)
+    ):
+        raise ValueError("request_id must be a bounded opaque identifier")
+
+    async def write(tenant_id: str, envelope: Mapping[str, Any]) -> None:
+        try:
+            supplied_organization_id = UUID(tenant_id)
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ValueError("tenant_id must match the authenticated organization") from exc
+        if supplied_organization_id != organization_id:
+            raise PermissionError("tool audit tenant does not match authenticated organization")
+        if not isinstance(envelope, dict):
+            raise TypeError("audit envelope must be a dictionary")
+
+        from .governance import stable_json, verify_tool_provenance_audit_details
+
+        if not verify_tool_provenance_audit_details(envelope):
+            raise ValueError("tool provenance audit envelope failed verification")
+        details = json.loads(stable_json(envelope))
+        event = AuditEvent(
+            actor_user_id=actor_user_id,
+            organization_id=organization_id,
+            action="rag.tool_execution.completed",
+            resource_type="rag_tool_execution",
+            resource_id=request_id,
+            detail=details,
+            request_id=request_id,
+        )
+        session.add(event)
+        await session.flush()
+
+    return write
+
