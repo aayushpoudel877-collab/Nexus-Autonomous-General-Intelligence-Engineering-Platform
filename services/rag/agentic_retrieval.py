@@ -290,6 +290,10 @@ async def execute_bounded_tool_plan_with_audit(
         actor_scopes=actor_scopes,
         policy=policy,
     )
+    # Empty plans represent no tool execution and must not produce provenance events.
+    if not records:
+        return records
+
     from .governance import (
         build_tool_provenance_audit_details,
         seal_tool_provenance_audit_details,
