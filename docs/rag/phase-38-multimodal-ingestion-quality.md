@@ -1,21 +1,35 @@
-# RAG Phase 38 — Multimodal Ingestion Quality
+# RAG Phase 38 — Multimodal Retrieval Quality Evaluation
 
-## Implemented hardening
+## Implemented increment
 
-The current multimodal index stores bounded text representations, not raw image/audio/video bytes. This increment hardens metadata filtering and provenance identifiers:
+The existing multimodal index converts controlled extraction outputs (captions, OCR text, transcripts, and extracted metadata) into bounded tenant-scoped text representations. This increment adds an offline evaluation path that reports retrieval quality separately for `text`, `image`, `audio`, `video`, and `structured` queries.
 
-- Credential-like metadata keys are rejected across common separator/case variants, including API-key, bearer, session, private-key, and authorization patterns.
-- Representation chunk IDs percent-encode asset and representation identifiers before combining them, preventing collisions caused by identifiers containing the delimiter.
-- Existing tenant ownership, modality/kind compatibility, text/metadata limits, timestamp/page validation, and provenance fields remain enforced.
-- Regression tests cover secret-key aliases, a non-sensitive author field, and previously colliding asset/representation pairs.
+- Strict JSONL modality-map loader with size limits inherited from the shared evaluation reader, duplicate rejection, and supported-modality validation.
+- Per-run aggregate metrics plus modality-specific precision@k, recall@k, reciprocal rank, NDCG@k, and empty-result rate.
+- Missing predictions count as empty results; unknown cases, duplicate run/case predictions, and incomplete modality mappings fail closed.
+- Reports explicitly state that retrieval relevance metrics do not measure OCR/transcription fidelity and synthetic fixtures are not production evidence.
+
+## Usage
+
+Create a JSONL modality map with exactly `case_id` and `modality` per line, where modality is one of the supported values. Use the evaluation API:
+
+```python
+from services.rag.evaluation import load_golden_dataset, load_predictions
+from services.rag.multimodal_evaluation import load_modality_map, evaluate_multimodal_slices
+
+cases = load_golden_dataset("path/to/golden.jsonl")
+predictions = load_predictions("path/to/predictions.jsonl")
+modalities = load_modality_map("path/to/modalities.jsonl")
+report = evaluate_multimodal_slices(cases, predictions, modalities, k=5)
+```
 
 ## Explicit boundary
 
-This does not implement OCR, speech-to-text, video frame extraction, raw media decoding, durable vector indexing, or external media-provider calls. It indexes bounded text produced by a separately controlled extraction pipeline. Captions, OCR output, transcripts, and metadata must be treated as untrusted input, not instructions.
+This is an offline evaluator; it does not decode raw media or call OCR/speech/video providers. It does not claim that an image, audio, or video extraction is correct. Captions, OCR output, transcripts, and metadata remain untrusted input, not instructions.
 
 ## Remaining acceptance
 
-- Add provider adapters behind explicit byte, duration, timeout, cost, and output-size budgets.
+- Add human-reviewed image/audio/video relevance cases and modality-specific quality labels.
+- Add extraction fidelity metrics for OCR/transcription only when reference transcripts or annotations are available.
 - Test malformed media, decompression bombs, parser timeouts, cancellation, and quarantine flows.
-- Add reviewed image/audio/video relevance cases and modality-specific quality metrics.
 - Integrate durable vector persistence and verify deletion/retention behavior across all representations.
