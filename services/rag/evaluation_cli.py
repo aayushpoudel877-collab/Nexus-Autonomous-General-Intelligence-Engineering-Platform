@@ -5,6 +5,7 @@ import argparse
 import sys
 
 from .grounding_evaluation import evaluate_grounding_cases, load_grounding_dataset
+from .multilingual_evaluation import build_multilingual_ablation_report
 from .evaluation import (
     EvaluationThresholds,
     build_evaluation_report,
@@ -26,6 +27,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-precision-drop", type=float, default=0.05)
     parser.add_argument("--max-recall-drop", type=float, default=0.05)
     parser.add_argument("--max-ndcg-drop", type=float, default=0.05)
+    parser.add_argument("--bootstrap-samples", type=int, default=1000, help="Per-language paired bootstrap samples (100..5000)")
+    parser.add_argument("--bootstrap-seed", type=int, default=37, help="Non-negative reproducibility seed")
+    parser.add_argument("--confidence", type=float, default=0.95, help="Confidence level for percentile intervals (0.5..1)")
     return parser
 
 
@@ -47,6 +51,12 @@ def main(argv: list[str] | None = None) -> int:
             candidate_name=args.candidate,
             thresholds=thresholds,
         )
+        if args.baseline is not None and args.candidate is not None:
+            report["multilingual_ablation"] = build_multilingual_ablation_report(
+                cases, predictions, baseline_name=args.baseline, candidate_name=args.candidate,
+                k=args.k, bootstrap_samples=args.bootstrap_samples,
+                confidence=args.confidence, seed=args.bootstrap_seed,
+            )
         if args.grounding_dataset:
             report["grounding_evaluation"] = evaluate_grounding_cases(
                 load_grounding_dataset(args.grounding_dataset)
