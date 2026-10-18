@@ -54,6 +54,8 @@ def evaluate_multimodal_slices(
         raise ValueError("at least one evaluation case is required")
     if not 1 <= k <= 100:
         raise ValueError("k must be between 1 and 100")
+    if any(not isinstance(case_id, str) or not case_id.strip() for case_id in modalities):
+        raise ValueError("modality map case IDs must be non-empty strings")
     by_id = {case.case_id: case for case in cases}
     if len(by_id) != len(cases):
         raise ValueError("case IDs must be unique")
