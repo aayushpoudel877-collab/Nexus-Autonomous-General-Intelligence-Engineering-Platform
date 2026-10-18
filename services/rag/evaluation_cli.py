@@ -6,6 +6,7 @@ import sys
 
 from .grounding_evaluation import evaluate_grounding_cases, load_grounding_dataset
 from .multilingual_evaluation import build_multilingual_ablation_report
+from .multimodal_evaluation import evaluate_multimodal_slices, load_modality_map
 from .evaluation import (
     EvaluationThresholds,
     build_evaluation_report,
@@ -30,6 +31,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--bootstrap-samples", type=int, default=1000, help="Per-language paired bootstrap samples (100..5000)")
     parser.add_argument("--bootstrap-seed", type=int, default=37, help="Non-negative reproducibility seed")
     parser.add_argument("--confidence", type=float, default=0.95, help="Confidence level for percentile intervals (0.5..1)")
+    parser.add_argument("--modality-map", help="Optional JSONL mapping case_id to modality for modality-sliced metrics")
     return parser
 
 
@@ -56,6 +58,10 @@ def main(argv: list[str] | None = None) -> int:
                 cases, predictions, baseline_name=args.baseline, candidate_name=args.candidate,
                 k=args.k, bootstrap_samples=args.bootstrap_samples,
                 confidence=args.confidence, seed=args.bootstrap_seed,
+            )
+        if args.modality_map:
+            report["multimodal_evaluation"] = evaluate_multimodal_slices(
+                cases, predictions, load_modality_map(args.modality_map), k=args.k,
             )
         if args.grounding_dataset:
             report["grounding_evaluation"] = evaluate_grounding_cases(
