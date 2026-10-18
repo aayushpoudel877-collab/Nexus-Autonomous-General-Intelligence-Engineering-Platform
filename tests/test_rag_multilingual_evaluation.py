@@ -43,10 +43,10 @@ def test_multilingual_ablation_reports_language_slices_and_paired_intervals():
 
 
 def test_multilingual_ablation_is_reproducible_for_same_seed():
-    kwargs = dict(
-        cases=_cases(), predictions=_predictions(), baseline_name="baseline",
-        candidate_name="ngram-04", k=2, bootstrap_samples=200, seed=99,
-    )
+    kwargs = {
+        "cases": _cases(), "predictions": _predictions(), "baseline_name": "baseline",
+        "candidate_name": "ngram-04", "k": 2, "bootstrap_samples": 200, "seed": 99,
+    }
     first = build_multilingual_ablation_report(**kwargs)
     second = build_multilingual_ablation_report(**kwargs)
     assert json.dumps(first, sort_keys=True) == json.dumps(second, sort_keys=True)
