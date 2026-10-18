@@ -6,6 +6,7 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Unicode-aware NFC text tokenization and overlap-aware chunking with source offsets.
 - Multilingual lexical token support for scripts including Devanagari, Arabic, Cyrillic, Japanese, and Latin diacritics.
 - Opt-in character n-gram retrieval weighting for scripts without reliable whitespace segmentation; default weight is zero, and this remains a lexical—not semantic—signal.
+- Paired bootstrap confidence intervals for baseline/candidate multilingual retrieval comparisons, with language-level precision, recall, MRR, NDCG, and empty-result metrics.
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
@@ -15,6 +16,16 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - PostgreSQL-backed document/chunk schema and async persistence helpers.
 - Content-hash idempotency per organization and lifecycle states for documents.
 - Privacy-safe audit event, source lineage, deletion-outbox, retention, and model-card governance contracts with tests.
+
+## Offline multilingual ablation
+
+When the JSONL predictions contain both baseline and candidate runs, the evaluator emits per-language paired bootstrap intervals:
+
+```bash
+python -m services.rag.evaluation_cli --dataset path/to/golden.jsonl --predictions path/to/predictions.jsonl --baseline bm25 --candidate ngram-04 --bootstrap-samples 1000 --bootstrap-seed 37 --output multilingual-report.json
+```
+
+Intervals describe variation in the supplied sample, not a guarantee of population-wide performance. Synthetic fixtures are contract tests, not human-reviewed multilingual benchmarks.
 
 ## Boundaries
 The RAG API and ingestion foundations exist, but concrete hosted embedding/generation providers and durable external vector indexing remain separate integration tasks. Phase 35 governance helpers define contracts only: they do not emit telemetry, physically delete external index records, run retention jobs, or approve model cards. The API must derive organization scope from authenticated membership and own transaction commits. Citation checks and lexical grounding signals do not prove semantic entailment. Treat retrieved text as untrusted data, never as instructions.
