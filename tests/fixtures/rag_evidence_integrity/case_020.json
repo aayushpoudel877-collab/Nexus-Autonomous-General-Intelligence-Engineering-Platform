@@ -1,0 +1,22 @@
+{
+  "scenario": "20: valid evidence and exact source quote (Numbers 12345 and punctu)",
+  "evidence": [
+    {
+      "evidence_id": "ev-020",
+      "document_id": "doc-20",
+      "chunk_id": "chunk-20",
+      "text": "Numbers 12345 and punctuation !?; remain searchable. Vector 020.",
+      "source_uri": "https://example.test/source/20",
+      "start_char": 0,
+      "end_char": 64,
+      "score": 0.2
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-020",
+      "quote": "Numbers 1234"
+    }
+  ],
+  "expected_codes": []
+}
