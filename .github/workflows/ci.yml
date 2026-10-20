@@ -10,6 +10,7 @@ concurrency:
 jobs:
   python:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Validate Docker Compose configuration
@@ -48,6 +49,7 @@ jobs:
           if-no-files-found: ignore
   web:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run: {working-directory: apps/web}
     steps:
@@ -59,6 +61,7 @@ jobs:
 
   migrations:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:16-alpine
@@ -93,6 +96,7 @@ jobs:
 
   containers:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Build API image with document extraction dependencies
