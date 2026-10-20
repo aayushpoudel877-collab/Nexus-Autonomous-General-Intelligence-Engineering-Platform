@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-japanese",
+  "claim": "東京の検索システム",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "明日は晴れるでしょう"
+    }
+  ],
+  "expected_status": "unsupported"
+}
