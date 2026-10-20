@@ -1,0 +1,24 @@
+{
+  "scenario": "66: source offsets do not match the evidence text length",
+  "evidence": [
+    {
+      "evidence_id": "ev-66",
+      "document_id": "doc-66",
+      "chunk_id": "chunk-66",
+      "text": "Evidence body for regression vector 66.",
+      "source_uri": "https://example.test/evidence/66",
+      "start_char": 0,
+      "end_char": 40,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-66",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "offset_length_mismatch"
+  ]
+}
