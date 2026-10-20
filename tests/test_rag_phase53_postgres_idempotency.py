@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from services.api.app.models import AuditEvent, Organization, User
@@ -70,7 +71,7 @@ async def _persist(session_factory, organization_id, actor_id, request_id, envel
             await writer(str(organization_id), envelope)
             await session.commit()
             return "ok"
-        except Exception as exc:
+        except (IntegrityError, ValueError) as exc:
             await session.rollback()
             return exc
 
