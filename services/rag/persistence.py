@@ -213,10 +213,32 @@ def build_database_tool_audit_writer(
         if not verify_tool_provenance_audit_details(envelope):
             raise ValueError("tool provenance audit envelope failed verification")
         details = json.loads(stable_json(envelope))
+        action = "rag.tool_execution.completed"
+
+        # A stable request ID makes retries idempotent. A replay with different
+        # metadata is a conflict, never a silent overwrite.
+        if request_id is not None:
+            existing = await session.scalar(
+                select(AuditEvent).where(
+                    AuditEvent.organization_id == organization_id,
+                    AuditEvent.action == action,
+                    AuditEvent.request_id == request_id,
+                )
+            )
+            if existing is not None:
+                if (
+                    existing.actor_user_id != actor_user_id
+                    or existing.resource_type != "rag_tool_execution"
+                    or existing.resource_id != request_id
+                    or existing.detail != details
+                ):
+                    raise ValueError("request_id was already used for different audit metadata")
+                return
+
         event = AuditEvent(
             actor_user_id=actor_user_id,
             organization_id=organization_id,
-            action="rag.tool_execution.completed",
+            action=action,
             resource_type="rag_tool_execution",
             resource_id=request_id,
             detail=details,

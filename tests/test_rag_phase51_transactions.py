@@ -23,6 +23,7 @@ async def test_audited_retrieval_commits_metadata_before_returning(monkeypatch):
     membership = SimpleNamespace(organization_id=organization_id)
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
 
     async def membership_for_user(_user, _session):
         return membership
@@ -65,6 +66,7 @@ async def test_audited_retrieval_rolls_back_and_fails_closed_when_audit_fails(mo
     membership = SimpleNamespace(organization_id=organization_id)
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
 
     async def membership_for_user(_user, _session):
         return membership
@@ -95,6 +97,7 @@ async def test_audited_retrieval_rolls_back_unexpected_commit_failure(monkeypatc
     membership = SimpleNamespace(organization_id=organization_id)
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     session.commit.side_effect = RuntimeError("database unavailable")
 
     async def membership_for_user(_user, _session):
@@ -130,6 +133,7 @@ async def test_audited_retrieval_rolls_back_policy_rejection(monkeypatch):
     membership = SimpleNamespace(organization_id=organization_id)
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
 
     async def membership_for_user(_user, _session):
         return membership
