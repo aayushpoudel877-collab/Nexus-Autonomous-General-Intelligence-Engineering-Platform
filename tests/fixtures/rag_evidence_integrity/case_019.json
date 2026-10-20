@@ -1,0 +1,22 @@
+{
+  "scenario": "19: valid evidence and exact source quote (Markdown evidence sectio)",
+  "evidence": [
+    {
+      "evidence_id": "ev-019",
+      "document_id": "doc-19",
+      "chunk_id": "chunk-19",
+      "text": "Markdown evidence section with source references. Vector 019.",
+      "source_uri": "https://example.test/source/19",
+      "start_char": 0,
+      "end_char": 61,
+      "score": 0.19
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-019",
+      "quote": "Markdown evi"
+    }
+  ],
+  "expected_codes": []
+}
