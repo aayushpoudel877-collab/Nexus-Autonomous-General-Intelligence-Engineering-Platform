@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-accented",
+  "claim": "café naïve résumé",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "mountain river valley"
+    }
+  ],
+  "expected_status": "unsupported"
+}
