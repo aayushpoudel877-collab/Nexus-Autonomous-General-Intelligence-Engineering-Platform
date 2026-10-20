@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-071",
+  "scenario": "71: verified regression - code: def retrieve(query): return query",
+  "expected_content": "code: def retrieve(query): return query :: vector-071",
+  "observed_content": "code: def retrieve(query): return query :: vector-071",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
