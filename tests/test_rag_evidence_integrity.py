@@ -99,3 +99,34 @@ def test_accepts_boundary_scores_and_quotes():
     assert report.is_valid
     assert math.isfinite(item.score)
     assert evidence(score=1.0).score == 1.0
+
+
+
+def test_rejects_unhashable_citation_identifier_without_crashing():
+    report = validate_evidence_bundle(
+        [evidence()], [CitationItem(["not", "a", "hashable", "identifier"], "quote")]
+    )
+    assert "unknown_evidence_reference" in {issue.code for issue in report.issues}
+
+
+def test_rejects_oversized_evidence_text():
+    from services.rag.evidence_integrity import MAX_EVIDENCE_TEXT_CHARS
+
+    text = "x" * (MAX_EVIDENCE_TEXT_CHARS + 1)
+    report = validate_evidence_bundle(
+        [evidence(text=text, end_char=len(text))], []
+    )
+    assert "evidence_text_too_long" in {issue.code for issue in report.issues}
+
+
+def test_bounds_generator_consumption_before_rejecting_excessive_input():
+    consumed = []
+
+    def evidence_stream():
+        for index in range(10):
+            consumed.append(index)
+            yield evidence(evidence_id=f"stream-{index}")
+
+    with pytest.raises(ValueError, match="exceeds"):
+        validate_evidence_bundle(evidence_stream(), [], max_evidence=2)
+    assert consumed == [0, 1, 2]
