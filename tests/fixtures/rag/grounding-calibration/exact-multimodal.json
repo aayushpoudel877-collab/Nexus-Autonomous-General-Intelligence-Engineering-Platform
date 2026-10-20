@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-multimodal",
+  "claim": "Nexus evaluates image retrieval",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus evaluates image retrieval"
+    }
+  ],
+  "expected_status": "grounded"
+}
