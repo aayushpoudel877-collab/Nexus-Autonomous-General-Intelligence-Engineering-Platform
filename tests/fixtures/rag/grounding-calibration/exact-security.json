@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-security",
+  "claim": "Retrieved text is untrusted input",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Retrieved text is untrusted input"
+    }
+  ],
+  "expected_status": "grounded"
+}
