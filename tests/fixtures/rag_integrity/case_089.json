@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-089",
+  "scenario": "89: verified regression - CJK 東京データ",
+  "expected_content": "CJK 東京データ :: vector-089",
+  "observed_content": "CJK 東京データ :: vector-089",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
