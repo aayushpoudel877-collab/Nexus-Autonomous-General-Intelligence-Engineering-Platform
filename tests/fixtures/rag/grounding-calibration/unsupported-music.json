@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-music",
+  "claim": "The model reports grounding metrics",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A violin played a short melody"
+    }
+  ],
+  "expected_status": "unsupported"
+}
