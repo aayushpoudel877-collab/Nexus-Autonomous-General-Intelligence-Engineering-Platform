@@ -1,0 +1,20 @@
+{
+  "scenario": "96: both document and chunk identity are blank",
+  "evidence": [
+    {
+      "evidence_id": "ev-96",
+      "document_id": "",
+      "chunk_id": " ",
+      "text": "Evidence body for edge vector 96.",
+      "source_uri": "https://example.test/evidence/96",
+      "start_char": 0,
+      "end_char": 33,
+      "score": 0.5
+    }
+  ],
+  "citations": [],
+  "expected_codes": [
+    "blank_identity_field",
+    "blank_identity_field"
+  ]
+}

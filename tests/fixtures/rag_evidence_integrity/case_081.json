@@ -1,0 +1,24 @@
+{
+  "scenario": "81: reject unsafe, blank, or overlong source locator",
+  "evidence": [
+    {
+      "evidence_id": "ev-81",
+      "document_id": "doc-81",
+      "chunk_id": "chunk-81",
+      "text": "Evidence body for source URI regression 81.",
+      "source_uri": "",
+      "start_char": 0,
+      "end_char": 43,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-81",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "invalid_source_uri"
+  ]
+}

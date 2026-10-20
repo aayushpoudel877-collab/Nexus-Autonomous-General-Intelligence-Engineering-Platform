@@ -1,0 +1,34 @@
+{
+  "scenario": "79: duplicate evidence ID in one retrieval bundle",
+  "evidence": [
+    {
+      "evidence_id": "ev-79",
+      "document_id": "doc-79",
+      "chunk_id": "chunk-79",
+      "text": "Evidence body for regression vector 79.",
+      "source_uri": "https://example.test/evidence/79",
+      "start_char": 0,
+      "end_char": 39,
+      "score": 0.5
+    },
+    {
+      "evidence_id": "ev-79",
+      "document_id": "doc-second-79",
+      "chunk_id": "chunk-second-79",
+      "text": "Evidence body for regression vector 79.",
+      "source_uri": "https://example.test/evidence/79",
+      "start_char": 0,
+      "end_char": 39,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-79",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "duplicate_evidence_id"
+  ]
+}

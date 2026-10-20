@@ -1,0 +1,24 @@
+{
+  "scenario": "54: retrieval score is outside finite normalized bounds",
+  "evidence": [
+    {
+      "evidence_id": "ev-54",
+      "document_id": "doc-54",
+      "chunk_id": "chunk-54",
+      "text": "Evidence body for regression vector 54.",
+      "source_uri": "https://example.test/evidence/54",
+      "start_char": 0,
+      "end_char": 39,
+      "score": "0.5"
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-54",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "invalid_score"
+  ]
+}

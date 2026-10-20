@@ -1,0 +1,22 @@
+{
+  "scenario": "6: valid evidence and exact source quote (JSON fields preserve sta)",
+  "evidence": [
+    {
+      "evidence_id": "ev-006",
+      "document_id": "doc-6",
+      "chunk_id": "chunk-6",
+      "text": "JSON fields preserve stable citation identity. Vector 006.",
+      "source_uri": "https://example.test/source/6",
+      "start_char": 0,
+      "end_char": 58,
+      "score": 0.06
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-006",
+      "quote": "JSON fields "
+    }
+  ],
+  "expected_codes": []
+}

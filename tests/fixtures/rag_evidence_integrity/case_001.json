@@ -1,0 +1,22 @@
+{
+  "scenario": "1: valid evidence and exact source quote (Verified retrieval evide)",
+  "evidence": [
+    {
+      "evidence_id": "ev-001",
+      "document_id": "doc-1",
+      "chunk_id": "chunk-1",
+      "text": "Verified retrieval evidence from source document. Vector 001.",
+      "source_uri": "https://example.test/source/1",
+      "start_char": 0,
+      "end_char": 61,
+      "score": 0.01
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-001",
+      "quote": "Verified ret"
+    }
+  ],
+  "expected_codes": []
+}

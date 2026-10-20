@@ -1,0 +1,24 @@
+{
+  "scenario": "64: negative, reversed, or non-integer source offsets",
+  "evidence": [
+    {
+      "evidence_id": "ev-64",
+      "document_id": "doc-64",
+      "chunk_id": "chunk-64",
+      "text": "Evidence body for regression vector 64.",
+      "source_uri": "https://example.test/evidence/64",
+      "start_char": true,
+      "end_char": 39,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-64",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "invalid_offsets"
+  ]
+}

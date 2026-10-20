@@ -1,0 +1,22 @@
+{
+  "scenario": "14: valid evidence and exact source quote (النص المسترجع يحتوي على )",
+  "evidence": [
+    {
+      "evidence_id": "ev-014",
+      "document_id": "doc-14",
+      "chunk_id": "chunk-14",
+      "text": "النص المسترجع يحتوي على دليل موثوق. Vector 014.",
+      "source_uri": "https://example.test/source/14",
+      "start_char": 0,
+      "end_char": 47,
+      "score": 0.14
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-014",
+      "quote": "النص المسترج"
+    }
+  ],
+  "expected_codes": []
+}

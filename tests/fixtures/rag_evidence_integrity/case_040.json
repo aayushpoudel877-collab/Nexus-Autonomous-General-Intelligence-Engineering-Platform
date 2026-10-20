@@ -1,0 +1,24 @@
+{
+  "scenario": "40: quote is absent from its cited source text",
+  "evidence": [
+    {
+      "evidence_id": "ev-40",
+      "document_id": "doc-40",
+      "chunk_id": "chunk-40",
+      "text": "Evidence body for citation regression vector 40.",
+      "source_uri": "https://example.test/evidence/40",
+      "start_char": 0,
+      "end_char": 48,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-40",
+      "quote": "NOT-IN-SOURCE-40"
+    }
+  ],
+  "expected_codes": [
+    "quote_not_in_evidence"
+  ]
+}

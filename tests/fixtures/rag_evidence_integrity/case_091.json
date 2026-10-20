@@ -1,0 +1,25 @@
+{
+  "scenario": "91: blank evidence ID also makes its citation unresolved",
+  "evidence": [
+    {
+      "evidence_id": "",
+      "document_id": "doc-91",
+      "chunk_id": "chunk-91",
+      "text": "Evidence body for edge vector 91.",
+      "source_uri": "https://example.test/evidence/91",
+      "start_char": 0,
+      "end_char": 33,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "",
+      "quote": "Evidence"
+    }
+  ],
+  "expected_codes": [
+    "blank_evidence_id",
+    "unknown_evidence_reference"
+  ]
+}

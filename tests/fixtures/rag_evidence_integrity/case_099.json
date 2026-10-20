@@ -1,0 +1,13 @@
+{
+  "scenario": "99: citation cannot resolve against an empty evidence bundle",
+  "evidence": [],
+  "citations": [
+    {
+      "evidence_id": "absent",
+      "quote": "some quote"
+    }
+  ],
+  "expected_codes": [
+    "unknown_evidence_reference"
+  ]
+}

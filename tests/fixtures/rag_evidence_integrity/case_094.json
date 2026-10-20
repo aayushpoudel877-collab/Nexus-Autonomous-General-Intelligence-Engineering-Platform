@@ -1,0 +1,26 @@
+{
+  "scenario": "94: empty source text and empty quote",
+  "evidence": [
+    {
+      "evidence_id": "ev-94",
+      "document_id": "doc-94",
+      "chunk_id": "chunk-94",
+      "text": "",
+      "source_uri": "https://example.test/evidence/94",
+      "start_char": 0,
+      "end_char": 0,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-94",
+      "quote": ""
+    }
+  ],
+  "expected_codes": [
+    "empty_evidence_text",
+    "empty_quote",
+    "invalid_offsets"
+  ]
+}

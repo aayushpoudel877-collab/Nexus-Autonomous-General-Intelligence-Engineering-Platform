@@ -1,0 +1,22 @@
+{
+  "scenario": "7: valid evidence and exact source quote (Line one contains eviden)",
+  "evidence": [
+    {
+      "evidence_id": "ev-007",
+      "document_id": "doc-7",
+      "chunk_id": "chunk-7",
+      "text": "Line one contains evidence.\nLine two adds context. Vector 007.",
+      "source_uri": "https://example.test/source/7",
+      "start_char": 0,
+      "end_char": 62,
+      "score": 0.07
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-007",
+      "quote": "Line one con"
+    }
+  ],
+  "expected_codes": []
+}

@@ -1,0 +1,24 @@
+{
+  "scenario": "43: citation quote is empty or whitespace only",
+  "evidence": [
+    {
+      "evidence_id": "ev-43",
+      "document_id": "doc-43",
+      "chunk_id": "chunk-43",
+      "text": "Evidence body for regression vector 43.",
+      "source_uri": "https://example.test/evidence/43",
+      "start_char": 0,
+      "end_char": 39,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-43",
+      "quote": ""
+    }
+  ],
+  "expected_codes": [
+    "empty_quote"
+  ]
+}

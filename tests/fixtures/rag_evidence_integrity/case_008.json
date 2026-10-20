@@ -1,0 +1,22 @@
+{
+  "scenario": "8: valid evidence and exact source quote (Code example: return ret)",
+  "evidence": [
+    {
+      "evidence_id": "ev-008",
+      "document_id": "doc-8",
+      "chunk_id": "chunk-8",
+      "text": "Code example: return retrieved_evidence; Vector 008.",
+      "source_uri": "https://example.test/source/8",
+      "start_char": 0,
+      "end_char": 52,
+      "score": 0.08
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-008",
+      "quote": "Code example"
+    }
+  ],
+  "expected_codes": []
+}

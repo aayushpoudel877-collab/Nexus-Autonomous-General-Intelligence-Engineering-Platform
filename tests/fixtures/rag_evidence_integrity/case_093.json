@@ -1,0 +1,19 @@
+{
+  "scenario": "93: blank chunk identity",
+  "evidence": [
+    {
+      "evidence_id": "ev-93",
+      "document_id": "doc-93",
+      "chunk_id": "",
+      "text": "Evidence body for edge vector 93.",
+      "source_uri": "https://example.test/evidence/93",
+      "start_char": 0,
+      "end_char": 33,
+      "score": 0.5
+    }
+  ],
+  "citations": [],
+  "expected_codes": [
+    "blank_identity_field"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "scenario": "24: citation points to a missing evidence ID",
+  "evidence": [
+    {
+      "evidence_id": "ev-24",
+      "document_id": "doc-24",
+      "chunk_id": "chunk-24",
+      "text": "Evidence body for citation regression vector 24.",
+      "source_uri": "https://example.test/evidence/24",
+      "start_char": 0,
+      "end_char": 48,
+      "score": 0.5
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "missing-24",
+      "quote": "Evidence body"
+    }
+  ],
+  "expected_codes": [
+    "unknown_evidence_reference"
+  ]
+}

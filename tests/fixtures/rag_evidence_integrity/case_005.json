@@ -1,0 +1,22 @@
+{
+  "scenario": "5: valid evidence and exact source quote (Unicode café résumé and )",
+  "evidence": [
+    {
+      "evidence_id": "ev-005",
+      "document_id": "doc-5",
+      "chunk_id": "chunk-5",
+      "text": "Unicode café résumé and naïve tokenization. Vector 005.",
+      "source_uri": "https://example.test/source/5",
+      "start_char": 0,
+      "end_char": 55,
+      "score": 0.05
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-005",
+      "quote": "Unicode café"
+    }
+  ],
+  "expected_codes": []
+}
