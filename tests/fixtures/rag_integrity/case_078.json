@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-078",
+  "scenario": "78: not_checked regression - spaces    remain",
+  "expected_content": "spaces    remain :: vector-078",
+  "observed_content": "spaces    remain :: vector-078XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}
