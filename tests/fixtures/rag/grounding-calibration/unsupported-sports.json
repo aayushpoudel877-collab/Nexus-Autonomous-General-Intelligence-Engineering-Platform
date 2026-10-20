@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-sports",
+  "claim": "The API checks evidence IDs",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The goalkeeper saved a penalty"
+    }
+  ],
+  "expected_status": "unsupported"
+}
