@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-punctuation",
+  "claim": "Nexus verifies claims, citations, and sources!",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus verifies claims, citations, and sources!"
+    }
+  ],
+  "expected_status": "grounded"
+}
