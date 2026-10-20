@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-finance",
+  "claim": "The source contains audit events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Interest rates changed overnight"
+    }
+  ],
+  "expected_status": "unsupported"
+}
