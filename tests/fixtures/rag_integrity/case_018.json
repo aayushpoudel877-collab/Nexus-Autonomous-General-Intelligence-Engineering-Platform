@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-018",
+  "scenario": "18: verified regression - spaces    remain",
+  "expected_content": "spaces    remain :: vector-018",
+  "observed_content": "spaces    remain :: vector-018",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
