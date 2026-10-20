@@ -8,12 +8,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from collections.abc import Iterable
+from itertools import islice
 
 
 MAX_EVIDENCE_ITEMS = 100
 MAX_CITATION_ITEMS = 200
 MAX_QUOTE_CHARS = 4_000
 MAX_SOURCE_URI_CHARS = 2_048
+MAX_EVIDENCE_TEXT_CHARS = 12_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,8 +72,8 @@ def validate_evidence_bundle(
     if not 1 <= max_quote_chars <= MAX_QUOTE_CHARS:
         raise ValueError("max_quote_chars must be between 1 and 4000")
 
-    evidence_items = list(evidence)
-    citation_items = list(citations)
+    evidence_items = list(islice(evidence, max_evidence + 1))
+    citation_items = list(islice(citations, max_citations + 1))
     if len(evidence_items) > max_evidence:
         raise ValueError("evidence bundle exceeds max_evidence")
     if len(citation_items) > max_citations:
@@ -99,6 +101,8 @@ def validate_evidence_bundle(
 
         if not isinstance(item.text, str) or not item.text:
             issues.append(EvidenceIssue("empty_evidence_text", index, "text"))
+        elif len(item.text) > MAX_EVIDENCE_TEXT_CHARS:
+            issues.append(EvidenceIssue("evidence_text_too_long", index, "text"))
         if (
             not isinstance(item.source_uri, str)
             or not item.source_uri.strip()
@@ -130,6 +134,9 @@ def validate_evidence_bundle(
     for index, citation in enumerate(citation_items):
         if not isinstance(citation, CitationItem):
             issues.append(EvidenceIssue("invalid_citation_item", index, "item"))
+            continue
+        if not isinstance(citation.evidence_id, str) or not citation.evidence_id.strip():
+            issues.append(EvidenceIssue("unknown_evidence_reference", index, "evidence_id"))
             continue
         item = known.get(citation.evidence_id)
         if item is None:
