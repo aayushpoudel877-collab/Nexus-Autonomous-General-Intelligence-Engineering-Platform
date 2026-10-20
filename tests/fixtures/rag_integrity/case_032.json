@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-032",
+  "scenario": "32: mismatch regression - markdown # Retrieval - chunk A",
+  "expected_content": "markdown # Retrieval\n- chunk A :: vector-032",
+  "observed_content": "markdown # Retrieval\n- chunk A :: vector-032 [mutated]",
+  "expected_status": "mismatch",
+  "expected_reason": "sha256_mismatch",
+  "max_bytes": 26214400
+}
