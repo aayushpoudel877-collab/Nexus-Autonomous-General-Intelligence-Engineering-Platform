@@ -11,6 +11,7 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
+- Phase 57 evidence provenance validation: citation IDs resolve to unique retrieved evidence, quotes match source text, offsets and normalized scores are checked, and diagnostics never echo private source text.
 - Validated multimodal text representations with source provenance, credential-like metadata filtering, and collision-safe representation IDs; OCR/transcription providers remain unconnected.
 - Bounded graph-assisted retrieval over explicit tenant-scoped entity/chunk associations, with deterministic paths and limits on seeds, edges, entities, associations, and hops.
 - Offline prompt-injection marker evaluation with false-positive/false-negative reporting and language/risk slices; it is a heuristic, not a security boundary.
@@ -50,6 +51,18 @@ Run the focused contract tests with:
 ```bash
 pytest tests/test_rag_source_integrity.py
 ```
+
+## Evidence and citation integrity (Phase 57)
+
+`services.rag.evidence_integrity` validates evidence identities, source locators, character offsets, normalized retrieval scores, citation references, and exact quote membership. Reports use stable issue codes and indices rather than copying raw source text or quotes. Limits are 100 evidence items, 200 citations, and 4,000 characters per quote. This is a structural provenance check, not proof of truth or semantic entailment.
+
+Run the focused checks with:
+
+```bash
+pytest tests/test_rag_evidence_integrity.py tests/test_rag_evidence_fixture_vectors.py
+```
+
+See `docs/rag/phase-57-evidence-citation-integrity.md` for the full contract and limitations.
 
 ## Quick start
 From the repository root:
