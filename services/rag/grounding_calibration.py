@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from services.rag.grounding import ClaimEvidence, GroundingClaim, LexicalGroundingVerifier
 
@@ -62,7 +63,10 @@ def _validate_case(case: dict[str, Any]) -> None:
             raise ValueError("each evidence item needs a string evidence_id")
         if not isinstance(item.get("text"), str):
             raise ValueError("each evidence item needs string text")
-    if not isinstance(case["expected_status"], str) or case["expected_status"] not in _ALLOWED_STATUSES:
+    if (
+        not isinstance(case["expected_status"], str)
+        or case["expected_status"] not in _ALLOWED_STATUSES
+    ):
         raise ValueError(f"expected_status must be one of {sorted(_ALLOWED_STATUSES)}")
 
 
