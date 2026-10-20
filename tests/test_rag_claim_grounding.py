@@ -148,3 +148,28 @@ def test_report_metrics_cover_all_claim_statuses():
     assert report.citation_coverage == 1.0
     assert report.grounding_rate == 0.25
     assert report.should_abstain is True
+
+@pytest.mark.parametrize(
+    "claim_text,evidence_text",
+    [
+        ("नेक्सस सुरक्षित भण्डारण समर्थन गर्छ", "नेक्सस सुरक्षित भण्डारण समर्थन गर्छ"),
+        ("東京の検索システム", "東京の検索システム"),
+        ("café naïve résumé", "café naïve résumé"),
+    ],
+)
+def test_unicode_claims_can_receive_exact_lexical_support(claim_text, evidence_text):
+    report = LexicalGroundingVerifier().assess(
+        [claim(claim_text)],
+        [evidence(evidence_text)],
+    )
+    assert report.assessments[0].status == "grounded"
+    assert report.assessments[0].best_token_coverage == 1.0
+
+
+def test_unicode_claim_with_unrelated_evidence_fails_closed():
+    report = LexicalGroundingVerifier().assess(
+        [claim("नेक्सस सुरक्षित भण्डारण समर्थन गर्छ")],
+        [evidence("Penguins operate underwater elevators")],
+    )
+    assert report.assessments[0].status == "unsupported"
+    assert report.should_abstain is True
