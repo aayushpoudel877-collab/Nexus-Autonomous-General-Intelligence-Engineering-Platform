@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-008",
+  "scenario": "8: mismatch regression - Unicode café naïve résumé",
+  "expected_content": "Unicode café naïve résumé :: vector-008",
+  "observed_content": "Unicode café naïve résumé :: vector-008 [mutated]",
+  "expected_status": "mismatch",
+  "expected_reason": "sha256_mismatch",
+  "max_bytes": 26214400
+}
