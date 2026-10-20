@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-025",
+  "scenario": "25: verified regression - tab\tseparated\ttext",
+  "expected_content": "tab\tseparated\ttext :: vector-025",
+  "observed_content": "tab\tseparated\ttext :: vector-025",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
