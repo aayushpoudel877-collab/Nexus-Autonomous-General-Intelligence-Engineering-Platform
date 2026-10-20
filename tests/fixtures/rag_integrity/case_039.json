@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-039",
+  "scenario": "39: not_checked regression - punctuation !?.,:;()[]{}",
+  "expected_content": "punctuation !?.,:;()[]{} :: vector-039",
+  "observed_content": "punctuation !?.,:;()[]{} :: vector-039XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}
