@@ -1,5 +1,6 @@
 """Enforce idempotency for audited RAG tool execution request IDs."""
 from alembic import op
+import sqlalchemy as sa
 
 revision = "0026_rag_audit_idem"
 down_revision = "0025_rag_operator"
@@ -15,7 +16,7 @@ def upgrade() -> None:
         "audit_events",
         ["organization_id", "request_id"],
         unique=True,
-        postgresql_where=op.inline_literal("action = 'rag.tool_execution.completed' AND request_id IS NOT NULL"),
+        postgresql_where=sa.text("action = 'rag.tool_execution.completed' AND request_id IS NOT NULL"),
     )
 
 
