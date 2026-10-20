@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-astronomy",
+  "claim": "The service validates source URIs",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Jupiter orbits the Sun"
+    }
+  ],
+  "expected_status": "unsupported"
+}
