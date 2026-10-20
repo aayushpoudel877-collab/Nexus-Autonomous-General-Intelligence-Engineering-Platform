@@ -11,6 +11,7 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Tenant-scoped document and chunk contracts.
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
+- Unicode-aware lexical claim-grounding baseline with conservative abstention signals; lexical overlap is not semantic entailment.
 - Validated multimodal text representations with source provenance, credential-like metadata filtering, and collision-safe representation IDs; OCR/transcription providers remain unconnected.
 - Bounded graph-assisted retrieval over explicit tenant-scoped entity/chunk associations, with deterministic paths and limits on seeds, edges, entities, associations, and hops.
 - Offline prompt-injection marker evaluation with false-positive/false-negative reporting and language/risk slices; it is a heuristic, not a security boundary.
