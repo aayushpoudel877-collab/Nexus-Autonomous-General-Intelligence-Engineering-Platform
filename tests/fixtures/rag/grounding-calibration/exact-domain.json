@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-domain",
+  "claim": "The retriever returns ranked passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever returns ranked passages"
+    }
+  ],
+  "expected_status": "grounded"
+}
