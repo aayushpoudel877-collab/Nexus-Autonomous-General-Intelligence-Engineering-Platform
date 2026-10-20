@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-cyrillic",
+  "claim": "поиск документов",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "сегодня хорошая погода"
+    }
+  ],
+  "expected_status": "unsupported"
+}
