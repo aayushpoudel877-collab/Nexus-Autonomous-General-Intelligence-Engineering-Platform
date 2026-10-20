@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-083",
+  "scenario": "83: verified regression - JSON {\"topic\":\"retrieval\"}",
+  "expected_content": "JSON {\"topic\":\"retrieval\"} :: vector-083",
+  "observed_content": "JSON {\"topic\":\"retrieval\"} :: vector-083",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
