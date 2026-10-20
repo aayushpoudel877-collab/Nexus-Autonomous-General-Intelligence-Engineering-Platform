@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-cooking",
+  "claim": "Nexus validates citations",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bake the dough until golden"
+    }
+  ],
+  "expected_status": "unsupported"
+}
