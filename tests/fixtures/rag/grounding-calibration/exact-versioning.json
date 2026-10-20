@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-versioning",
+  "claim": "Nexus versions evaluation datasets",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus versions evaluation datasets"
+    }
+  ],
+  "expected_status": "grounded"
+}
