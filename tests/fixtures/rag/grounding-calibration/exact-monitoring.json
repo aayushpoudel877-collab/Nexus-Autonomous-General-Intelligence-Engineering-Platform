@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-monitoring",
+  "claim": "Nexus monitors retrieval quality",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus monitors retrieval quality"
+    }
+  ],
+  "expected_status": "grounded"
+}
