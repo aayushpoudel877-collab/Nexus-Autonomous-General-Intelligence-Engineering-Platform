@@ -34,6 +34,7 @@ def _envelope():
 async def test_database_writer_adds_verified_metadata_to_existing_audit_event():
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     organization_id = uuid4()
     actor_user_id = uuid4()
     envelope = _envelope()
@@ -64,6 +65,7 @@ async def test_database_writer_adds_verified_metadata_to_existing_audit_event():
 async def test_database_writer_rejects_cross_tenant_scope_before_database_write():
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     organization_id = uuid4()
     other_organization_id = uuid4()
     writer = build_database_tool_audit_writer(session, organization_id=organization_id)
@@ -79,6 +81,7 @@ async def test_database_writer_rejects_cross_tenant_scope_before_database_write(
 async def test_database_writer_rejects_tampered_envelope_before_database_write():
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     organization_id = uuid4()
     writer = build_database_tool_audit_writer(session, organization_id=organization_id)
     envelope = deepcopy(_envelope())
@@ -95,6 +98,7 @@ async def test_database_writer_rejects_tampered_envelope_before_database_write()
 async def test_database_writer_rejects_non_uuid_tenant_and_non_dict_envelope():
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     organization_id = uuid4()
     writer = build_database_tool_audit_writer(session, organization_id=organization_id)
 
@@ -130,6 +134,7 @@ async def _search(tenant_id, arguments):
 async def test_execution_boundary_writes_sealed_envelope_through_database_adapter():
     session = AsyncMock()
     session.add = MagicMock()
+    session.scalar.return_value = None
     organization_id = uuid4()
     writer = build_database_tool_audit_writer(
         session,
