@@ -14,7 +14,7 @@ Validate the contract between retrieved evidence and citations generated for an 
 - Every citation references a known evidence ID.
 - Every quote is nonempty, bounded, and an exact substring of its cited evidence.
 - Diagnostic reports contain reason codes, field names, and indexes only; they do not echo source text or quotes.
-- Bundle sizes are bounded (100 evidence records, 200 citations, 4,000 characters per quote).
+- Bundle sizes are bounded (100 evidence records, 200 citations, 12,000 characters per evidence text, and 4,000 characters per quote).
 
 ## Files
 
