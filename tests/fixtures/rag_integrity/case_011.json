@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-011",
+  "scenario": "11: unavailable regression - code: def retrieve(query): return query",
+  "expected_content": "code: def retrieve(query): return query :: vector-011",
+  "observed_content": null,
+  "expected_status": "unavailable",
+  "expected_reason": "source_bytes_unavailable",
+  "max_bytes": 26214400
+}
