@@ -54,7 +54,7 @@ pytest tests/test_rag_source_integrity.py
 
 ## Evidence and citation integrity (Phase 57)
 
-`services.rag.evidence_integrity` validates evidence identities, source locators, character offsets, normalized retrieval scores, citation references, and exact quote membership. Reports use stable issue codes and indices rather than copying raw source text or quotes. Limits are 100 evidence items, 200 citations, and 4,000 characters per quote. This is a structural provenance check, not proof of truth or semantic entailment.
+`services.rag.evidence_integrity` validates evidence identities, source locators, character offsets, normalized retrieval scores, citation references, and exact quote membership. Reports use stable issue codes and indices rather than copying raw source text or quotes. Limits are 100 evidence items, 200 citations, 12,000 characters per evidence text, and 4,000 characters per quote. This is a structural provenance check, not proof of truth or semantic entailment.
 
 Run the focused checks with:
 
