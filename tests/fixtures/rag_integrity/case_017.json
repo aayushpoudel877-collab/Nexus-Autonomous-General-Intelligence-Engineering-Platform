@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-017",
+  "scenario": "17: verified regression - CRLF-like\r content",
+  "expected_content": "CRLF-like\r\ncontent :: vector-017",
+  "observed_content": "CRLF-like\r\ncontent :: vector-017",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
