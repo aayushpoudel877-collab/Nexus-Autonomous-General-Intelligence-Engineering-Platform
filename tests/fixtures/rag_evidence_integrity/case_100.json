@@ -1,0 +1,17 @@
+{
+  "scenario": "100: evidence without generated citations remains valid",
+  "evidence": [
+    {
+      "evidence_id": "ev-100",
+      "document_id": "doc-100",
+      "chunk_id": "chunk-100",
+      "text": "Evidence body for edge vector 100.",
+      "source_uri": "https://example.test/evidence/100",
+      "start_char": 0,
+      "end_char": 34,
+      "score": 0.5
+    }
+  ],
+  "citations": [],
+  "expected_codes": []
+}
