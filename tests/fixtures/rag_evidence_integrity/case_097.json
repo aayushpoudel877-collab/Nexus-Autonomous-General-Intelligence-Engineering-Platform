@@ -1,0 +1,29 @@
+{
+  "scenario": "97: repeated evidence identifier is reported once at duplicate row",
+  "evidence": [
+    {
+      "evidence_id": "ev-97",
+      "document_id": "doc-97",
+      "chunk_id": "chunk-97",
+      "text": "Evidence body for edge vector 97.",
+      "source_uri": "https://example.test/evidence/97",
+      "start_char": 0,
+      "end_char": 33,
+      "score": 0.5
+    },
+    {
+      "evidence_id": "ev-97",
+      "document_id": "doc-97-other",
+      "chunk_id": "chunk-97-other",
+      "text": "Evidence body for edge vector 97.",
+      "source_uri": "https://example.test/evidence/97",
+      "start_char": 0,
+      "end_char": 33,
+      "score": 0.5
+    }
+  ],
+  "citations": [],
+  "expected_codes": [
+    "duplicate_evidence_id"
+  ]
+}
