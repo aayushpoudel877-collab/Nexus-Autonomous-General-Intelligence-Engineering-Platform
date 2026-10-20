@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-retrieval",
+  "claim": "Nexus supports hybrid retrieval",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus supports hybrid retrieval"
+    }
+  ],
+  "expected_status": "grounded"
+}
