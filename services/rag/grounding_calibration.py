@@ -32,7 +32,7 @@ def load_case_files(directory: str | Path) -> list[dict[str, Any]]:
         except (OSError, json.JSONDecodeError) as exc:
             raise ValueError(f"invalid fixture {path.name}: {exc}") from exc
         if not isinstance(case, dict):
-            raise ValueError(f"fixture {path.name} must contain a JSON object")
+            raise TypeError(f"fixture {path.name} must contain a JSON object")
         case = dict(case)
         case.setdefault("case_id", path.stem)
         case["_fixture"] = path.name
@@ -60,9 +60,9 @@ def _validate_case(case: dict[str, Any]) -> None:
         raise ValueError("evidence must be a non-empty list")
     for item in case["evidence"]:
         if not isinstance(item, dict) or not isinstance(item.get("evidence_id"), str):
-            raise ValueError("each evidence item needs a string evidence_id")
+            raise TypeError("each evidence item needs a string evidence_id")
         if not isinstance(item.get("text"), str):
-            raise ValueError("each evidence item needs string text")
+            raise TypeError("each evidence item needs string text")
     if (
         not isinstance(case["expected_status"], str)
         or case["expected_status"] not in _ALLOWED_STATUSES
