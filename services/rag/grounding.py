@@ -29,7 +29,7 @@ _NEGATION_WORDS = frozenset({
     "isn't", "aren't", "wasn't", "weren't", "doesn't", "don't", "didn't",
     "hasn't", "haven't", "hadn't", "won't", "wouldn't", "shouldn't",
 })
-_TOKEN_RE = re.compile(r"[^\W_]+(?:['’][^\\W_]+)*", re.IGNORECASE)
+_TOKEN_RE = re.compile(r"[^\W_]+(?:['’][^\W_]+)*", re.IGNORECASE)
 
 
 @dataclass(frozen=True, slots=True)
