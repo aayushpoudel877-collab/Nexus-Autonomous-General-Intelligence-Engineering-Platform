@@ -119,3 +119,34 @@ async def test_audited_retrieval_rolls_back_unexpected_commit_failure(monkeypatc
 
     session.commit.assert_awaited_once()
     session.rollback.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_audited_retrieval_rolls_back_policy_rejection(monkeypatch):
+    from services.rag.agentic_retrieval import ToolPolicyError
+
+    organization_id = uuid4()
+    user = SimpleNamespace(id=uuid4())
+    membership = SimpleNamespace(organization_id=organization_id)
+    session = AsyncMock()
+    session.add = MagicMock()
+
+    async def membership_for_user(_user, _session):
+        return membership
+
+    async def reject_plan(*args, **kwargs):
+        raise ToolPolicyError("tool is not allowlisted")
+
+    monkeypatch.setattr(rag_agentic, "get_membership", membership_for_user)
+    monkeypatch.setattr(rag_agentic, "execute_bounded_tool_plan_with_audit", reject_plan)
+
+    with pytest.raises(HTTPException) as error:
+        await rag_agentic.audited_agentic_query(
+            rag_agentic.AgenticRAGQuery(query="hello"),
+            user=user,
+            db=session,
+        )
+
+    assert error.value.status_code == 422
+    session.rollback.assert_awaited_once()
+    session.commit.assert_not_awaited()
