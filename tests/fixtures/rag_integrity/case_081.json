@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-081",
+  "scenario": "81: verified regression - RAG source document",
+  "expected_content": "RAG source document :: vector-081",
+  "observed_content": "RAG source document :: vector-081",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
