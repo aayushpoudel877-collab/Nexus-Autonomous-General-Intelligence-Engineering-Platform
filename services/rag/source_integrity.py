@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Iterable
+from collections.abc import Iterable
 
 MAX_ARTIFACT_BYTES = 25 * 1024 * 1024
 MAX_BATCH_ITEMS = 500
