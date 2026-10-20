@@ -1,0 +1,20 @@
+{
+  "scenario": "98: multiple independent field errors are reported",
+  "evidence": [
+    {
+      "evidence_id": "ev-98",
+      "document_id": "doc-98",
+      "chunk_id": "chunk-98",
+      "text": "Evidence body for edge vector 98.",
+      "source_uri": "https://example.test/evidence/98",
+      "start_char": 0,
+      "end_char": 4,
+      "score": 2
+    }
+  ],
+  "citations": [],
+  "expected_codes": [
+    "invalid_score",
+    "offset_length_mismatch"
+  ]
+}
