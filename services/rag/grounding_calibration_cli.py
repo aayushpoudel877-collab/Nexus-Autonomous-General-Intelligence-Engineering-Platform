@@ -21,7 +21,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         report = evaluate_cases(load_case_files(args.fixtures))
-    except (OSError, ValueError) as exc:
+    except (OSError, TypeError, ValueError) as exc:
         print(f"grounding calibration failed to load: {exc}", file=sys.stderr)
         return 2
     rendered = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
