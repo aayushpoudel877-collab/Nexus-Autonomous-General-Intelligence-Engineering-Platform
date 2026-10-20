@@ -1,0 +1,22 @@
+{
+  "scenario": "2: valid evidence and exact source quote (नेपाली स्रोतबाट प्राप्त )",
+  "evidence": [
+    {
+      "evidence_id": "ev-002",
+      "document_id": "doc-2",
+      "chunk_id": "chunk-2",
+      "text": "नेपाली स्रोतबाट प्राप्त प्रमाण सुरक्षित छ। Vector 002.",
+      "source_uri": "https://example.test/source/2",
+      "start_char": 0,
+      "end_char": 54,
+      "score": 0.02
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-002",
+      "quote": "नेपाली स्रोत"
+    }
+  ],
+  "expected_codes": []
+}
