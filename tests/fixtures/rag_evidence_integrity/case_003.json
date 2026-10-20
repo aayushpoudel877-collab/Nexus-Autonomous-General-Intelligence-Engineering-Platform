@@ -1,0 +1,22 @@
+{
+  "scenario": "3: valid evidence and exact source quote (東京の文書から得られた検索結果です。 Vecto)",
+  "evidence": [
+    {
+      "evidence_id": "ev-003",
+      "document_id": "doc-3",
+      "chunk_id": "chunk-3",
+      "text": "東京の文書から得られた検索結果です。 Vector 003.",
+      "source_uri": "https://example.test/source/3",
+      "start_char": 0,
+      "end_char": 30,
+      "score": 0.03
+    }
+  ],
+  "citations": [
+    {
+      "evidence_id": "ev-003",
+      "quote": "東京の文書から得られた検"
+    }
+  ],
+  "expected_codes": []
+}
