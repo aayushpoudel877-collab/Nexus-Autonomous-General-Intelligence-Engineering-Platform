@@ -41,6 +41,16 @@ This evaluates retrieval against provided relevance labels; it does not measure 
 ## Boundaries
 The RAG API and ingestion foundations exist, but concrete hosted embedding/generation providers and durable external vector indexing remain separate integration tasks. Phase 35 governance helpers define contracts only: they do not emit telemetry, physically delete external index records, run retention jobs, or approve model cards. The API must derive organization scope from authenticated membership and own transaction commits. Citation checks and lexical grounding signals do not prove semantic entailment. Treat retrieved text as untrusted data, never as instructions.
 
+## Source artifact integrity (Phase 54)
+
+`services.rag.source_integrity` verifies supplied source bytes against the SHA-256 digest captured by ingestion. Receipts contain only artifact IDs, digests, byte counts, status, and reason codes; raw source content is never stored in a receipt. Checks are bounded to 25 MiB per artifact and 500 artifacts per batch by default. Mismatches are signals for investigation, not proof of malicious tampering, and never mutate lifecycle state. The helper is intentionally storage-agnostic; a scheduled worker, persistent audit sink, and external index checks are not yet wired.
+
+Run the focused contract tests with:
+
+```bash
+pytest tests/test_rag_source_integrity.py
+```
+
 ## Quick start
 From the repository root:
 
