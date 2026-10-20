@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-075",
+  "scenario": "75: verified regression - SQL SELECT * FROM chunks;",
+  "expected_content": "SQL SELECT * FROM chunks; :: vector-075",
+  "observed_content": "SQL SELECT * FROM chunks; :: vector-075",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
