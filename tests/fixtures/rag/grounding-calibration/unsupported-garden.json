@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-garden",
+  "claim": "The system scopes tenant data",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Tomatoes grow best in warm soil"
+    }
+  ],
+  "expected_status": "unsupported"
+}
