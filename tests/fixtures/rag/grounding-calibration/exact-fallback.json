@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-fallback",
+  "claim": "Nexus abstains when evidence is insufficient",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus abstains when evidence is insufficient"
+    }
+  ],
+  "expected_status": "grounded"
+}
