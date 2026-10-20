@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-chunking",
+  "claim": "Nexus performs overlap-aware chunking",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus performs overlap-aware chunking"
+    }
+  ],
+  "expected_status": "grounded"
+}
