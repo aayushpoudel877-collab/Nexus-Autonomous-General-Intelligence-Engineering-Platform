@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-065",
+  "scenario": "65: not_checked regression - tab\tseparated\ttext",
+  "expected_content": "tab\tseparated\ttext :: vector-065",
+  "observed_content": "tab\tseparated\ttext :: vector-065XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}
