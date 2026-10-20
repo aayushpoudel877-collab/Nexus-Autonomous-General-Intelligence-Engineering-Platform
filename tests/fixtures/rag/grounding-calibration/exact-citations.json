@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-citations",
+  "claim": "Nexus validates citations",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus validates citations"
+    }
+  ],
+  "expected_status": "grounded"
+}
