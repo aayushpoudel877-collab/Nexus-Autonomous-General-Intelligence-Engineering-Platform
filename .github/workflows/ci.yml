@@ -76,13 +76,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - run: pip install -e .
+      - run: pip install -e '.[dev]'
       - name: Upgrade the complete schema
         run: alembic upgrade head
       - name: Verify every migration can be downgraded
         run: alembic downgrade base
       - name: Rebuild the schema from a clean database
         run: alembic upgrade head
+      - name: Exercise PostgreSQL-backed RAG audit idempotency and concurrency
+        run: pytest -q tests/test_rag_phase53_postgres_idempotency.py
       - name: Confirm one current migration head
         run: alembic current
 
