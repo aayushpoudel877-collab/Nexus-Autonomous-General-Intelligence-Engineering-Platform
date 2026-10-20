@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-006",
+  "scenario": "6: verified regression - emoji 🧠🔎",
+  "expected_content": "emoji 🧠🔎 :: vector-006",
+  "observed_content": "emoji 🧠🔎 :: vector-006",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
