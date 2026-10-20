@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-094",
+  "scenario": "94: verified regression - XML <doc>safe</doc>",
+  "expected_content": "XML <doc>safe</doc> :: vector-094",
+  "observed_content": "XML <doc>safe</doc> :: vector-094",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}
