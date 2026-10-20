@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-077",
+  "scenario": "77: unavailable regression - CRLF-like\r content",
+  "expected_content": "CRLF-like\r\ncontent :: vector-077",
+  "observed_content": null,
+  "expected_status": "unavailable",
+  "expected_reason": "source_bytes_unavailable",
+  "max_bytes": 26214400
+}
