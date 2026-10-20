@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-022",
+  "scenario": "22: unavailable regression - multilingual नेपाली source",
+  "expected_content": "multilingual नेपाली source :: vector-022",
+  "observed_content": null,
+  "expected_status": "unavailable",
+  "expected_reason": "source_bytes_unavailable",
+  "max_bytes": 26214400
+}

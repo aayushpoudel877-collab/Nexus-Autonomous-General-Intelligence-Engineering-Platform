@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-053",
+  "scenario": "53: verified regression - CSV id,text 1,hello",
+  "expected_content": "CSV id,text\n1,hello :: vector-053",
+  "observed_content": "CSV id,text\n1,hello :: vector-053",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}

@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-019",
+  "scenario": "19: verified regression - punctuation !?.,:;()[]{}",
+  "expected_content": "punctuation !?.,:;()[]{} :: vector-019",
+  "observed_content": "punctuation !?.,:;()[]{} :: vector-019",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}

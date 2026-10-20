@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-055",
+  "scenario": "55: unavailable regression - SQL SELECT * FROM chunks;",
+  "expected_content": "SQL SELECT * FROM chunks; :: vector-055",
+  "observed_content": null,
+  "expected_status": "unavailable",
+  "expected_reason": "source_bytes_unavailable",
+  "max_bytes": 26214400
+}

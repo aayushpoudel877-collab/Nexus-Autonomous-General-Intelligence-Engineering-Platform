@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-013",
+  "scenario": "13: not_checked regression - CSV id,text 1,hello",
+  "expected_content": "CSV id,text\n1,hello :: vector-013",
+  "observed_content": "CSV id,text\n1,hello :: vector-013XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}

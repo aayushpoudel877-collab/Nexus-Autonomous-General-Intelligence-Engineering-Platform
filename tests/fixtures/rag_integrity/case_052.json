@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-052",
+  "scenario": "52: not_checked regression - markdown # Retrieval - chunk A",
+  "expected_content": "markdown # Retrieval\n- chunk A :: vector-052",
+  "observed_content": "markdown # Retrieval\n- chunk A :: vector-052XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}

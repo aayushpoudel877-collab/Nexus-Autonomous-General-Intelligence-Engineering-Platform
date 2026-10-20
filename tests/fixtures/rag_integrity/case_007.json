@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-007",
+  "scenario": "7: verified regression - zero-width-safe plain text",
+  "expected_content": "zero-width-safe plain text :: vector-007",
+  "observed_content": "zero-width-safe plain text :: vector-007",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}

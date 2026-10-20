@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-099",
+  "scenario": "99: unavailable regression - punctuation !?.,:;()[]{}",
+  "expected_content": "punctuation !?.,:;()[]{} :: vector-099",
+  "observed_content": null,
+  "expected_status": "unavailable",
+  "expected_reason": "source_bytes_unavailable",
+  "max_bytes": 26214400
+}

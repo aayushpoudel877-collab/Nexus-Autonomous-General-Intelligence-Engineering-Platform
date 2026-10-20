@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-002",
+  "scenario": "2: verified regression - multilingual नेपाली source",
+  "expected_content": "multilingual नेपाली source :: vector-002",
+  "observed_content": "multilingual नेपाली source :: vector-002",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}

@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.api.app.models.rag import RAGChunk, RAGDocument
 from services.api.app.models.audit import AuditEvent
-from .chunking import Chunk, chunk_text
+from .chunking import Chunk, chunk_text, normalize_text
 
 MAX_DOCUMENT_CHARS = 2_000_000
 MAX_CHUNK_CHARS = 12_000
@@ -67,7 +67,12 @@ async def ingest_document(
     if metadata_size > MAX_METADATA_BYTES:
         raise ValueError(f"metadata exceeds {MAX_METADATA_BYTES} bytes")
 
-    digest = sha256(text.encode("utf-8")).hexdigest()
+    # Hash the canonical text representation actually stored in chunk records.
+    # This makes later integrity verification deterministic despite whitespace normalization.
+    normalized_text = normalize_text(text)
+    if not normalized_text:
+        raise ValueError("document text must contain non-whitespace content")
+    digest = sha256(normalized_text.encode("utf-8")).hexdigest()
     existing = await session.scalar(
         select(RAGDocument).where(
             RAGDocument.organization_id == organization_id,
@@ -84,11 +89,11 @@ async def ingest_document(
         title=title.strip(),
         source_uri=source_uri,
         content_sha256=digest,
-        content_chars=len(text),
+        content_chars=len(normalized_text),
         metadata_json=metadata_value,
     )
     chunks: list[Chunk] = chunk_text(
-        text, str(document.id or "pending"), str(organization_id),
+        normalized_text, str(document.id or "pending"), str(organization_id),
         max_chars=max_chars, overlap=overlap,
     )
     try:

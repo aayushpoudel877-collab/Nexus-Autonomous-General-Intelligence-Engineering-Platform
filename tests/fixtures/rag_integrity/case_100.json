@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-100",
+  "scenario": "100: mismatch regression - combining é unicode",
+  "expected_content": "combining é unicode :: vector-100",
+  "observed_content": "combining é unicode :: vector-100 [mutated]",
+  "expected_status": "mismatch",
+  "expected_reason": "sha256_mismatch",
+  "max_bytes": 26214400
+}

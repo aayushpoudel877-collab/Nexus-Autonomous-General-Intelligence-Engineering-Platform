@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-010",
+  "scenario": "10: verified regression - Arabic العربية للبحث",
+  "expected_content": "Arabic العربية للبحث :: vector-010",
+  "observed_content": "Arabic العربية للبحث :: vector-010",
+  "expected_status": "verified",
+  "expected_reason": null,
+  "max_bytes": 26214400
+}

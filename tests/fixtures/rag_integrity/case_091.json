@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-091",
+  "scenario": "91: not_checked regression - code: def retrieve(query): return query",
+  "expected_content": "code: def retrieve(query): return query :: vector-091",
+  "observed_content": "code: def retrieve(query): return query :: vector-091XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}

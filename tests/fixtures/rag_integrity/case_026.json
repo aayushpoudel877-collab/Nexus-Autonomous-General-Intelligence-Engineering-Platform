@@ -1,0 +1,9 @@
+{
+  "artifact_id": "fixture-026",
+  "scenario": "26: not_checked regression - emoji 🧠🔎",
+  "expected_content": "emoji 🧠🔎 :: vector-026",
+  "observed_content": "emoji 🧠🔎 :: vector-026XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "expected_status": "not_checked",
+  "expected_reason": "artifact_exceeds_size_limit",
+  "max_bytes": 8
+}
