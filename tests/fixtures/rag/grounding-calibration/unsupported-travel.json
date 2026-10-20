@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-travel",
+  "claim": "The corpus detects regressions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The train departs at noon"
+    }
+  ],
+  "expected_status": "unsupported"
+}
