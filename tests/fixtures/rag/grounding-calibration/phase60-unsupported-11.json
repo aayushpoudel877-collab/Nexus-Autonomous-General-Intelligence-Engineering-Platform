@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-11",
+  "claim": "Nexus records dataset lineage metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Volcanic ash can enrich nearby soil"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "governance",
+  "language": "en"
+}
