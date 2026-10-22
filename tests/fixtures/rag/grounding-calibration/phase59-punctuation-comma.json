@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-punctuation-comma",
+  "claim": "Nexus validates claims, citations, and evidence.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus validates claims citations and evidence"
+    }
+  ],
+  "expected_status": "grounded"
+}
