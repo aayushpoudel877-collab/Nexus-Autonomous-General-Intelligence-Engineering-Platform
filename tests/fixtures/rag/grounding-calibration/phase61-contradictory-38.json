@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-38",
+  "claim": "The ingestion pipeline validates uploaded files",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ingestion pipeline validates uploaded files not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "ingestion",
+  "language": "en"
+}
