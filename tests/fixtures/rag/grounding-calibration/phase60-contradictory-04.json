@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-04",
+  "claim": "Nexus checks evidence coverage for claims",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus checks evidence coverage for claims not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "grounding",
+  "language": "en"
+}
