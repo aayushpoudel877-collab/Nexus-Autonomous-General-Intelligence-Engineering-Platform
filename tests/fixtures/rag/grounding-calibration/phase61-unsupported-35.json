@@ -1,16 +1,16 @@
 {
   "case_id": "phase61-unsupported-35",
-  "claim": "The multilingual evaluator preserves Unicode text",
+  "claim": "The parser rejects malformed JSON fixtures",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "Glaciers move slowly across valleys"
+      "text": "Bamboo grows rapidly in warm climates"
     }
   ],
   "expected_status": "unsupported",
-  "category": "multilingual",
+  "category": "validation",
   "language": "en"
 }
