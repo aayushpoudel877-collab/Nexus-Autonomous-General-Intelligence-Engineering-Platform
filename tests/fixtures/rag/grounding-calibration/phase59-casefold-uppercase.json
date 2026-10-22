@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-casefold-uppercase",
+  "claim": "NEXUS SUPPORTS ENCRYPTED STORAGE",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "nexus supports encrypted storage"
+    }
+  ],
+  "expected_status": "grounded"
+}
