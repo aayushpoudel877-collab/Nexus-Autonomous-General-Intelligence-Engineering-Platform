@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-02",
+  "claim": "Nexus validates signed audit events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Coral reefs host diverse tropical fish"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "governance",
+  "language": "en"
+}
