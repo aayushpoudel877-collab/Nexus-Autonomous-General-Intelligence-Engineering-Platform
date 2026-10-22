@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-biology",
+  "claim": "The source contains audit events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Cells contain mitochondria"
+    }
+  ],
+  "expected_status": "unsupported"
+}
