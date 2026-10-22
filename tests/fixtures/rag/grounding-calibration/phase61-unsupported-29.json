@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-29",
+  "claim": "The corpus loader sorts fixture filenames",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The moon reflects sunlight toward Earth"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}
