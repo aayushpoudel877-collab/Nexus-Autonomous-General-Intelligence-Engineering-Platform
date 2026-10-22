@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-27",
+  "claim": "The worker renews its execution lease",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A violin produces sound through vibrating strings"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "execution",
+  "language": "en"
+}
