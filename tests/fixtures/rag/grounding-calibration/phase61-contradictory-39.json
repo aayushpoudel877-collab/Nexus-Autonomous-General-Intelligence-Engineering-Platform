@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-39",
+  "claim": "The audit journal records request identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The audit journal records request identifiers not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "audit",
+  "language": "en"
+}
