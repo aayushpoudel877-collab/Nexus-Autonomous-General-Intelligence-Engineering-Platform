@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-05",
+  "claim": "Nexus indexes source passages before search",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus indexes source passages before search not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "indexing",
+  "language": "en"
+}
