@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-tenant",
+  "claim": "Documents are scoped by tenant",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Documents are scoped by tenant"
+    }
+  ],
+  "expected_status": "grounded"
+}
