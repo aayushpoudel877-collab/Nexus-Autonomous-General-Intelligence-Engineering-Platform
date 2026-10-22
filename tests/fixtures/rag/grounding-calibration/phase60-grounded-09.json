@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-09",
+  "claim": "Nexus keeps audit events for review",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus keeps audit events for review"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "governance",
+  "language": "en"
+}
