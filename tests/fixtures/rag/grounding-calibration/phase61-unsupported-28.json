@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-28",
+  "claim": "The report groups results by language",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Coral reefs host diverse marine life"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}
