@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-34",
+  "claim": "The upload endpoint enforces file size limits",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Copper conducts electricity efficiently"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}
