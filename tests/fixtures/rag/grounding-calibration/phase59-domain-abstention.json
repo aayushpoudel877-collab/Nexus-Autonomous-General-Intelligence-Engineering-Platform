@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-abstention",
+  "claim": "The assistant abstains when evidence is insufficient",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The assistant abstains when evidence is insufficient"
+    }
+  ],
+  "expected_status": "grounded"
+}
