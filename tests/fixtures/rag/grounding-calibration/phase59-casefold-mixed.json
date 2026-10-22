@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-casefold-mixed",
+  "claim": "NeXuS supports Hybrid Retrieval",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "NEXUS SUPPORTS HYBRID RETRIEVAL"
+    }
+  ],
+  "expected_status": "grounded"
+}
