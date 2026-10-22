@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-48",
+  "claim": "The upload endpoint enforces file size limits",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The upload endpoint enforces file size limits not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "security",
+  "language": "en"
+}
