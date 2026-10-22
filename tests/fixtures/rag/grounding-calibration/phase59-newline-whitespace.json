@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-newline-whitespace",
+  "claim": "Nexus retrieves relevant evidence",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus retrieves\nrelevant evidence"
+    }
+  ],
+  "expected_status": "grounded"
+}
