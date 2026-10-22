@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-chunking",
+  "claim": "Chunking preserves configured overlap",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Chunking preserves configured overlap"
+    }
+  ],
+  "expected_status": "grounded"
+}
