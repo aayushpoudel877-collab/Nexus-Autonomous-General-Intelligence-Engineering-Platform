@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-49",
+  "claim": "The multilingual evaluator preserves Unicode text",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The multilingual evaluator preserves Unicode text not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "multilingual",
+  "language": "en"
+}
