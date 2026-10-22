@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-digits-preserved",
+  "claim": "The index stores 128 chunks",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The index stores 128 chunks"
+    }
+  ],
+  "expected_status": "grounded"
+}
