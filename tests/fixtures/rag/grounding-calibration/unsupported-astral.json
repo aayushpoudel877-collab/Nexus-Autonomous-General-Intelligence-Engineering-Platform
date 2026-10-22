@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-astral",
+  "claim": "Nexus checks document provenance",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Mars has two small moons"
+    }
+  ],
+  "expected_status": "unsupported"
+}

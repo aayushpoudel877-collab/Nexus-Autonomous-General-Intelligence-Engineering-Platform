@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-governance",
+  "claim": "Retention policies are documented",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Retention policies are documented"
+    }
+  ],
+  "expected_status": "grounded"
+}

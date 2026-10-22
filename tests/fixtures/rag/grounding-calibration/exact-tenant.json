@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-tenant",
+  "claim": "Nexus scopes documents by tenant",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus scopes documents by tenant"
+    }
+  ],
+  "expected_status": "grounded"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-geology",
+  "claim": "Nexus checks source offsets",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Basalt forms from cooled lava"
+    }
+  ],
+  "expected_status": "unsupported"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-weather",
+  "claim": "The retriever ranks documents",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Clouds bring afternoon rain"
+    }
+  ],
+  "expected_status": "unsupported"
+}

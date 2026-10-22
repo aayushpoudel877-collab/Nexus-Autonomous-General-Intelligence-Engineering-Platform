@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-penguins",
+  "claim": "Nexus supports encrypted storage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Penguins operate underwater elevators"
+    }
+  ],
+  "expected_status": "unsupported"
+}

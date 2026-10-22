@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-apostrophe",
+  "claim": "The system supports users’ documents",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The system supports users’ documents"
+    }
+  ],
+  "expected_status": "grounded"
+}

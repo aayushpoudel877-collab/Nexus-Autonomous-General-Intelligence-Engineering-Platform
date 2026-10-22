@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-arabic",
+  "claim": "نظام استرجاع موثوق",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "الطقس جميل اليوم"
+    }
+  ],
+  "expected_status": "unsupported"
+}

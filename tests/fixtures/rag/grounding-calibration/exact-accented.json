@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-accented",
+  "claim": "café naïve résumé",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "café naïve résumé"
+    }
+  ],
+  "expected_status": "grounded"
+}

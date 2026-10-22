@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-arabic",
+  "claim": "نظام استرجاع موثوق",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "نظام استرجاع موثوق"
+    }
+  ],
+  "expected_status": "grounded"
+}

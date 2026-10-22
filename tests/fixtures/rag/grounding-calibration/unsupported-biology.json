@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-biology",
+  "claim": "The retriever uses lexical overlap",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Cells contain mitochondria"
+    }
+  ],
+  "expected_status": "unsupported"
+}

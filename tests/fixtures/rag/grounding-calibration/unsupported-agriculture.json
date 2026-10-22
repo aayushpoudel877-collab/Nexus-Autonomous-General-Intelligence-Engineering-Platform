@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-agriculture",
+  "claim": "The document contains provenance data",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Rice is cultivated in flooded fields"
+    }
+  ],
+  "expected_status": "unsupported"
+}

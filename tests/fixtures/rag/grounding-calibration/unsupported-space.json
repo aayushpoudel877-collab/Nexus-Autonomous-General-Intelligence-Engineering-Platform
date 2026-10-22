@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-space",
+  "claim": "The index stores document chunks",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Saturn has prominent rings"
+    }
+  ],
+  "expected_status": "unsupported"
+}

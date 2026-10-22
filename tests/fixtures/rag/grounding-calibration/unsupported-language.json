@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-language",
+  "claim": "Nexus stores chunk metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "La biblioteca está cerca del parque"
+    }
+  ],
+  "expected_status": "unsupported"
+}

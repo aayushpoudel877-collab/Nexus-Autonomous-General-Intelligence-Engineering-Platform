@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-geometry",
+  "claim": "The system reports retrieval metrics",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A triangle has three sides"
+    }
+  ],
+  "expected_status": "unsupported"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-education",
+  "claim": "The API validates evidence references",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Students study mathematics"
+    }
+  ],
+  "expected_status": "unsupported"
+}

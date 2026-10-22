@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-audit",
+  "claim": "Nexus records audit events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus records audit events"
+    }
+  ],
+  "expected_status": "grounded"
+}

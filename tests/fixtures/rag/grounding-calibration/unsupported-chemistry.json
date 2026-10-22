@@ -1,0 +1,14 @@
+{
+  "case_id": "unsupported-chemistry",
+  "claim": "The verifier checks claim grounding",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Water contains hydrogen and oxygen"
+    }
+  ],
+  "expected_status": "unsupported"
+}

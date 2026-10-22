@@ -1,0 +1,14 @@
+{
+  "case_id": "exact-storage",
+  "claim": "Nexus supports encrypted storage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus supports encrypted storage"
+    }
+  ],
+  "expected_status": "grounded"
+}
