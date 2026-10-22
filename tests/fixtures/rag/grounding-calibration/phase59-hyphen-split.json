@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-hyphen-split",
+  "claim": "evidence-aware retrieval pipeline",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "evidence aware retrieval pipeline"
+    }
+  ],
+  "expected_status": "grounded"
+}
