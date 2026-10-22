@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-02",
+  "claim": "Nexus logs retrieval failures for review",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus logs retrieval failures for review not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "observability",
+  "language": "en"
+}
