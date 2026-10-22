@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-03",
+  "claim": "The ingestion pipeline validates uploaded files",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ingestion pipeline validates uploaded files"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ingestion",
+  "language": "en"
+}
