@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-33",
+  "claim": "The model registry tracks artifact versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Migratory birds travel between seasonal habitats"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "models",
+  "language": "en"
+}
