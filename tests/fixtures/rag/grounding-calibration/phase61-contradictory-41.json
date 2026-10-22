@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-41",
+  "claim": "The API rejects unknown citation identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The API rejects unknown citation identifiers not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "security",
+  "language": "en"
+}
