@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-12",
+  "claim": "The model registry tracks artifact versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The model registry tracks artifact versions"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "models",
+  "language": "en"
+}
