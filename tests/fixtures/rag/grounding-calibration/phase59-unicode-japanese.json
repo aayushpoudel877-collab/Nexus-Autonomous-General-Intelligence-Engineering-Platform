@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unicode-japanese",
+  "claim": "東京の検索システム",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "東京の検索システム"
+    }
+  ],
+  "expected_status": "grounded"
+}
