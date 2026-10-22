@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-07",
+  "claim": "Nexus blocks untrusted tool instructions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus blocks untrusted tool instructions not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "security",
+  "language": "en"
+}
