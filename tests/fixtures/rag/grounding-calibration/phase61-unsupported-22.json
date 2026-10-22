@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-22",
+  "claim": "The ranking service sorts candidate passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Penguins swim in cold ocean water"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "ranking",
+  "language": "en"
+}
