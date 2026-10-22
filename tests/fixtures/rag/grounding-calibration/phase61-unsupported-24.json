@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-24",
+  "claim": "The audit journal records request identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Satellites orbit distant planets"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "audit",
+  "language": "en"
+}
