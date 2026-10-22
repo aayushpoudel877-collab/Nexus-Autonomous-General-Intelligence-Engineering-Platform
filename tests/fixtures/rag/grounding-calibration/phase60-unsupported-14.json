@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-14",
+  "claim": "Nexus applies confidence thresholds to claims",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Migrating geese follow seasonal routes"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "grounding",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-09",
+  "claim": "Nexus tracks data quality checks over time",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus tracks data quality checks over time not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "governance",
+  "language": "en"
+}

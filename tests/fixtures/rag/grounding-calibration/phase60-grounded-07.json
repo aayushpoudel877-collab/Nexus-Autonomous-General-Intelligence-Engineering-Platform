@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-07",
+  "claim": "Nexus logs failed inference requests",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus logs failed inference requests"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "observability",
+  "language": "en"
+}

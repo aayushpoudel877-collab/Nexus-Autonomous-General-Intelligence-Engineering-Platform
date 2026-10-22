@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-15",
+  "claim": "Nexus reports unsupported answer claims",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Basalt forms when lava cools rapidly"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "grounding",
+  "language": "en"
+}

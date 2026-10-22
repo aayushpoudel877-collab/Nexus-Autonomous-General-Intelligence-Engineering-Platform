@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-09",
+  "claim": "Nexus compares baseline and candidate scores",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A dolphin communicates through clicks and whistles"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}

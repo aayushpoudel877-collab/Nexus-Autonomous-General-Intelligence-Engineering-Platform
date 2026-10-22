@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-10",
+  "claim": "नेक्सस प्रणालीले स्रोतका आधारमा उत्तर जाँच गर्छ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्सस प्रणालीले स्रोतका आधारमा उत्तर जाँच गर्छ"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "ne"
+}

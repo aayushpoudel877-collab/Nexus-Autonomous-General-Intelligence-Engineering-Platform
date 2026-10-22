@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-13",
+  "claim": "Nexus exports calibration reports as JSON",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The piano has pedals beneath its keyboard"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "tooling",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-07",
+  "claim": "Nexus emits structured request traces",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The northern lights illuminate polar skies"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "observability",
+  "language": "en"
+}

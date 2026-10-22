@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-04",
+  "claim": "Nexus stores vector embeddings",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The violin uses four strings to create music"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "indexing",
+  "language": "en"
+}

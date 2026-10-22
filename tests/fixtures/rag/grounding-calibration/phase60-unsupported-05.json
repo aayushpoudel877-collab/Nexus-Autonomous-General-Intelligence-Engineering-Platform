@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-05",
+  "claim": "Nexus measures candidate model latency",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Saturn has a system of icy rings"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}

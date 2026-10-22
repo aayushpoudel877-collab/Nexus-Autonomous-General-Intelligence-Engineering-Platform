@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-12",
+  "claim": "Nexus chunks long documents for indexing",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A maple tree changes color in autumn"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "indexing",
+  "language": "en"
+}

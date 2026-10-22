@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-02",
+  "claim": "Nexus records citations for generated answers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus records citations for generated answers"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "en"
+}

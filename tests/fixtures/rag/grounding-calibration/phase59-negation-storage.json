@@ -7,7 +7,7 @@
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "Nexus supports encryption"
+      "text": "Nexus does support encryption"
     }
   ],
   "expected_status": "contradictory"

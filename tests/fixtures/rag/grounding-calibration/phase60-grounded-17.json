@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-17",
+  "claim": "Nexus evalúa respuestas usando fuentes citadas",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus evalúa respuestas usando fuentes citadas"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "es"
+}

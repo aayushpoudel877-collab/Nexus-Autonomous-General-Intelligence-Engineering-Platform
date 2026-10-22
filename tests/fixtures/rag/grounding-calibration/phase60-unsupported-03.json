@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-03",
+  "claim": "Nexus ranks retrieved passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A glacier slowly carves a mountain valley"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "retrieval",
+  "language": "en"
+}

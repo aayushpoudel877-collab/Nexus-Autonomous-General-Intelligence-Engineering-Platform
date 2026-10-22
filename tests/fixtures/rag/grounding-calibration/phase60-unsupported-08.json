@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-08",
+  "claim": "Nexus schedules model retraining",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Ancient pottery fragments reveal local customs"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "lifecycle",
+  "language": "en"
+}

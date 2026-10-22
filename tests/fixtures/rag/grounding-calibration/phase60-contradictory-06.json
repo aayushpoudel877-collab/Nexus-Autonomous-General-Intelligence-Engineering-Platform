@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-06",
+  "claim": "Nexus records model versions for deployment",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus records model versions for deployment not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "lifecycle",
+  "language": "en"
+}

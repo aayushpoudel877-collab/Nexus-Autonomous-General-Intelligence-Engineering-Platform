@@ -14,6 +14,7 @@ from typing import Any
 from services.rag.grounding import ClaimEvidence, GroundingClaim, LexicalGroundingVerifier
 
 _ALLOWED_STATUSES = frozenset({"grounded", "unsupported", "contradictory", "inconclusive"})
+_GROUP_FIELDS = ("category", "language")
 
 
 def load_case_files(directory: str | Path) -> list[dict[str, Any]]:
@@ -52,6 +53,11 @@ def _validate_case(case: dict[str, Any]) -> None:
     for field in ("case_id", "claim"):
         if not isinstance(case[field], str) or not case[field].strip():
             raise ValueError(f"{field} must be a non-empty string")
+    for field in _GROUP_FIELDS:
+        if field in case and (
+            not isinstance(case[field], str) or not case[field].strip()
+        ):
+            raise ValueError(f"{field} must be a non-empty string when provided")
     if not isinstance(case["citations"], list) or not all(
         isinstance(value, str) for value in case["citations"]
     ):
@@ -71,9 +77,12 @@ def _validate_case(case: dict[str, Any]) -> None:
 
 
 def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
-    """Run cases and return deterministic counts, confusion matrix, and failures."""
+    """Run cases and return deterministic counts, confusion matrix, and group metrics."""
     verifier = LexicalGroundingVerifier()
     confusion: Counter[str] = Counter()
+    grouped: dict[str, Counter[str]] = {
+        field: Counter() for field in _GROUP_FIELDS
+    }
     failures: list[dict[str, str]] = []
     count = 0
     for case in cases:
@@ -87,6 +96,11 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         actual = report.assessments[0].status
         expected = case["expected_status"]
         confusion[f"{expected}->{actual}"] += 1
+        for field in _GROUP_FIELDS:
+            group = case.get(field, "unspecified")
+            grouped[field][f"{group}:case_count"] += 1
+            grouped[field][f"{group}:passed"] += actual == expected
+            grouped[field][f"{group}:failed"] += actual != expected
         count += 1
         if actual != expected:
             failures.append({
@@ -96,6 +110,19 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
                 "actual": actual,
             })
     correct = count - len(failures)
+    breakdown: dict[str, dict[str, dict[str, int | float]]] = {}
+    for field, counts in grouped.items():
+        breakdown[field] = {}
+        group_names = sorted({key.rsplit(":", 1)[0] for key in counts})
+        for name in group_names:
+            cases_in_group = counts[f"{name}:case_count"]
+            passed = counts[f"{name}:passed"]
+            breakdown[field][name] = {
+                "case_count": cases_in_group,
+                "passed": passed,
+                "failed": counts[f"{name}:failed"],
+                "accuracy": passed / cases_in_group if cases_in_group else 0.0,
+            }
     return {
         "schema_version": 1,
         "case_count": count,
@@ -103,6 +130,7 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "failed": len(failures),
         "accuracy": correct / count if count else 0.0,
         "confusion": dict(sorted(confusion.items())),
+        "breakdown": breakdown,
         "failures": failures,
         "interpretation": (
             "Fixture agreement measures regression consistency only; "

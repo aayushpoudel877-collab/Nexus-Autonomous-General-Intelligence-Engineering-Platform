@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-06",
+  "claim": "Nexus measures retrieval precision at rank one",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus measures retrieval precision at rank one"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}
