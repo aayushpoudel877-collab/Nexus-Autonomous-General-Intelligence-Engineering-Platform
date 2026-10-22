@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-negation-storage",
+  "claim": "Nexus does not support encryption",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus supports encryption"
+    }
+  ],
+  "expected_status": "contradictory"
+}
