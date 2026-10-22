@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-partial-retrieval",
+  "claim": "The retriever ranks relevant passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever ranks"
+    }
+  ],
+  "expected_status": "inconclusive"
+}
