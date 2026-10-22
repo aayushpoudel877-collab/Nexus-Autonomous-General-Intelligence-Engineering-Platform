@@ -1,16 +1,16 @@
 {
   "case_id": "phase61-unsupported-31",
-  "claim": "The verifier reports lexical token coverage",
+  "claim": "The multilingual evaluator preserves Unicode text",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "Farmers rotate crops to protect soil"
+      "text": "Deserts receive little annual rainfall"
     }
   ],
   "expected_status": "unsupported",
-  "category": "grounding",
+  "category": "multilingual",
   "language": "en"
 }
