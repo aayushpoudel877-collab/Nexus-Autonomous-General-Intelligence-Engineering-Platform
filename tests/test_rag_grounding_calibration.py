@@ -14,7 +14,7 @@ def test_grounding_calibration_corpus_matches_expected_labels():
     cases = load_case_files(FIXTURES)
     report = evaluate_cases(cases)
     assert report["case_count"] >= 40
-    assert report["failed"] == 0
+    assert report["failed"] == 0, report["failures"]
     assert report["accuracy"] == 1.0
     assert report["confusion"]
     assert report["interpretation"].startswith("Fixture agreement")
