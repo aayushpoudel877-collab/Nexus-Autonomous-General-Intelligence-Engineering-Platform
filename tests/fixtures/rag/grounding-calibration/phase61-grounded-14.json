@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-14",
+  "claim": "The multilingual evaluator preserves Unicode text",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The multilingual evaluator preserves Unicode text"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "en"
+}
