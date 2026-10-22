@@ -7,7 +7,7 @@
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The platform retains documents"
+      "text": "The platform does retain documents"
     }
   ],
   "expected_status": "contradictory"
