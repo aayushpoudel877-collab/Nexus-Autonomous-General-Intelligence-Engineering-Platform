@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-partial-citation",
+  "claim": "The verifier checks evidence identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The verifier checks"
+    }
+  ],
+  "expected_status": "inconclusive"
+}
