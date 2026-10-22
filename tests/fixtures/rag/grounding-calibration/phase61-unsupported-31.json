@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-31",
+  "claim": "The verifier reports lexical token coverage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Farmers rotate crops to protect soil"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "grounding",
+  "language": "en"
+}
