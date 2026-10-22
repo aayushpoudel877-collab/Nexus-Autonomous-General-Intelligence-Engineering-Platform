@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-35",
+  "claim": "The multilingual evaluator preserves Unicode text",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Glaciers move slowly across valleys"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "multilingual",
+  "language": "en"
+}
