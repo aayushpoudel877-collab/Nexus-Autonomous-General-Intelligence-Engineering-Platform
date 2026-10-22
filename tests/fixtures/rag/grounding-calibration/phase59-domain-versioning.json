@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-versioning",
+  "claim": "Evaluation datasets use stable versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Evaluation datasets use stable versions"
+    }
+  ],
+  "expected_status": "grounded"
+}
