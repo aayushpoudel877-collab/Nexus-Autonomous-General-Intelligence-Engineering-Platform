@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-cooking",
+  "claim": "The retriever ranks documents",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bake the bread until golden"
+    }
+  ],
+  "expected_status": "unsupported"
+}
