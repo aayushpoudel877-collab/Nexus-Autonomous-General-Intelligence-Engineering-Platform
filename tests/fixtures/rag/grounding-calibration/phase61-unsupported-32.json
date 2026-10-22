@@ -1,16 +1,16 @@
 {
   "case_id": "phase61-unsupported-32",
-  "claim": "The workflow journal stores ordered events",
+  "claim": "The benchmark runner emits a JSON summary",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "Water freezes near zero degrees Celsius"
+      "text": "A compass needle aligns with a magnetic field"
     }
   ],
   "expected_status": "unsupported",
-  "category": "workflow",
+  "category": "benchmarks",
   "language": "en"
 }
