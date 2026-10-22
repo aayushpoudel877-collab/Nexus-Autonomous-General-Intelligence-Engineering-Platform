@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-26",
+  "claim": "The API rejects unknown citation identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Mountains form through tectonic activity"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-23",
+  "claim": "The ingestion pipeline validates uploaded files",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Orchards produce apples in autumn"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "ingestion",
+  "language": "en"
+}

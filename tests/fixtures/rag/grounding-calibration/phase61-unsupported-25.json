@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-25",
+  "claim": "The cache reuses computed embeddings",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bread dough rises when yeast ferments sugar"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "caching",
+  "language": "en"
+}

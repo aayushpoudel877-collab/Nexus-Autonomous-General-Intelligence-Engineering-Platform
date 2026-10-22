@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-18",
+  "claim": "The parser rejects malformed JSON fixtures",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The parser rejects malformed JSON fixtures"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "validation",
+  "language": "en"
+}

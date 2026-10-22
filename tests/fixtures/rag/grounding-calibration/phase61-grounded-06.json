@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-06",
+  "claim": "The API rejects unknown citation identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The API rejects unknown citation identifiers"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "security",
+  "language": "en"
+}

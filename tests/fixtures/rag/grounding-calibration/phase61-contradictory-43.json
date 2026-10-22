@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-43",
+  "claim": "The report groups results by language",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The report groups results by language not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "evaluation",
+  "language": "en"
+}

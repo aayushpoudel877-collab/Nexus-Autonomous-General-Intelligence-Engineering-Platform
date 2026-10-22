@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-50",
+  "claim": "The benchmark runner emits a JSON summary",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The benchmark runner emits a JSON summary not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "benchmarks",
+  "language": "en"
+}

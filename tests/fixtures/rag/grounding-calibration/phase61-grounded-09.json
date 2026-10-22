@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-09",
+  "claim": "The corpus loader sorts fixture filenames",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The corpus loader sorts fixture filenames"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

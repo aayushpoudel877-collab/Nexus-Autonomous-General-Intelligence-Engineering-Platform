@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-08",
+  "claim": "The report groups results by language",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The report groups results by language"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

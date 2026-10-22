@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-01",
+  "claim": "The retrieval index stores document metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retrieval index stores document metadata"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-35",
+  "claim": "The parser rejects malformed JSON fixtures",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bamboo grows rapidly in warm climates"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "validation",
+  "language": "en"
+}

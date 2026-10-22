@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-21",
+  "claim": "The retrieval index stores document metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Volcanoes release molten rock during eruptions"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "retrieval",
+  "language": "en"
+}

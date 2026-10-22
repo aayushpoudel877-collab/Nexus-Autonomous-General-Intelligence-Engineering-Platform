@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-33",
+  "claim": "The retrieval adapter returns ranked evidence",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Astronomers observe distant galaxies"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "retrieval",
+  "language": "en"
+}

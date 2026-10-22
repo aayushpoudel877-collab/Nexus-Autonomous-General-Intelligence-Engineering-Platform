@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-32",
+  "claim": "The benchmark runner emits a JSON summary",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A compass needle aligns with a magnetic field"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "benchmarks",
+  "language": "en"
+}

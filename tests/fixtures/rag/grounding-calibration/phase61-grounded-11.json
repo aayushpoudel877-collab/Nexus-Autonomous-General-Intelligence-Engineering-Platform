@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-11",
+  "claim": "The workflow journal stores ordered events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The workflow journal stores ordered events"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "workflow",
+  "language": "en"
+}

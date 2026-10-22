@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-34",
+  "claim": "The governance policy defines review requirements",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Limestone forms from accumulated marine material"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "governance",
+  "language": "en"
+}

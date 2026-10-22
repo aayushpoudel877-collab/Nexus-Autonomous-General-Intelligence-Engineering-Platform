@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-47",
+  "claim": "The model registry tracks artifact versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The model registry tracks artifact versions not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "models",
+  "language": "en"
+}

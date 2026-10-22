@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-10",
+  "claim": "The verifier reports lexical token coverage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The verifier reports lexical token coverage"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "en"
+}

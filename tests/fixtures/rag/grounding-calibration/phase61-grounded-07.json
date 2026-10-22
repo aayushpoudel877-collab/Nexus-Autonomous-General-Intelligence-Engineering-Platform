@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-07",
+  "claim": "The worker renews its execution lease",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The worker renews its execution lease"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "execution",
+  "language": "en"
+}

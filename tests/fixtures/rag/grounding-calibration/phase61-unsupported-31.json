@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-31",
+  "claim": "The multilingual evaluator preserves Unicode text",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Deserts receive little annual rainfall"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "multilingual",
+  "language": "en"
+}

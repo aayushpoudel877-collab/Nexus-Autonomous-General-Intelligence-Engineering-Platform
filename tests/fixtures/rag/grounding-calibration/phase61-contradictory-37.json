@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-37",
+  "claim": "The ranking service sorts candidate passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ranking service sorts candidate passages not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "ranking",
+  "language": "en"
+}

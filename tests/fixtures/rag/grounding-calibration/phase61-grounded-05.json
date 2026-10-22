@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-05",
+  "claim": "The cache reuses computed embeddings",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The cache reuses computed embeddings"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "caching",
+  "language": "en"
+}

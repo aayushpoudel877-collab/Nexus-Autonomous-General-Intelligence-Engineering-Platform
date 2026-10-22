@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-16",
+  "claim": "The retrieval adapter returns ranked evidence",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retrieval adapter returns ranked evidence"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "en"
+}

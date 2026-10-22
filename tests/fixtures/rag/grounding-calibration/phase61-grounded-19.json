@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-19",
+  "claim": "The report includes failed case identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The report includes failed case identifiers"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

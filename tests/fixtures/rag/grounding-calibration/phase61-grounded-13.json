@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-13",
+  "claim": "The upload endpoint enforces file size limits",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The upload endpoint enforces file size limits"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "security",
+  "language": "en"
+}

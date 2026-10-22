@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-45",
+  "claim": "The verifier reports lexical token coverage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The verifier reports lexical token coverage not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "grounding",
+  "language": "en"
+}

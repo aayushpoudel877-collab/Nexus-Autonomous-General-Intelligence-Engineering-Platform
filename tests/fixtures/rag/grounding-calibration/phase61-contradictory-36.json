@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-contradictory-36",
+  "claim": "The retrieval index stores document metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retrieval index stores document metadata not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "retrieval",
+  "language": "en"
+}
