@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-19",
+  "claim": "Nexus indexa documentos para la búsqueda",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus indexa documentos para la búsqueda"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "es"
+}
