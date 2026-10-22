@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-15",
+  "claim": "The benchmark runner emits a JSON summary",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The benchmark runner emits a JSON summary"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "benchmarks",
+  "language": "en"
+}
