@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-02",
+  "claim": "The ranking service sorts candidate passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ranking service sorts candidate passages"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ranking",
+  "language": "en"
+}
