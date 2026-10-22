@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-17",
+  "claim": "The governance policy defines review requirements",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The governance policy defines review requirements"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "governance",
+  "language": "en"
+}
