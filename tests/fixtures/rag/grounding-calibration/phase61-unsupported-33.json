@@ -1,16 +1,16 @@
 {
   "case_id": "phase61-unsupported-33",
-  "claim": "The model registry tracks artifact versions",
+  "claim": "The retrieval adapter returns ranked evidence",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "Migratory birds travel between seasonal habitats"
+      "text": "Astronomers observe distant galaxies"
     }
   ],
   "expected_status": "unsupported",
-  "category": "models",
+  "category": "retrieval",
   "language": "en"
 }
