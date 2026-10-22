@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-negation-security",
+  "claim": "The system is not secure",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The system is secure"
+    }
+  ],
+  "expected_status": "contradictory"
+}

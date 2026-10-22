@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-travel",
+  "claim": "The index stores document chunks",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The train departs at noon"
+    }
+  ],
+  "expected_status": "unsupported"
+}

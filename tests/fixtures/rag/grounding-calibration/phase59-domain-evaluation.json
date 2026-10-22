@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-evaluation",
+  "claim": "The evaluator reports regression metrics",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The evaluator reports regression metrics"
+    }
+  ],
+  "expected_status": "grounded"
+}

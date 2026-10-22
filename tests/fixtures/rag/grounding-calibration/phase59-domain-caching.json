@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-domain-caching",
+  "claim": "The embedding cache uses stable keys",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The embedding cache uses stable keys"
+    }
+  ],
+  "expected_status": "grounded"
+}

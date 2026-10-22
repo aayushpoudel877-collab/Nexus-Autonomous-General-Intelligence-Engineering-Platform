@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-11",
+  "claim": "Nexus audits access to protected datasets",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus audits access to protected datasets not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "governance",
+  "language": "en"
+}

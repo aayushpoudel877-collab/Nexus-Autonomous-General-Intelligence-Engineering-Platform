@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-16",
+  "claim": "ネクサスは評価結果を保存する",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "ネクサスは評価結果を保存する"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "ja"
+}

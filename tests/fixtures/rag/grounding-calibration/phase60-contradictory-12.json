@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-contradictory-12",
+  "claim": "Nexus monitors drift in model predictions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus monitors drift in model predictions not"
+    }
+  ],
+  "expected_status": "contradictory",
+  "category": "observability",
+  "language": "en"
+}

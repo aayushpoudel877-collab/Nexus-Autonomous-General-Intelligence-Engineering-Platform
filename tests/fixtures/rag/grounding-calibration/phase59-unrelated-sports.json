@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-sports",
+  "claim": "The API validates evidence IDs",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The goalkeeper saved a penalty"
+    }
+  ],
+  "expected_status": "unsupported"
+}

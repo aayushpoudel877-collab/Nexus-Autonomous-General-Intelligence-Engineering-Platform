@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-13",
+  "claim": "नेक्ससले अनुरोधका घटनाहरू अभिलेख गर्छ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्ससले अनुरोधका घटनाहरू अभिलेख गर्छ"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "observability",
+  "language": "ne"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-punctuation-semicolon",
+  "claim": "The retriever returns ranked passages; the evaluator records metrics.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever returns ranked passages the evaluator records metrics"
+    }
+  ],
+  "expected_status": "grounded"
+}

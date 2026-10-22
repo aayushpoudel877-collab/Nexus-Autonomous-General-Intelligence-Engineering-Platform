@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-weather",
+  "claim": "Nexus validates citations",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Rain clouds gather above the valley"
+    }
+  ],
+  "expected_status": "unsupported"
+}

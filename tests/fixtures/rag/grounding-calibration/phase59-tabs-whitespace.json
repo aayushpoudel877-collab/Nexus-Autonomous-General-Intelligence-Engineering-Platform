@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-tabs-whitespace",
+  "claim": "Nexus validates citation identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus\tvalidates citation identifiers"
+    }
+  ],
+  "expected_status": "grounded"
+}

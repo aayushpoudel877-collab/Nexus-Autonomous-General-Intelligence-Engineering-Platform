@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-12",
+  "claim": "नेक्ससले मूल्याङ्कन नतिजा सुरक्षित राख्छ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्ससले मूल्याङ्कन नतिजा सुरक्षित राख्छ"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "ne"
+}

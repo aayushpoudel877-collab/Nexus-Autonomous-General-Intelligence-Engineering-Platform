@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-18",
+  "claim": "Nexus registra resultados de evaluación",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus registra resultados de evaluación"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "es"
+}

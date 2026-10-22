@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unicode-nepali-case",
+  "claim": "नेक्सस सुरक्षित भण्डारण समर्थन गर्छ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्सस सुरक्षित भण्डारण समर्थन गर्छ"
+    }
+  ],
+  "expected_status": "grounded"
+}

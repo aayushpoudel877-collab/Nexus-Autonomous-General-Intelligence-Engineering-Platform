@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-geometry",
+  "claim": "The service monitors retrieval quality",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A triangle has three sides"
+    }
+  ],
+  "expected_status": "unsupported"
+}

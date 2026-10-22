@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-03",
+  "claim": "Nexus checks source coverage for each claim",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus checks source coverage for each claim"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "en"
+}

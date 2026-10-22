@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-partial-data-version",
+  "claim": "Evaluation datasets use stable versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Evaluation datasets versions"
+    }
+  ],
+  "expected_status": "inconclusive"
+}

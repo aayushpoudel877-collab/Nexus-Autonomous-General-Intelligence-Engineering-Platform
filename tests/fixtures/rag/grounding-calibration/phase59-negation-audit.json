@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-negation-audit",
+  "claim": "The service never records audit events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The service records audit events"
+    }
+  ],
+  "expected_status": "contradictory"
+}

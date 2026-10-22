@@ -14,10 +14,12 @@ def test_grounding_calibration_corpus_matches_expected_labels():
     cases = load_case_files(FIXTURES)
     report = evaluate_cases(cases)
     assert report["case_count"] >= 40
-    assert report["failed"] == 0
+    assert report["failed"] == 0, report["failures"]
     assert report["accuracy"] == 1.0
     assert report["confusion"]
     assert report["interpretation"].startswith("Fixture agreement")
+    assert report["breakdown"]["category"]
+    assert report["breakdown"]["language"]
 
 
 def test_corpus_case_ids_are_unique():
@@ -60,10 +62,14 @@ def test_report_marks_a_regression_as_failure():
         "citations": ["E1"],
         "evidence": [{"evidence_id": "E1", "text": "Penguins swim in the ocean"}],
         "expected_status": "grounded",
+        "category": "storage",
+        "language": "en",
     }
     report = evaluate_cases([case])
     assert report["failed"] == 1
     assert report["failures"][0]["case_id"] == "known-mismatch"
+    assert report["breakdown"]["category"]["storage"]["failed"] == 1
+    assert report["breakdown"]["language"]["en"]["accuracy"] == 0.0
 
 
 def test_unicode_fixtures_round_trip_without_ascii_escaping():
@@ -71,3 +77,44 @@ def test_unicode_fixtures_round_trip_without_ascii_escaping():
     serialized = json.dumps(cases, ensure_ascii=False)
     assert "नेक्सस" in serialized
     assert "東京" in serialized
+
+
+def test_category_and_language_breakdowns_are_deterministic():
+    cases = [
+        {
+            "case_id": "group-a",
+            "claim": "Nexus stores encrypted records",
+            "citations": ["E1"],
+            "evidence": [{"evidence_id": "E1", "text": "Nexus stores encrypted records"}],
+            "expected_status": "grounded",
+            "category": "security",
+            "language": "en",
+        },
+        {
+            "case_id": "group-b",
+            "claim": "Nexus stores encrypted records",
+            "citations": ["E1"],
+            "evidence": [{"evidence_id": "E1", "text": "Penguins swim in oceans"}],
+            "expected_status": "unsupported",
+            "category": "security",
+            "language": "en",
+        },
+    ]
+    report = evaluate_cases(cases)
+    assert report["breakdown"]["category"]["security"] == {
+        "case_count": 2, "passed": 2, "failed": 0, "accuracy": 1.0
+    }
+    assert report["breakdown"]["language"]["en"]["case_count"] == 2
+
+
+def test_invalid_optional_group_metadata_is_rejected():
+    case = {
+        "case_id": "bad-category",
+        "claim": "Nexus stores encrypted records",
+        "citations": ["E1"],
+        "evidence": [{"evidence_id": "E1", "text": "Nexus stores encrypted records"}],
+        "expected_status": "grounded",
+        "category": " ",
+    }
+    with pytest.raises(ValueError, match="category must be a non-empty string"):
+        evaluate_cases([case])

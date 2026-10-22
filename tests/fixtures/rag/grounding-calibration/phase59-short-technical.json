@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-short-technical",
+  "claim": "RAG checks citations",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "RAG checks citations"
+    }
+  ],
+  "expected_status": "grounded"
+}

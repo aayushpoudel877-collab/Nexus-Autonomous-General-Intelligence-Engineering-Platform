@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-negation-retention",
+  "claim": "The platform does not retain documents",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The platform does retain documents"
+    }
+  ],
+  "expected_status": "contradictory"
+}

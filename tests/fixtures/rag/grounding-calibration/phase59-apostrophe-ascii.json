@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-apostrophe-ascii",
+  "claim": "The system checks users' documents",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The system checks users documents"
+    }
+  ],
+  "expected_status": "grounded"
+}

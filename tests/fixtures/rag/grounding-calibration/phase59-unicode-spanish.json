@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unicode-spanish",
+  "claim": "La biblioteca digital indexa documentos",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "La biblioteca digital indexa documentos"
+    }
+  ],
+  "expected_status": "grounded"
+}

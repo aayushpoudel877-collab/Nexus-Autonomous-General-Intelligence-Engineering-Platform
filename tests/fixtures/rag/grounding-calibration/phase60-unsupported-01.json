@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-01",
+  "claim": "Nexus rotates application credentials",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A comet leaves a bright trail near the sun"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}

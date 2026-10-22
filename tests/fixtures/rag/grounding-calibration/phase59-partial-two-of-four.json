@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-partial-two-of-four",
+  "claim": "Nexus supports encrypted storage",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus supports"
+    }
+  ],
+  "expected_status": "inconclusive"
+}

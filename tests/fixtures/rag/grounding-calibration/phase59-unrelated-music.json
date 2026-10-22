@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-music",
+  "claim": "The evaluator records metrics",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A violin played a melody"
+    }
+  ],
+  "expected_status": "unsupported"
+}

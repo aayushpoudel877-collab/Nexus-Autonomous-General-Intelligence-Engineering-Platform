@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-punctuation-parentheses",
+  "claim": "Nexus (offline mode) evaluates retrieval quality.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus offline mode evaluates retrieval quality"
+    }
+  ],
+  "expected_status": "grounded"
+}

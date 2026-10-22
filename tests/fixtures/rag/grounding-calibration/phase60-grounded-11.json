@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-11",
+  "claim": "नेक्ससले कागजात खोजीका लागि सूचकाङ्क बनाउँछ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्ससले कागजात खोजीका लागि सूचकाङ्क बनाउँछ"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "ne"
+}

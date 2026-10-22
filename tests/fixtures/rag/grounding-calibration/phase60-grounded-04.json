@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-grounded-04",
+  "claim": "Nexus stores embeddings for semantic search",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus stores embeddings for semantic search"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "indexing",
+  "language": "en"
+}

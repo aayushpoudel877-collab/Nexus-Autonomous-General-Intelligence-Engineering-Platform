@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-stopword-heavy",
+  "claim": "The platform supports the encrypted storage service",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "platform supports encrypted storage service"
+    }
+  ],
+  "expected_status": "grounded"
+}

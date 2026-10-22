@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-negation-retrieval",
+  "claim": "The retriever cannot return citations",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever can return citations"
+    }
+  ],
+  "expected_status": "contradictory"
+}

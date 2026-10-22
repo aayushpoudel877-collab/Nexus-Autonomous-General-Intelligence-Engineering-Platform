@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unicode-cyrillic",
+  "claim": "поиск документов",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "поиск документов"
+    }
+  ],
+  "expected_status": "grounded"
+}

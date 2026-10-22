@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-06",
+  "claim": "Nexus rejects unknown citation identifiers",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A cactus stores moisture during dry seasons"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}

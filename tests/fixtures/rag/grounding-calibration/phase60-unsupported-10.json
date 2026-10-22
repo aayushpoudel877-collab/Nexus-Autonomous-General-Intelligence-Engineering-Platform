@@ -1,0 +1,16 @@
+{
+  "case_id": "phase60-unsupported-10",
+  "claim": "Nexus filters prompt injection attempts",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The moon reflects sunlight toward Earth"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}
