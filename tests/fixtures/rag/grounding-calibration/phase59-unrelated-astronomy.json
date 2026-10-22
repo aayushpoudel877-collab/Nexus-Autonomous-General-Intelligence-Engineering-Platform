@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-astronomy",
+  "claim": "The system checks source offsets",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Jupiter orbits the Sun"
+    }
+  ],
+  "expected_status": "unsupported"
+}
