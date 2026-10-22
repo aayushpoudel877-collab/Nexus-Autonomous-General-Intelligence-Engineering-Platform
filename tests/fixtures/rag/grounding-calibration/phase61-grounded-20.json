@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-grounded-20",
+  "claim": "The test suite checks deterministic output",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The test suite checks deterministic output"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "testing",
+  "language": "en"
+}
