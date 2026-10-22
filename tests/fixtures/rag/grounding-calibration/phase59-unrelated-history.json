@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-history",
+  "claim": "The corpus detects regressions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The treaty was signed centuries ago"
+    }
+  ],
+  "expected_status": "unsupported"
+}
