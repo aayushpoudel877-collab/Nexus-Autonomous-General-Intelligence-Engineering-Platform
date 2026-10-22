@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unrelated-agriculture",
+  "claim": "The verifier checks claim grounding",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Rice grows in flooded fields"
+    }
+  ],
+  "expected_status": "unsupported"
+}
