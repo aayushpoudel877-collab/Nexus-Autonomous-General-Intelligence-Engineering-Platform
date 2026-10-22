@@ -1,0 +1,14 @@
+{
+  "case_id": "phase59-unicode-german",
+  "claim": "Das System prüft gültige Quellen",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Das System prüft gültige Quellen"
+    }
+  ],
+  "expected_status": "grounded"
+}
