@@ -1,0 +1,16 @@
+{
+  "case_id": "phase61-unsupported-32",
+  "claim": "The workflow journal stores ordered events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Water freezes near zero degrees Celsius"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "workflow",
+  "language": "en"
+}
