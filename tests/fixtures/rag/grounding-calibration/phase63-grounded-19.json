@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-19",
+  "claim": "서비스는 인용 식별자를 검증한다.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "서비스는 인용 식별자를 검증한다."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ko"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-report-accuracy-37",
+  "claim": "The evaluator calculates accuracy from passing cases.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The evaluator calculates accuracy from passing cases."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

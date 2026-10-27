@@ -1,0 +1,14 @@
+{
+  "case_id": "phase63-boundary-empty-citations-26",
+  "claim": "The answer includes a source reference.",
+  "citations": [],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Penguins migrate across cold oceans"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "citation",
+  "language": "en"
+}

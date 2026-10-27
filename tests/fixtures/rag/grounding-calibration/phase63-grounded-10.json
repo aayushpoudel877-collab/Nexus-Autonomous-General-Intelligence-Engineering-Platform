@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-10",
+  "claim": "The model registry stores version 2.1.0 metadata.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The model registry stores version 2.1.0 metadata."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "models",
+  "language": "en"
+}

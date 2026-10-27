@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-low-overlap-docs-50",
+  "claim": "The documentation describes calibration limits.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The telescope captures distant galaxies."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "documentation",
+  "language": "en"
+}

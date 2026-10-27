@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-09",
+  "claim": "The benchmark emits a run_id for each evaluation.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The benchmark emits a run_id for each evaluation."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "benchmarks",
+  "language": "en"
+}

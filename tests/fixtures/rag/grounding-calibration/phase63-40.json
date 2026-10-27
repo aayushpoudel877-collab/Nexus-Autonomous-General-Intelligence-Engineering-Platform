@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-category-metadata-40",
+  "claim": "The fixture declares a category for grouped reporting.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The fixture declares a category for grouped reporting."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "reporting",
+  "language": "en"
+}

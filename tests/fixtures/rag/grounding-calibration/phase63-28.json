@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-unicode-es-28",
+  "claim": "El sistema registra los resultados de evaluación.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "El sistema registra los resultados de evaluación."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "es"
+}

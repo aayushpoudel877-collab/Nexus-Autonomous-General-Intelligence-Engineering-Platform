@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-11",
+  "claim": "The evaluator reports an accuracy of 0.95.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The evaluator reports an accuracy of 0.95."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

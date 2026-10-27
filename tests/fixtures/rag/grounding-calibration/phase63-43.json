@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-model-version-43",
+  "claim": "The registry records model version metadata.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The registry records model version metadata."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "models",
+  "language": "en"
+}

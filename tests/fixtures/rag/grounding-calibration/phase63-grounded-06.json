@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-06",
+  "claim": "The verifier checks citations; the report records outcomes.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The verifier checks citations; the report records outcomes."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "en"
+}

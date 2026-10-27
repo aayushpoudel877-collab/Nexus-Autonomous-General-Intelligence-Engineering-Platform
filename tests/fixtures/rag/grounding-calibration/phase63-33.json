@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-digits-33",
+  "claim": "The worker retries a failed task 3 times.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The worker retries a failed task 3 times."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "execution",
+  "language": "en"
+}

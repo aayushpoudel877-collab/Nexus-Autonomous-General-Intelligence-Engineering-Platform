@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-low-overlap-security-49",
+  "claim": "The gateway rejects unknown credentials.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Glaciers shape valleys over thousands of years."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-low-overlap-api-46",
+  "claim": "The API validates citation identifiers.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ocean currents transport warm water."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "api",
+  "language": "en"
+}

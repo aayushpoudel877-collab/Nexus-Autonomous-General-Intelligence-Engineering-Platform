@@ -19,3 +19,7 @@ overlap, claims without citations, exact-match Unicode text, and low-overlap
 evidence. Use `tests/test_rag_grounding_calibration_phase62.py` to validate the
 expected outcome distribution. Exact-match Unicode cases check tokenizer
 consistency only; they do not demonstrate semantic understanding of a language.
+
+## Phase 63 additions
+
+The `phase63-*.json` fixtures add 50 regression cases for exact lexical matches, Unicode text, punctuation and numeric tokens, metadata grouping, citation-free claims, and low-overlap evidence. Validate their label distribution and deterministic report breakdowns with `tests/test_rag_grounding_calibration_phase63.py`. These remain lexical regression fixtures, not a semantic-entailment benchmark.

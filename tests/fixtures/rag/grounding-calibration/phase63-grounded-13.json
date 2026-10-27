@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-13",
+  "claim": "検索サービスは文書の引用を検証する。",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "検索サービスは文書の引用を検証する。"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ja"
+}

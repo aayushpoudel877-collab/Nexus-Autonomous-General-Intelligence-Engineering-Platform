@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-language-metadata-39",
+  "claim": "The fixture declares language metadata explicitly.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The fixture declares language metadata explicitly."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-quotes-35",
+  "claim": "The report labels the status as \"inconclusive\".",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The report labels the status as \"inconclusive\"."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "reporting",
+  "language": "en"
+}

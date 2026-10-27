@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-confusion-matrix-38",
+  "claim": "The confusion matrix counts expected and actual status pairs.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The confusion matrix counts expected and actual status pairs."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}

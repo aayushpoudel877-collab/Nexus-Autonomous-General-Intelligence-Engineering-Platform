@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-04",
+  "claim": "The system records a user's selected language.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The system records a user's selected language."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "audit",
+  "language": "en"
+}

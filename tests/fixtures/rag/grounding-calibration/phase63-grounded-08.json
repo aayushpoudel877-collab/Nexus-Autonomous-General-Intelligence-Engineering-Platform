@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-08",
+  "claim": "The ingestion service accepts PDF/TXT documents.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ingestion service accepts PDF/TXT documents."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ingestion",
+  "language": "en"
+}

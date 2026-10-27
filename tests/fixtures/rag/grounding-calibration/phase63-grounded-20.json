@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-20",
+  "claim": "服务会验证引用标识符。",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "服务会验证引用标识符。"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "zh"
+}
