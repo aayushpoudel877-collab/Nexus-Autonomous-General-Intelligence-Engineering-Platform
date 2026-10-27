@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-47",
+  "claim": "The model registry tracks versions",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The moon reflects sunlight toward Earth"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "models",
+  "language": "en"
+}
