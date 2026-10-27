@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-03",
+  "claim": "The re-ranking worker sorts candidate passages.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The re-ranking worker sorts candidate passages."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ranking",
+  "language": "en"
+}
