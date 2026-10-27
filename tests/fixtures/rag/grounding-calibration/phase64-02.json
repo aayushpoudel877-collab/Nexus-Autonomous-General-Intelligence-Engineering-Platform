@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-02",
+  "claim": "The retriever records the selected document identifiers.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever records the selected document identifiers."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "en"
+}
