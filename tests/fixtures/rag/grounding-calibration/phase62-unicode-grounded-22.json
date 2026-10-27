@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-22",
+  "claim": "東京の索引は文書を保存する",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "東京の索引は文書を保存する"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ja"
+}
