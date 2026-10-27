@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-34",
+  "claim": "Nexus kiểm tra mã trích dẫn",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus kiểm tra mã trích dẫn"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "vi"
+}

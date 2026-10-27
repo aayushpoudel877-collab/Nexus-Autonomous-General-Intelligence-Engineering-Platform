@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-30",
+  "claim": "Sistem menyimpan metadata dokumen",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Sistem menyimpan metadata dokumen"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "id"
+}

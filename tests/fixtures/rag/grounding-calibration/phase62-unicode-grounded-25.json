@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-25",
+  "claim": "El sistema valida las citas",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "El sistema valida las citas"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "es"
+}

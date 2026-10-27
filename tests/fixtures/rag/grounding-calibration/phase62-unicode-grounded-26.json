@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-26",
+  "claim": "Le système classe les passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Le système classe les passages"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "fr"
+}

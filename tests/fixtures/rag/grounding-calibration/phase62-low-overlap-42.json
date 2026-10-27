@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-42",
+  "claim": "The worker renews execution leases",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Coral reefs support marine ecosystems"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "execution",
+  "language": "en"
+}

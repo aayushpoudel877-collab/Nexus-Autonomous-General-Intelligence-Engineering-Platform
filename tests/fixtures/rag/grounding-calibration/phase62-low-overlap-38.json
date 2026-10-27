@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-38",
+  "claim": "The ingestion pipeline validates uploads",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Orchards produce fruit during autumn"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "ingestion",
+  "language": "en"
+}

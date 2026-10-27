@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-49",
+  "claim": "The multilingual evaluator preserves Unicode",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bamboo grows quickly in warm climates"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "multilingual",
+  "language": "en"
+}

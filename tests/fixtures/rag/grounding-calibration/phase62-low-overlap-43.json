@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-43",
+  "claim": "The report groups results by language",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Copper conducts electricity efficiently"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}

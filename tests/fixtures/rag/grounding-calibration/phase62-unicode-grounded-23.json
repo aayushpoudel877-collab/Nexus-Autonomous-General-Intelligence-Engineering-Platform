@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-23",
+  "claim": "يفهرس النظام المستندات الرقمية",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "يفهرس النظام المستندات الرقمية"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ar"
+}

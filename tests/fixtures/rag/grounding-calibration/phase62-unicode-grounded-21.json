@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-21",
+  "claim": "नेक्ससले प्रमाणहरू क्रमबद्ध गर्छ",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्ससले प्रमाणहरू क्रमबद्ध गर्छ"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ne"
+}

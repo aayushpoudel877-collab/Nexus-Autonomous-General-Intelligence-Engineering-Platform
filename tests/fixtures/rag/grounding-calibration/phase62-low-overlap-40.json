@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-40",
+  "claim": "The cache reuses embeddings",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bakers knead dough before baking"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "caching",
+  "language": "en"
+}

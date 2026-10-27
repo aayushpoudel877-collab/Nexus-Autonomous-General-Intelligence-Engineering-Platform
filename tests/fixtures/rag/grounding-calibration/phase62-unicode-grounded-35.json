@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-35",
+  "claim": "Nexus valida los identificadores de cita",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus valida los identificadores de cita"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "es"
+}

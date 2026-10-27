@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-27",
+  "claim": "Das System prüft Quellenangaben",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Das System prüft Quellenangaben"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "de"
+}

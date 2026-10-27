@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-31",
+  "claim": "ระบบตรวจสอบเอกสารอ้างอิง",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "ระบบตรวจสอบเอกสารอ้างอิง"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "th"
+}

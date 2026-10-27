@@ -11,3 +11,11 @@ Required fields: `case_id`, `claim`, `citations`, `evidence`, and
 `text`. Use exact lexical matches for supported cases and disjoint vocabulary
 for unsupported cases unless the fixture intentionally tests a more specific
 heuristic.
+
+## Phase 62 additions
+
+The `phase62-*.json` fixtures add 50 cases covering intermediate lexical
+overlap, claims without citations, exact-match Unicode text, and low-overlap
+evidence. Use `tests/test_rag_grounding_calibration_phase62.py` to validate the
+expected outcome distribution. Exact-match Unicode cases check tokenizer
+consistency only; they do not demonstrate semantic understanding of a language.

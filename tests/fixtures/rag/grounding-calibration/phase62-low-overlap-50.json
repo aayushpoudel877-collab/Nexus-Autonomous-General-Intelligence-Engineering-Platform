@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-50",
+  "claim": "The benchmark runner emits summaries",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A compass aligns with magnetic fields"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "benchmarks",
+  "language": "en"
+}
