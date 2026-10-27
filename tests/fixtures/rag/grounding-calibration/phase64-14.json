@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-14",
+  "claim": "The evaluator summarizes pass and fail counts.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The evaluator summarizes pass and fail counts."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "evaluation",
+  "language": "en"
+}
