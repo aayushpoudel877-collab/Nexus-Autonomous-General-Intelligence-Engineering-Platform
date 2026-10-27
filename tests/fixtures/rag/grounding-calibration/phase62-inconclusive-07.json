@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-07",
-  "claim": "inconclusive",
+  "claim": "The worker renews its execution lease",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The worker renews its execution lease"
+      "text": "The worker renews"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The worker renews leases",
+  "category": "boundary",
   "language": "en"
 }
