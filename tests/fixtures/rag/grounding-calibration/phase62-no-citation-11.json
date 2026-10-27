@@ -1,0 +1,14 @@
+{
+  "case_id": "phase62-no-citation-11",
+  "claim": "The retrieval index stores document metadata",
+  "citations": [],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "This evidence is deliberately unrelated to the claim."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "retrieval",
+  "language": "en"
+}
