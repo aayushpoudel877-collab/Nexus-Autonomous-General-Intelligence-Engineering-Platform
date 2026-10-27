@@ -1,0 +1,14 @@
+{
+  "case_id": "phase62-no-citation-12",
+  "claim": "The ranking service sorts candidate passages",
+  "citations": [],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "This evidence is deliberately unrelated to the claim."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "ranking",
+  "language": "en"
+}
