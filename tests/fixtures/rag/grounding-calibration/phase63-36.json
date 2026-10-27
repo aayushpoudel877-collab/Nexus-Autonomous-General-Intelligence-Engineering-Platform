@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-claim-evidence-order-36",
+  "claim": "The verifier assesses each claim against cited evidence.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The verifier assesses each claim against cited evidence."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "grounding",
+  "language": "en"
+}
