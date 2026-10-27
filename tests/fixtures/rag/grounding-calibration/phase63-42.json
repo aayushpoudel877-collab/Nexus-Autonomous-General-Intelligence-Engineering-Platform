@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-retrieval-rank-42",
+  "claim": "The retriever orders passages by relevance.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The retriever orders passages by relevance."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "retrieval",
+  "language": "en"
+}
