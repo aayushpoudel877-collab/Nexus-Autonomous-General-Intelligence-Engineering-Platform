@@ -114,3 +114,16 @@ def test_cli_returns_two_when_filters_match_no_cases(tmp_path):
 
     assert result.returncode == 2
     assert "selected zero cases" in result.stderr
+
+
+def test_cli_reports_output_write_errors_with_exit_code_two(tmp_path):
+    fixtures = tmp_path / "fixtures"
+    _write_case(fixtures, "one", "grounded", "Nexus stores records", "Nexus stores records")
+    blocker = tmp_path / "not-a-directory"
+    blocker.write_text("file", encoding="utf-8")
+    output = blocker / "report.json"
+
+    result = _run("--fixtures", str(fixtures), "--output", str(output))
+
+    assert result.returncode == 2
+    assert "failed to write report" in result.stderr
