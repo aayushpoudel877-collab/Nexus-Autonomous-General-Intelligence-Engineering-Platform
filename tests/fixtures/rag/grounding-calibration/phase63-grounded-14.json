@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-14",
+  "claim": "يتحقق النظام من معرّفات الاستشهاد.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "يتحقق النظام من معرّفات الاستشهاد."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ar"
+}
