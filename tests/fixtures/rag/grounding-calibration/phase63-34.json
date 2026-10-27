@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-hyphen-34",
+  "claim": "The read-only endpoint returns calibration metrics.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The read-only endpoint returns calibration metrics."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "api",
+  "language": "en"
+}
