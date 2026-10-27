@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-unicode-pt-accent-32",
+  "claim": "A avaliação mantém referências válidas.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "A avaliação mantém referências válidas."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "pt"
+}
