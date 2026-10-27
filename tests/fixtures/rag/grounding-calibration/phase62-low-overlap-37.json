@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-37",
+  "claim": "The ranking service sorts passages",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Volcanoes erupt during tectonic activity"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "ranking",
+  "language": "en"
+}
