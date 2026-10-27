@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-17",
+  "claim": "Der Dienst überprüft die Quellenangaben.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Der Dienst überprüft die Quellenangaben."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "de"
+}
