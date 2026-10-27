@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-46",
+  "claim": "The workflow journal stores events",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Bees pollinate flowers in spring"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "workflow",
+  "language": "en"
+}
