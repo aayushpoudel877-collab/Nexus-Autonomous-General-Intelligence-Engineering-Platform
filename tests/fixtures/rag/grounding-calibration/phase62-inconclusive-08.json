@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-08",
-  "claim": "inconclusive",
+  "claim": "The report groups results by language",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The report groups results by language"
+      "text": "The report groups"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The report groups results",
+  "category": "boundary",
   "language": "en"
 }
