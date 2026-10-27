@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-36",
+  "claim": "The retrieval index stores metadata",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Penguins swim across cold oceans"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "retrieval",
+  "language": "en"
+}
