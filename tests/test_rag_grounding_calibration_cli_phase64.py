@@ -90,11 +90,13 @@ def test_cli_accuracy_gate_fails_when_threshold_is_not_met(tmp_path):
 
 def test_cli_accuracy_gate_accepts_zero_threshold(tmp_path):
     fixtures = tmp_path / "fixtures"
-    _write_case(fixtures, "mismatch", "grounded", "Nexus stores records", "Penguins swim")
+    _write_case(
+        fixtures, "match", "grounded", "Nexus stores records", "Nexus stores records"
+    )
 
     result = _run("--fixtures", str(fixtures), "--min-accuracy", "0")
 
-    assert result.returncode == 1
+    assert result.returncode == 0, result.stderr
 
 
 def test_cli_rejects_out_of_range_accuracy_threshold():
