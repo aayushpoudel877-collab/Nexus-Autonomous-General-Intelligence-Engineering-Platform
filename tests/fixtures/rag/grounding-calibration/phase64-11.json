@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-11",
+  "claim": "The ranking stage returns the highest-scoring passages first.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ranking stage returns the highest-scoring passages first."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ranking",
+  "language": "en"
+}
