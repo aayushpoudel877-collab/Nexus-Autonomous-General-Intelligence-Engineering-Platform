@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-24",
+  "claim": "O sistema valida documentos",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "O sistema valida documentos"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "pt"
+}
