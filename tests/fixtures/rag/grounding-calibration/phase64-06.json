@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-06",
+  "claim": "The audit trail retains a stable event identifier.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The audit trail retains a stable event identifier."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "audit",
+  "language": "en"
+}
