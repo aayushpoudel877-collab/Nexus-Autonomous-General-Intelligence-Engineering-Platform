@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-48",
+  "claim": "The upload endpoint enforces limits",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Rivers carry sediment downstream"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}
