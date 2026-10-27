@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-07",
+  "claim": "The deployment check verifies the active release version.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The deployment check verifies the active release version."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "deployment",
+  "language": "en"
+}
