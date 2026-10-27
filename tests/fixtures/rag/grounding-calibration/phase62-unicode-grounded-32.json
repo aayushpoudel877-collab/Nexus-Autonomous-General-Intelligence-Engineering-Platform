@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-32",
+  "claim": "시스템은 문서 메타데이터를 저장한다",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "시스템은 문서 메타데이터를 저장한다"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ko"
+}
