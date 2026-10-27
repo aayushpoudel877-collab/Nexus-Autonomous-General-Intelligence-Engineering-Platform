@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-12",
+  "claim": "The ingestion worker extracts text from supported documents.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The ingestion worker extracts text from supported documents."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "ingestion",
+  "language": "en"
+}
