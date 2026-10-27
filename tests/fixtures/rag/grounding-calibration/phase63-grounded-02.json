@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-02",
+  "claim": "The index retains 128 document records.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The index retains 128 document records."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "indexing",
+  "language": "en"
+}
