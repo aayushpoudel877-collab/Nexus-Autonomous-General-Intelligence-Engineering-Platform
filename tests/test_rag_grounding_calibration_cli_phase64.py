@@ -127,3 +127,34 @@ def test_cli_reports_output_write_errors_with_exit_code_two(tmp_path):
 
     assert result.returncode == 2
     assert "failed to write report" in result.stderr
+
+
+def test_cli_repeated_status_values_use_or_semantics(tmp_path):
+    fixtures = tmp_path / "fixtures"
+    _write_case(fixtures, "grounded", "grounded", "Nexus stores records", "Nexus stores records")
+    _write_case(fixtures, "unsupported", "unsupported", "Nexus stores records", "Penguins swim")
+
+    result = _run(
+        "--fixtures", str(fixtures), "--status", "grounded", "--status", "unsupported"
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["case_count"] == 2
+
+
+def test_cli_different_filters_combine_with_and_semantics(tmp_path):
+    fixtures = tmp_path / "fixtures"
+    _write_case(fixtures, "security-one", "grounded", "Nexus stores records", "Nexus stores records")
+    _write_case(fixtures, "cache-two", "grounded", "Nexus stores records", "Nexus stores records")
+    for name, category in (("security-one", "security"), ("cache-two", "cache")):
+        path = fixtures / f"{name}.json"
+        case = json.loads(path.read_text(encoding="utf-8"))
+        case["category"] = category
+        path.write_text(json.dumps(case), encoding="utf-8")
+
+    result = _run(
+        "--fixtures", str(fixtures), "--category", "security", "--case-prefix", "cache-"
+    )
+
+    assert result.returncode == 2
+    assert "selected zero cases" in result.stderr
