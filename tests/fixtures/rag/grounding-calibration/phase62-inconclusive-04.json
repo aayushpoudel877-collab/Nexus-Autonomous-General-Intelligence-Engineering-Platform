@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-04",
-  "claim": "inconclusive",
+  "claim": "The audit log records request identifiers",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The audit log records request identifiers"
+      "text": "The audit log records"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The audit log records requests",
+  "category": "boundary",
   "language": "en"
 }
