@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-10",
-  "claim": "inconclusive",
+  "claim": "The verifier reports lexical token coverage",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The verifier reports lexical token coverage"
+      "text": "The verifier reports"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The verifier reports token coverage",
+  "category": "boundary",
   "language": "en"
 }
