@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-unicode-id-29",
+  "claim": "Sistem memvalidasi referensi dokumen.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Sistem memvalidasi referensi dokumen."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "id"
+}
