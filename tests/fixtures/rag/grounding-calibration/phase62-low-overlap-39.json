@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-39",
+  "claim": "The audit journal records requests",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Satellites orbit planets in space"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "audit",
+  "language": "en"
+}
