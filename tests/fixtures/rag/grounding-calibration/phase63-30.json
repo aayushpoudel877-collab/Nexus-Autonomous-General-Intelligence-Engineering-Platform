@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-unicode-it-30",
+  "claim": "Il sistema conserva i riferimenti delle fonti.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Il sistema conserva i riferimenti delle fonti."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "it"
+}
