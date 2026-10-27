@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-audit-id-41",
+  "claim": "The audit event contains a stable request identifier.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The audit event contains a stable request identifier."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "audit",
+  "language": "en"
+}
