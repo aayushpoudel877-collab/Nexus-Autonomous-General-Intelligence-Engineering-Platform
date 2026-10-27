@@ -57,8 +57,12 @@ def main() -> int:
         return 2
     rendered = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(rendered, encoding="utf-8")
+        try:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered, encoding="utf-8")
+        except OSError as exc:
+            print(f"grounding calibration failed to write report: {exc}", file=sys.stderr)
+            return 2
     print(rendered, end="")
     if report["failed"]:
         return 1
