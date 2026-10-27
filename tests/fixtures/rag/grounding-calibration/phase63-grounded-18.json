@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-18",
+  "claim": "O serviço valida os identificadores de citação.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "O serviço valida os identificadores de citação."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "pt"
+}
