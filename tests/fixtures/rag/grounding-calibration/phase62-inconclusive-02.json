@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-02",
-  "claim": "inconclusive",
+  "claim": "The ranker sorts candidate passages",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The ranker sorts candidate passages"
+      "text": "The ranker sorts"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The ranker sorts candidates",
+  "category": "boundary",
   "language": "en"
 }
