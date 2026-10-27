@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-07",
+  "claim": "The cache stores embeddings (not raw credentials).",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The cache stores embeddings (not raw credentials)."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "caching",
+  "language": "en"
+}
