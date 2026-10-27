@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-deployment-record-45",
+  "claim": "The deployment event records the active model version.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The deployment event records the active model version."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "deployment",
+  "language": "en"
+}
