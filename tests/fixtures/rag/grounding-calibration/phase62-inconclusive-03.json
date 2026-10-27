@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-03",
-  "claim": "inconclusive",
+  "claim": "The loader validates uploaded documents",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The loader validates uploaded documents"
+      "text": "The loader validates"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The loader validates documents",
+  "category": "boundary",
   "language": "en"
 }
