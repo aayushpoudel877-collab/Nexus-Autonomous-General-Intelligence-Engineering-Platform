@@ -1,0 +1,14 @@
+{
+  "case_id": "phase63-boundary-unrelated-27",
+  "claim": "The cache stores embedding vectors.",
+  "citations": [],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Penguins migrate across cold oceans"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "cache",
+  "language": "en"
+}
