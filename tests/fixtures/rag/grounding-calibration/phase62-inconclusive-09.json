@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-09",
-  "claim": "inconclusive",
+  "claim": "The corpus loader sorts fixture filenames",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The corpus loader sorts fixture filenames"
+      "text": "The corpus loader"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The corpus loader sorts filenames",
+  "category": "boundary",
   "language": "en"
 }
