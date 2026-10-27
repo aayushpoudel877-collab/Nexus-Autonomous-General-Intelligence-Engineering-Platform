@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-secret-redaction-44",
+  "claim": "The logger removes configured secret values.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The logger removes configured secret values."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "privacy",
+  "language": "en"
+}
