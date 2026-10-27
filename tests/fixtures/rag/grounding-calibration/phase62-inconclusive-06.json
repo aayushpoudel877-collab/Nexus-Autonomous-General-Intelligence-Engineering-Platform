@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-06",
-  "claim": "inconclusive",
+  "claim": "The API rejects unknown citation identifiers",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The API rejects unknown citation identifiers"
+      "text": "The API rejects"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The API rejects unknown citations",
+  "category": "boundary",
   "language": "en"
 }
