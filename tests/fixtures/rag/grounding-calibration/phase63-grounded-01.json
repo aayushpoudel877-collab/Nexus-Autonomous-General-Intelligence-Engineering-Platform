@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-grounded-01",
+  "claim": "Nexus validates citation identifiers.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Nexus validates citation identifiers."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "validation",
+  "language": "en"
+}
