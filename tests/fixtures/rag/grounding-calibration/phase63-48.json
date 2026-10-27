@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-low-overlap-benchmark-48",
+  "claim": "The benchmark emits a machine-readable report.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The violin produces sound through vibrating strings."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "benchmarks",
+  "language": "en"
+}
