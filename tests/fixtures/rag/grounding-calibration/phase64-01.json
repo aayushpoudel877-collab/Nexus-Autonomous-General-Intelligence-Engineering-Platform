@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-01",
+  "claim": "The cache expires stale entries after the configured interval.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The cache expires stale entries after the configured interval."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "caching",
+  "language": "en"
+}
