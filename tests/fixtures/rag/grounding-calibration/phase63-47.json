@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-low-overlap-worker-47",
+  "claim": "The worker renews its execution lease.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Cedar trees grow on rocky hillsides."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "execution",
+  "language": "en"
+}
