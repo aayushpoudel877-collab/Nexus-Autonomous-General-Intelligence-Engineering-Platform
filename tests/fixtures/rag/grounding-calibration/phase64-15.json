@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-15",
+  "claim": "Le service vérifie les références du document.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Le service vérifie les références du document."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "fr"
+}
