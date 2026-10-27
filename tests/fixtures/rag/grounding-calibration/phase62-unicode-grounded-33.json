@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-unicode-grounded-33",
+  "claim": "系统验证引用标识符",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "系统验证引用标识符"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "zh"
+}
