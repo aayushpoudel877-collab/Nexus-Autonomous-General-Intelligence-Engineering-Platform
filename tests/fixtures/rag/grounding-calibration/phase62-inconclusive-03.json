@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-inconclusive-03",
+  "claim": "inconclusive",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The loader validates uploaded documents"
+    }
+  ],
+  "expected_status": "inconclusive",
+  "category": "The loader validates documents",
+  "language": "en"
+}
