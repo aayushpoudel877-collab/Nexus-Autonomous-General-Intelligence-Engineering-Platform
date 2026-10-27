@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-low-overlap-44",
+  "claim": "The corpus loader sorts filenames",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "Birds migrate across continents"
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "evaluation",
+  "language": "en"
+}
