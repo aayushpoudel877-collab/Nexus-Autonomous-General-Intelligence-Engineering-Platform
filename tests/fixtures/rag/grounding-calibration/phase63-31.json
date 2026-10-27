@@ -1,0 +1,16 @@
+{
+  "case_id": "phase63-unicode-th-31",
+  "claim": "ระบบบันทึกผลการประเมิน",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "ระบบบันทึกผลการประเมิน"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "th"
+}
