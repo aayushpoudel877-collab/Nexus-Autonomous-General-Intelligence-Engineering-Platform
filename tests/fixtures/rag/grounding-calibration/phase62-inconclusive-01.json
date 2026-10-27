@@ -1,0 +1,16 @@
+{
+  "case_id": "phase62-inconclusive-01",
+  "claim": "inconclusive",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The index stores document metadata"
+    }
+  ],
+  "expected_status": "inconclusive",
+  "category": "The index stores records",
+  "language": "en"
+}
