@@ -1,16 +1,16 @@
 {
   "case_id": "phase62-inconclusive-05",
-  "claim": "inconclusive",
+  "claim": "The cache reuses computed embeddings",
   "citations": [
     "E1"
   ],
   "evidence": [
     {
       "evidence_id": "E1",
-      "text": "The cache reuses computed embeddings"
+      "text": "The cache reuses"
     }
   ],
   "expected_status": "inconclusive",
-  "category": "The cache reuses embeddings",
+  "category": "boundary",
   "language": "en"
 }
