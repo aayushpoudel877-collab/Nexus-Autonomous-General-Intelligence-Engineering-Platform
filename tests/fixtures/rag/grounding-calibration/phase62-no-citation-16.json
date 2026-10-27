@@ -1,0 +1,14 @@
+{
+  "case_id": "phase62-no-citation-16",
+  "claim": "The API rejects unknown citation identifiers",
+  "citations": [],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "This evidence is deliberately unrelated to the claim."
+    }
+  ],
+  "expected_status": "unsupported",
+  "category": "security",
+  "language": "en"
+}
