@@ -242,3 +242,21 @@ def test_perfect_status_metrics_are_one_for_supported_classes():
     assert metrics["recall"] == 1.0
     assert metrics["f1"] == 1.0
     assert report["macro_f1"] == 0.25
+
+
+
+def test_absent_status_has_zero_precision_recall_and_f1():
+    case = {
+        "case_id": "only-grounded",
+        "claim": "Nexus supports encrypted storage",
+        "citations": ["E1"],
+        "evidence": [{"evidence_id": "E1", "text": "Nexus supports encrypted storage"}],
+        "expected_status": "grounded",
+    }
+    report = evaluate_cases([case])
+    absent = report["status_metrics"]["contradictory"]
+    assert absent["support"] == 0
+    assert absent["predicted"] == 0
+    assert absent["precision"] == 0.0
+    assert absent["recall"] == 0.0
+    assert absent["f1"] == 0.0
