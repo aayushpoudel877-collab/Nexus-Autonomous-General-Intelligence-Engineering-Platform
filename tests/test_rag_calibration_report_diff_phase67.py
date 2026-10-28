@@ -265,3 +265,33 @@ def test_cli_rejects_invalid_json_with_actionable_error(tmp_path):
 
     assert result.returncode == 2
     assert "cannot read JSON report" in result.stderr
+
+
+def test_group_accuracy_regression_has_its_own_tolerance():
+    comparison = compare_reports(
+        _report(),
+        _report(
+            group_accuracy=0.8,
+            case_results=[
+                {
+                    "case_id": "case-a",
+                    "fixture": "case-a.json",
+                    "expected": "grounded",
+                    "actual": "grounded",
+                    "passed": True,
+                },
+                {
+                    "case_id": "case-b",
+                    "fixture": "case-b.json",
+                    "expected": "grounded",
+                    "actual": "grounded",
+                    "passed": True,
+                },
+            ],
+        ),
+    )
+
+    assert find_regressions(comparison) == [
+        "category group security accuracy dropped by 0.200, exceeding tolerance 0.000"
+    ]
+    assert find_regressions(comparison, max_group_accuracy_drop=0.2) == []
