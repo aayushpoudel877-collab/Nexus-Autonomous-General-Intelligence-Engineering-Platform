@@ -119,6 +119,12 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
                 "actual": actual,
             })
     correct = count - len(failures)
+    status_metrics = _build_status_metrics(confusion)
+    macro_f1 = (
+        sum(metric["f1"] for metric in status_metrics.values()) / len(status_metrics)
+        if status_metrics
+        else 0.0
+    )
     breakdown: dict[str, dict[str, dict[str, int | float]]] = {}
     for field, counts in grouped.items():
         breakdown[field] = {}
@@ -139,6 +145,8 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "failed": len(failures),
         "accuracy": correct / count if count else 0.0,
         "confusion": dict(sorted(confusion.items())),
+        "status_metrics": status_metrics,
+        "macro_f1": macro_f1,
         "breakdown": breakdown,
         "failures": failures,
         "interpretation": (
@@ -146,3 +154,39 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
             "lexical grounding does not establish semantic entailment."
         ),
     }
+
+
+
+def _build_status_metrics(
+    confusion: Counter[str],
+) -> dict[str, dict[str, int | float]]:
+    """Calculate one-vs-rest classification metrics from expected->actual counts."""
+    metrics: dict[str, dict[str, int | float]] = {}
+    for status in sorted(_ALLOWED_STATUSES):
+        true_positive = confusion[f"{status}->{status}"]
+        support = sum(
+            value for key, value in confusion.items() if key.startswith(f"{status}->")
+        )
+        predicted = sum(
+            value for key, value in confusion.items() if key.endswith(f"->{status}")
+        )
+        false_positive = predicted - true_positive
+        false_negative = support - true_positive
+        precision = true_positive / predicted if predicted else 0.0
+        recall = true_positive / support if support else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if precision + recall
+            else 0.0
+        )
+        metrics[status] = {
+            "support": support,
+            "predicted": predicted,
+            "true_positive": true_positive,
+            "false_positive": false_positive,
+            "false_negative": false_negative,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        }
+    return metrics
