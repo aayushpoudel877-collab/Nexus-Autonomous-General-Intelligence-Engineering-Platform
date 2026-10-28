@@ -59,16 +59,25 @@ def _validate_case(case: dict[str, Any]) -> None:
         ):
             raise ValueError(f"{field} must be a non-empty string when provided")
     if not isinstance(case["citations"], list) or not all(
-        isinstance(value, str) for value in case["citations"]
+        isinstance(value, str) and value.strip() for value in case["citations"]
     ):
-        raise ValueError("citations must be a list of strings")
+        raise ValueError("citations must be a list of non-empty strings")
+    if len(case["citations"]) != len(set(case["citations"])):
+        raise ValueError("citations must not contain duplicate identifiers")
     if not isinstance(case["evidence"], list) or not case["evidence"]:
         raise ValueError("evidence must be a non-empty list")
+    evidence_ids: set[str] = set()
     for item in case["evidence"]:
-        if not isinstance(item, dict) or not isinstance(item.get("evidence_id"), str):
-            raise TypeError("each evidence item needs a string evidence_id")
-        if not isinstance(item.get("text"), str):
-            raise TypeError("each evidence item needs string text")
+        if not isinstance(item, dict):
+            raise TypeError("each evidence item must be an object")
+        evidence_id = item.get("evidence_id")
+        if not isinstance(evidence_id, str) or not evidence_id.strip():
+            raise ValueError("each evidence item needs a non-empty string evidence_id")
+        if evidence_id in evidence_ids:
+            raise ValueError(f"duplicate evidence_id: {evidence_id}")
+        evidence_ids.add(evidence_id)
+        if not isinstance(item.get("text"), str) or not item["text"].strip():
+            raise ValueError("each evidence item needs non-empty string text")
     if (
         not isinstance(case["expected_status"], str)
         or case["expected_status"] not in _ALLOWED_STATUSES

@@ -27,3 +27,11 @@ The `phase63-*.json` fixtures add 50 regression cases for exact lexical matches,
 ## Phase 64 additions
 
 Phase 64 adds CLI filters for category, language, expected status, and case-ID prefix, plus a minimum-accuracy gate. Filtered runs that select no fixtures fail explicitly. See `docs/rag-grounding-calibration-phase-64.md` for filter composition, examples, and exit-code semantics; tests are in `tests/test_rag_grounding_calibration_cli_phase64.py`.
+
+
+## Phase 65 additions
+
+Phase 65 tightens input validation for empty and duplicate citation/evidence
+identifiers and blank evidence text. See
+`docs/rag-grounding-calibration-phase-65.md` and the schema-validation tests in
+`tests/test_rag_grounding_calibration.py`.
