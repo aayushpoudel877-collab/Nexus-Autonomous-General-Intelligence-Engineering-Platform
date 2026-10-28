@@ -201,3 +201,12 @@ def test_cli_rejects_malformed_report_without_writing_manifest(tmp_path):
 
     assert result.returncode == 2
     assert not manifest_path.exists()
+
+
+
+def test_manifest_rejects_boolean_schema_version():
+    manifest = build_manifest(_report(), version=1, reason="approved")
+    manifest["manifest_schema_version"] = True
+
+    with pytest.raises(ValueError, match="unsupported baseline manifest schema version"):
+        validate_manifest(manifest)
