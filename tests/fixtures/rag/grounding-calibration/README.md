@@ -43,3 +43,13 @@ Phase 66 adds per-status precision, recall, F1, and macro-F1 reporting, plus a
 `--min-macro-f1` CLI gate. See `docs/rag-grounding-calibration-phase-66.md`
 and `tests/test_rag_grounding_calibration_cli_phase66.py`. Macro F1 includes all
 four supported statuses; a status with no examples contributes zero.
+
+
+## Phase 68 additions
+
+Phase 68 adds explicit, content-addressed baseline approval and verification.
+A baseline manifest embeds the report, SHA-256 integrity fingerprints, a
+version number, and a human approval reason. Updating an existing manifest
+requires its expected previous report hash and a greater version. See
+`docs/rag-grounding-calibration-phase-68.md`; baseline updates are never
+performed automatically by CI.
