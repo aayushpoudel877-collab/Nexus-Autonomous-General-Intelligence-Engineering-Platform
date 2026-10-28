@@ -34,6 +34,8 @@ def test_cli_report_includes_status_metrics_and_macro_f1(tmp_path):
     report = json.loads(result.stdout)
     assert report["status_metrics"]["grounded"]["f1"] == 1.0
     assert report["macro_f1"] == 0.25
+    assert report["case_results"][0]["case_id"] == "grounded"
+    assert report["case_results"][0]["passed"] is True
 
 
 def test_cli_macro_f1_gate_fails_below_threshold(tmp_path):

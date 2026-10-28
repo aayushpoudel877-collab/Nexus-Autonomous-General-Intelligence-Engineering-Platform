@@ -93,6 +93,7 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         field: Counter() for field in _GROUP_FIELDS
     }
     failures: list[dict[str, str]] = []
+    case_results: list[dict[str, Any]] = []
     count = 0
     for case in cases:
         _validate_case(case)
@@ -104,6 +105,13 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         report = verifier.assess([claim], evidence)
         actual = report.assessments[0].status
         expected = case["expected_status"]
+        case_results.append({
+            "case_id": case["case_id"],
+            "fixture": str(case.get("_fixture", "")),
+            "expected": expected,
+            "actual": actual,
+            "passed": actual == expected,
+        })
         confusion[f"{expected}->{actual}"] += 1
         for field in _GROUP_FIELDS:
             group = case.get(field, "unspecified")
@@ -148,6 +156,7 @@ def evaluate_cases(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "status_metrics": status_metrics,
         "macro_f1": macro_f1,
         "breakdown": breakdown,
+        "case_results": case_results,
         "failures": failures,
         "interpretation": (
             "Fixture agreement measures regression consistency only; "
