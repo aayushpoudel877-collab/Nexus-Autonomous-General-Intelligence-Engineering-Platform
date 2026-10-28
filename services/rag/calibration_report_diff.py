@@ -15,7 +15,7 @@ _CLASS_METRICS = ("precision", "recall", "f1")
 
 def _validate_report(report: Any, name: str) -> dict[str, Any]:
     if not isinstance(report, dict):
-        raise ValueError(f"{name} report must be a JSON object")
+        raise TypeError(f"{name} report must be a JSON object")
     if report.get("schema_version") != 1:
         raise ValueError(f"{name} report has unsupported schema_version")
     for field in ("case_count", "accuracy", "macro_f1", "breakdown", "status_metrics"):
@@ -27,34 +27,34 @@ def _validate_report(report: Any, name: str) -> dict[str, Any]:
     for field in _METRICS:
         value = report[field]
         if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise ValueError(f"{name} report {field} must be numeric")
+            raise TypeError(f"{name} report {field} must be numeric")
         if not math.isfinite(value) or not 0 <= value <= 1:
             raise ValueError(f"{name} report {field} must be finite and between 0 and 1")
     for field in ("breakdown", "status_metrics"):
         if not isinstance(report[field], dict):
-            raise ValueError(f"{name} report {field} must be an object")
+            raise TypeError(f"{name} report {field} must be an object")
     for status, values in report["status_metrics"].items():
         if not isinstance(status, str) or not isinstance(values, dict):
-            raise ValueError(f"{name} report status_metrics entries must be objects")
+            raise TypeError(f"{name} report status_metrics entries must be objects")
         for metric in _CLASS_METRICS:
             if metric in values:
                 value = values[metric]
                 if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise ValueError(f"{name} status metric {status}.{metric} must be numeric")
+                    raise TypeError(f"{name} status metric {status}.{metric} must be numeric")
                 if not math.isfinite(value) or not 0 <= value <= 1:
                     raise ValueError(
                         f"{name} status metric {status}.{metric} must be between 0 and 1"
                     )
     for dimension, groups in report["breakdown"].items():
         if not isinstance(dimension, str) or not isinstance(groups, dict):
-            raise ValueError(f"{name} breakdown dimensions must contain objects")
+            raise TypeError(f"{name} breakdown dimensions must contain objects")
         for group, values in groups.items():
             if not isinstance(group, str) or not isinstance(values, dict):
-                raise ValueError(f"{name} breakdown groups must contain objects")
+                raise TypeError(f"{name} breakdown groups must contain objects")
             if "accuracy" in values:
                 value = values["accuracy"]
                 if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise ValueError(f"{name} group {dimension}.{group} accuracy must be numeric")
+                    raise TypeError(f"{name} group {dimension}.{group} accuracy must be numeric")
                 if not math.isfinite(value) or not 0 <= value <= 1:
                     raise ValueError(
                         f"{name} group {dimension}.{group} accuracy must be between 0 and 1"
@@ -68,11 +68,11 @@ def _case_index(report: Mapping[str, Any], name: str) -> dict[str, dict[str, Any
         return None
     results = report["case_results"]
     if not isinstance(results, list):
-        raise ValueError(f"{name} report case_results must be a list")
+        raise TypeError(f"{name} report case_results must be a list")
     indexed: dict[str, dict[str, Any]] = {}
     for item in results:
         if not isinstance(item, dict):
-            raise ValueError(f"{name} case_results entries must be objects")
+            raise TypeError(f"{name} case_results entries must be objects")
         case_id = item.get("case_id")
         expected = item.get("expected")
         actual = item.get("actual")
@@ -82,8 +82,10 @@ def _case_index(report: Mapping[str, Any], name: str) -> dict[str, dict[str, Any
         if case_id in indexed:
             raise ValueError(f"{name} report contains duplicate case_id: {case_id}")
         if not isinstance(expected, str) or not isinstance(actual, str):
-            raise ValueError(f"{name} case {case_id} expected and actual must be strings")
-        if not isinstance(passed, bool) or passed != (expected == actual):
+            raise TypeError(f"{name} case {case_id} expected and actual must be strings")
+        if not isinstance(passed, bool):
+            raise TypeError(f"{name} case {case_id} passed must be a boolean")
+        if passed != (expected == actual):
             raise ValueError(f"{name} case {case_id} has inconsistent passed value")
         indexed[case_id] = item
     return indexed
@@ -185,7 +187,7 @@ def find_regressions(
     }
     for name, value in thresholds.items():
         if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise ValueError(f"{name} must be numeric")
+            raise TypeError(f"{name} must be numeric")
         if not math.isfinite(value) or not 0 <= value <= 1:
             raise ValueError(f"{name} must be finite and between 0 and 1")
     failures: list[str] = []
