@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-10",
+  "claim": "The response filter removes configured private fields.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The response filter removes configured private fields."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "privacy",
+  "language": "en"
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-13",
+  "claim": "The model registry records the artifact checksum.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The model registry records the artifact checksum."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "models",
+  "language": "en"
+}

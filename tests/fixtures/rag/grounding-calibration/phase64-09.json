@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-09",
+  "claim": "検索処理は文書の識別子を記録する。",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "検索処理は文書の識別子を記録する。"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ja"
+}

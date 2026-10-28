@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-03",
+  "claim": "The gateway validates the signed access token.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The gateway validates the signed access token."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "security",
+  "language": "en"
+}

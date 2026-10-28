@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-08",
+  "claim": "नेक्ससले स्रोतको पहिचान जाँच गर्छ।",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "नेक्ससले स्रोतको पहिचान जाँच गर्छ।"
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "multilingual",
+  "language": "ne"
+}

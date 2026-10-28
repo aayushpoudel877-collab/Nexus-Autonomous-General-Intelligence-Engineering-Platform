@@ -23,3 +23,7 @@ consistency only; they do not demonstrate semantic understanding of a language.
 ## Phase 63 additions
 
 The `phase63-*.json` fixtures add 50 regression cases for exact lexical matches, Unicode text, punctuation and numeric tokens, metadata grouping, citation-free claims, and low-overlap evidence. Validate their label distribution and deterministic report breakdowns with `tests/test_rag_grounding_calibration_phase63.py`. These remain lexical regression fixtures, not a semantic-entailment benchmark.
+
+## Phase 64 additions
+
+Phase 64 adds CLI filters for category, language, expected status, and case-ID prefix, plus a minimum-accuracy gate. Filtered runs that select no fixtures fail explicitly. See `docs/rag-grounding-calibration-phase-64.md` for filter composition, examples, and exit-code semantics; tests are in `tests/test_rag_grounding_calibration_cli_phase64.py`.

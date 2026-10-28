@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-05",
+  "claim": "The report includes the total number of evaluated cases.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The report includes the total number of evaluated cases."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "reporting",
+  "language": "en"
+}

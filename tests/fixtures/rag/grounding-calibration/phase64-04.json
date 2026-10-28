@@ -1,0 +1,16 @@
+{
+  "case_id": "phase64-04",
+  "claim": "The indexer stores normalized document chunks.",
+  "citations": [
+    "E1"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "text": "The indexer stores normalized document chunks."
+    }
+  ],
+  "expected_status": "grounded",
+  "category": "indexing",
+  "language": "en"
+}
