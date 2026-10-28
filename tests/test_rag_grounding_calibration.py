@@ -186,3 +186,59 @@ def test_non_object_evidence_entry_is_rejected():
     }
     with pytest.raises(TypeError, match="each evidence item must be an object"):
         evaluate_cases([case])
+
+
+
+def test_status_metrics_report_false_positives_and_false_negatives():
+    cases = [
+        {
+            "case_id": "grounded-misclassified",
+            "claim": "Nexus supports encrypted storage",
+            "citations": ["E1"],
+            "evidence": [{"evidence_id": "E1", "text": "Penguins swim in the ocean"}],
+            "expected_status": "grounded",
+        },
+        {
+            "case_id": "unsupported-misclassified",
+            "claim": "Nexus supports encrypted storage",
+            "citations": ["E1"],
+            "evidence": [{"evidence_id": "E1", "text": "Nexus supports encrypted storage"}],
+            "expected_status": "unsupported",
+        },
+    ]
+    report = evaluate_cases(cases)
+
+    grounded = report["status_metrics"]["grounded"]
+    unsupported = report["status_metrics"]["unsupported"]
+    assert grounded["support"] == 1
+    assert grounded["predicted"] == 1
+    assert grounded["true_positive"] == 0
+    assert grounded["false_positive"] == 1
+    assert grounded["false_negative"] == 1
+    assert grounded["precision"] == 0.0
+    assert grounded["recall"] == 0.0
+    assert grounded["f1"] == 0.0
+    assert unsupported["false_positive"] == 1
+    assert unsupported["false_negative"] == 1
+    assert report["macro_f1"] == 0.0
+
+
+def test_perfect_status_metrics_are_one_for_supported_classes():
+    case = {
+        "case_id": "perfect-grounded",
+        "claim": "Nexus supports encrypted storage",
+        "citations": ["E1"],
+        "evidence": [{"evidence_id": "E1", "text": "Nexus supports encrypted storage"}],
+        "expected_status": "grounded",
+    }
+    report = evaluate_cases([case])
+    metrics = report["status_metrics"]["grounded"]
+    assert metrics["support"] == 1
+    assert metrics["predicted"] == 1
+    assert metrics["true_positive"] == 1
+    assert metrics["false_positive"] == 0
+    assert metrics["false_negative"] == 0
+    assert metrics["precision"] == 1.0
+    assert metrics["recall"] == 1.0
+    assert metrics["f1"] == 1.0
+    assert report["macro_f1"] == 0.25
