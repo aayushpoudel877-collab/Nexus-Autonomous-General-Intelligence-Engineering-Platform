@@ -11,9 +11,13 @@ remain available.
 First save reports from two fixture runs:
 
 ```bash
-python -m services.rag.grounding_calibration_cli --output baseline.json
-python -m services.rag.grounding_calibration_cli --output current.json
-python -m services.rag.calibration_report_diff_cli --baseline baseline.json --current current.json
+python -m services.rag.calibration_report_diff_cli \
+  --baseline baseline.json \
+  --current current.json \
+  --max-accuracy-drop 0.01 \
+  --max-macro-f1-drop 0.02 \
+  --max-class-f1-drop 0.03 \
+  --max-group-accuracy-drop 0.02
 ```
 
 The comparison JSON includes deltas for overall accuracy and macro-F1,
