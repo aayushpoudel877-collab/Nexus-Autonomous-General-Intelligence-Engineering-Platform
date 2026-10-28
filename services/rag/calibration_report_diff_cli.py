@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from services.rag.calibration_baseline import load_manifest
 from services.rag.calibration_report_diff import compare_reports, find_regressions
 
 
@@ -19,7 +20,11 @@ def _read_report(path: Path) -> Any:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--baseline", required=True, type=Path, help="baseline report JSON")
+    baseline_group = parser.add_mutually_exclusive_group(required=True)
+    baseline_group.add_argument("--baseline", type=Path, help="baseline report JSON")
+    baseline_group.add_argument(
+        "--baseline-manifest", type=Path, help="verified, versioned baseline manifest JSON"
+    )
     parser.add_argument("--current", required=True, type=Path, help="current report JSON")
     parser.add_argument("--output", type=Path, help="optional path for the comparison JSON")
     parser.add_argument(
@@ -44,7 +49,12 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        baseline = _read_report(args.baseline)
+        if args.baseline_manifest:
+            baseline_manifest = load_manifest(args.baseline_manifest)
+            baseline = baseline_manifest["report"]
+        else:
+            baseline_manifest = None
+            baseline = _read_report(args.baseline)
         current = _read_report(args.current)
         comparison = compare_reports(baseline, current)
         regressions = find_regressions(
@@ -60,6 +70,12 @@ def main() -> int:
         return 2
     comparison["regressions"] = regressions
     comparison["passed"] = not regressions
+    if baseline_manifest is not None:
+        comparison["baseline"] = {
+            "version": baseline_manifest["baseline_version"],
+            "report_sha256": baseline_manifest["report_sha256"],
+            "case_set_sha256": baseline_manifest["case_set_sha256"],
+        }
     rendered = json.dumps(comparison, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output:
         try:
