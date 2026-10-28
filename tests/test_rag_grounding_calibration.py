@@ -158,3 +158,31 @@ def test_invalid_evidence_and_citation_values_are_rejected(field, value, message
     case[field] = value
     with pytest.raises(ValueError, match=message):
         evaluate_cases([case])
+
+
+
+def test_loader_rejects_duplicate_case_ids_across_files(tmp_path):
+    case = {
+        "case_id": "same-id",
+        "claim": "Nexus stores encrypted records",
+        "citations": ["E1"],
+        "evidence": [{"evidence_id": "E1", "text": "Nexus stores encrypted records"}],
+        "expected_status": "grounded",
+    }
+    (tmp_path / "a.json").write_text(json.dumps(case), encoding="utf-8")
+    (tmp_path / "b.json").write_text(json.dumps(case), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="duplicate case_id"):
+        load_case_files(tmp_path)
+
+
+def test_non_object_evidence_entry_is_rejected():
+    case = {
+        "case_id": "non-object-evidence",
+        "claim": "Nexus stores encrypted records",
+        "citations": ["E1"],
+        "evidence": ["E1 is not an evidence object"],
+        "expected_status": "grounded",
+    }
+    with pytest.raises(TypeError, match="each evidence item must be an object"):
+        evaluate_cases([case])
