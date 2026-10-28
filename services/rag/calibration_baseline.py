@@ -51,7 +51,12 @@ def validate_manifest(manifest: Any) -> dict[str, Any]:
     """Validate manifest shape, embedded report, content hash, and case-set hash."""
     if not isinstance(manifest, dict):
         raise TypeError("baseline manifest must be a JSON object")
-    if manifest.get("manifest_schema_version") != MANIFEST_SCHEMA_VERSION:
+    schema_version = manifest.get("manifest_schema_version")
+    if (
+        isinstance(schema_version, bool)
+        or not isinstance(schema_version, int)
+        or schema_version != MANIFEST_SCHEMA_VERSION
+    ):
         raise ValueError("unsupported baseline manifest schema version")
     version = manifest.get("baseline_version")
     if isinstance(version, bool) or not isinstance(version, int) or version < 1:
