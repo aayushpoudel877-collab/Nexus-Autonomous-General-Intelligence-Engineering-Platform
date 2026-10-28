@@ -62,3 +62,19 @@ def test_cli_rejects_out_of_range_macro_f1_threshold():
 
     assert result.returncode == 2
     assert "--min-macro-f1 must be between 0 and 1" in result.stderr
+
+
+
+def test_cli_accuracy_and_macro_f1_gates_can_be_combined(tmp_path):
+    fixtures = tmp_path / "fixtures"
+    _case(fixtures, "grounded", "grounded", "Nexus supports encrypted storage")
+
+    result = _run(
+        "--fixtures", str(fixtures), "--min-accuracy", "1",
+        "--min-macro-f1", "0.25",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["accuracy"] == 1.0
+    assert report["macro_f1"] == 0.25
