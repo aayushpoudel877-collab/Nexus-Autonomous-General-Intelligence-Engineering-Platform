@@ -32,9 +32,16 @@ def main() -> int:
         type=float,
         help="exit with status 1 when accuracy is below this threshold (0 to 1)",
     )
+    parser.add_argument(
+        "--min-macro-f1",
+        type=float,
+        help="exit with status 1 when macro F1 is below this threshold (0 to 1)",
+    )
     args = parser.parse_args()
     if args.min_accuracy is not None and not 0.0 <= args.min_accuracy <= 1.0:
         parser.error("--min-accuracy must be between 0 and 1")
+    if args.min_macro_f1 is not None and not 0.0 <= args.min_macro_f1 <= 1.0:
+        parser.error("--min-macro-f1 must be between 0 and 1")
     try:
         cases = load_case_files(args.fixtures)
         if args.category:
@@ -68,6 +75,13 @@ def main() -> int:
         print(
             f"grounding calibration accuracy {report['accuracy']:.3f} is below "
             f"minimum {args.min_accuracy:.3f}",
+            file=sys.stderr,
+        )
+        return 1
+    if args.min_macro_f1 is not None and report["macro_f1"] < args.min_macro_f1:
+        print(
+            f"grounding calibration macro F1 {report['macro_f1']:.3f} is below "
+            f"minimum {args.min_macro_f1:.3f}",
             file=sys.stderr,
         )
         return 1

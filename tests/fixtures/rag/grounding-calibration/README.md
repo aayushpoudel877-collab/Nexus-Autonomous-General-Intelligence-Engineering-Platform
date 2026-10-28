@@ -35,3 +35,11 @@ Phase 65 tightens input validation for empty and duplicate citation/evidence
 identifiers and blank evidence text. See
 `docs/rag-grounding-calibration-phase-65.md` and the schema-validation tests in
 `tests/test_rag_grounding_calibration.py`.
+
+
+## Phase 66 additions
+
+Phase 66 adds per-status precision, recall, F1, and macro-F1 reporting, plus a
+`--min-macro-f1` CLI gate. See `docs/rag-grounding-calibration-phase-66.md`
+and `tests/test_rag_grounding_calibration_cli_phase66.py`. Macro F1 includes all
+four supported statuses; a status with no examples contributes zero.
