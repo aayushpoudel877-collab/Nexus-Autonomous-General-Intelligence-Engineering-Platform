@@ -23,7 +23,7 @@ cases, and changed predictions when both reports contain per-case results.
 
 ## Regression gates
 
-By default, any accuracy, macro-F1, or per-status F1 decrease fails the command.
+By default, any accuracy, macro-F1, per-status F1, or comparable category/language group accuracy decrease fails the command.
 Previously passing cases that now fail are also treated as regressions when
 per-case data is available.
 
@@ -33,10 +33,10 @@ python -m services.rag.calibration_report_diff_cli \
   --current current.json \
   --max-accuracy-drop 0.01 \
   --max-macro-f1-drop 0.02 \
-  --max-class-f1-drop 0.03
+  --max-class-f1-drop 0.03 \\\n  --max-group-accuracy-drop 0.02
 ```
 
-Tolerances must be finite values from 0 to 1. Invalid JSON, unsupported report
+All tolerances must be finite values from 0 to 1. Group accuracy is gated only when a group appears in both reports, so added or removed groups are reported without comparing an absent group as a zero-score group. Invalid JSON, unsupported report
 schemas, malformed metric values, duplicate case IDs, and inconsistent case
 outcomes return exit status 2. Detected regressions return exit status 1;
 a passing comparison returns 0. Use `--allow-new-case-failures` only when case-
