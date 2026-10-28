@@ -70,7 +70,9 @@ def main() -> int:
             return 2
     print(rendered, end="")
     if regressions:
-        print("calibration report comparison detected regressions", file=sys.stderr)
+        print("calibration report comparison detected regressions:", file=sys.stderr)
+        for regression in regressions:
+            print(f"- {regression}", file=sys.stderr)
         return 1
     return 0
 
