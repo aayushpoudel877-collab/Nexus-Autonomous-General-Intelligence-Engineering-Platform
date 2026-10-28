@@ -295,3 +295,23 @@ def test_group_accuracy_regression_has_its_own_tolerance():
         "category group security accuracy dropped by 0.200, exceeding tolerance 0.000"
     ]
     assert find_regressions(comparison, max_group_accuracy_drop=0.2) == []
+
+
+
+def test_cli_accepts_group_accuracy_tolerance(tmp_path):
+    baseline = tmp_path / "baseline.json"
+    current = tmp_path / "current.json"
+    baseline.write_text(json.dumps(_report()), encoding="utf-8")
+    current.write_text(
+        json.dumps(_report(group_accuracy=0.8)), encoding="utf-8"
+    )
+
+    failed = _run("--baseline", str(baseline), "--current", str(current))
+    tolerated = _run(
+        "--baseline", str(baseline), "--current", str(current),
+        "--max-group-accuracy-drop", "0.2",
+    )
+
+    assert failed.returncode == 1
+    assert "category group security accuracy dropped" in failed.stderr
+    assert tolerated.returncode == 0, tolerated.stderr
