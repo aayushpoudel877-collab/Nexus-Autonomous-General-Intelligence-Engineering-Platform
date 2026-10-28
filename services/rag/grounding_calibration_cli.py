@@ -64,14 +64,14 @@ def main() -> int:
             print(f"grounding calibration failed to write report: {exc}", file=sys.stderr)
             return 2
     print(rendered, end="")
-    if report["failed"]:
-        return 1
     if args.min_accuracy is not None and report["accuracy"] < args.min_accuracy:
         print(
             f"grounding calibration accuracy {report['accuracy']:.3f} is below "
             f"minimum {args.min_accuracy:.3f}",
             file=sys.stderr,
         )
+        return 1
+    if report["failed"]:
         return 1
     return 0
 
