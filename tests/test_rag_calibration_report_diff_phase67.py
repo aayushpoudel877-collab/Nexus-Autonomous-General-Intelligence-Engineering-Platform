@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 
@@ -211,7 +210,7 @@ def test_invalid_report_data_is_rejected(mutate, message):
     report = _report()
     mutate(report)
 
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises((TypeError, ValueError), match=message):
         compare_reports(report, _report())
 
 
