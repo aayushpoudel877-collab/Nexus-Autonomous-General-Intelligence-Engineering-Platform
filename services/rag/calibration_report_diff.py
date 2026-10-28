@@ -177,6 +177,7 @@ def find_regressions(
     max_accuracy_drop: float = 0.0,
     max_macro_f1_drop: float = 0.0,
     max_class_f1_drop: float = 0.0,
+    max_group_accuracy_drop: float = 0.0,
     fail_on_new_case_failures: bool = True,
 ) -> list[str]:
     """Return deterministic gate failures for configured maximum metric drops."""
@@ -184,6 +185,7 @@ def find_regressions(
         "max_accuracy_drop": max_accuracy_drop,
         "max_macro_f1_drop": max_macro_f1_drop,
         "max_class_f1_drop": max_class_f1_drop,
+        "max_group_accuracy_drop": max_group_accuracy_drop,
     }
     for name, value in thresholds.items():
         if isinstance(value, bool) or not isinstance(value, (int, float)):
@@ -207,6 +209,16 @@ def find_regressions(
                 f"{status} F1 dropped by {-metrics['f1']:.3f}, "
                 f"exceeding tolerance {max_class_f1_drop:.3f}"
             )
+    for dimension, groups in comparison["breakdown"].items():
+        for group, metrics in groups.items():
+            if not metrics["baseline_present"] or not metrics["current_present"]:
+                continue
+            delta = metrics["accuracy_delta"]
+            if delta < -max_group_accuracy_drop:
+                failures.append(
+                    f"{dimension} group {group} accuracy dropped by {-delta:.3f}, "
+                    f"exceeding tolerance {max_group_accuracy_drop:.3f}"
+                )
     changes = comparison.get("case_changes")
     if fail_on_new_case_failures and changes:
         for case_id in changes["newly_failing"]:
