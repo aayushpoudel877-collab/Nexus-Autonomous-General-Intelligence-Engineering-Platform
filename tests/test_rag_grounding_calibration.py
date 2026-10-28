@@ -20,6 +20,8 @@ def test_grounding_calibration_corpus_matches_expected_labels():
     assert report["interpretation"].startswith("Fixture agreement")
     assert report["breakdown"]["category"]
     assert report["breakdown"]["language"]
+    assert len(report["case_results"]) == report["case_count"]
+    assert all("passed" in result for result in report["case_results"])
 
 
 def test_corpus_case_ids_are_unique():
@@ -68,6 +70,8 @@ def test_report_marks_a_regression_as_failure():
     report = evaluate_cases([case])
     assert report["failed"] == 1
     assert report["failures"][0]["case_id"] == "known-mismatch"
+    assert report["case_results"][0]["passed"] is False
+    assert report["case_results"][0]["actual"] != report["case_results"][0]["expected"]
     assert report["breakdown"]["category"]["storage"]["failed"] == 1
     assert report["breakdown"]["language"]["en"]["accuracy"] == 0.0
 
