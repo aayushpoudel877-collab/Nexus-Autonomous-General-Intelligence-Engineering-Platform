@@ -35,6 +35,10 @@ def main() -> int:
         help="maximum allowed per-status F1 drop (0 to 1; default 0)",
     )
     parser.add_argument(
+        "--max-group-accuracy-drop", type=float, default=0.0,
+        help="maximum allowed category/language accuracy drop (0 to 1; default 0)",
+    )
+    parser.add_argument(
         "--allow-new-case-failures", action="store_true",
         help="do not fail only because previously passing cases now fail",
     )
@@ -48,6 +52,7 @@ def main() -> int:
             max_accuracy_drop=args.max_accuracy_drop,
             max_macro_f1_drop=args.max_macro_f1_drop,
             max_class_f1_drop=args.max_class_f1_drop,
+            max_group_accuracy_drop=args.max_group_accuracy_drop,
             fail_on_new_case_failures=not args.allow_new_case_failures,
         )
     except (OSError, TypeError, ValueError, KeyError) as exc:
