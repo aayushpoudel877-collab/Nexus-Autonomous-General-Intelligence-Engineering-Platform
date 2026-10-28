@@ -118,3 +118,43 @@ def test_invalid_optional_group_metadata_is_rejected():
     }
     with pytest.raises(ValueError, match="category must be a non-empty string"):
         evaluate_cases([case])
+
+
+
+def test_duplicate_evidence_identifiers_are_rejected():
+    case = {
+        "case_id": "duplicate-evidence",
+        "claim": "Nexus stores encrypted records",
+        "citations": ["E1"],
+        "evidence": [
+            {"evidence_id": "E1", "text": "Nexus stores encrypted records"},
+            {"evidence_id": "E1", "text": "Nexus stores encrypted records"},
+        ],
+        "expected_status": "grounded",
+    }
+    with pytest.raises(ValueError, match="duplicate evidence_id"):
+        evaluate_cases([case])
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("citations", [""], "citations must be a list of non-empty strings"),
+        ("citations", ["E1", "E1"], "citations must not contain duplicate"),
+        ("evidence", [{"evidence_id": "", "text": "valid text"}],
+         "non-empty string evidence_id"),
+        ("evidence", [{"evidence_id": "E1", "text": " "}],
+         "non-empty string text"),
+    ],
+)
+def test_invalid_evidence_and_citation_values_are_rejected(field, value, message):
+    case = {
+        "case_id": "invalid-schema",
+        "claim": "Nexus stores encrypted records",
+        "citations": ["E1"],
+        "evidence": [{"evidence_id": "E1", "text": "Nexus stores encrypted records"}],
+        "expected_status": "grounded",
+    }
+    case[field] = value
+    with pytest.raises(ValueError, match=message):
+        evaluate_cases([case])
