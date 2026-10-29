@@ -17,6 +17,7 @@ def evaluate_release_gate(
     max_class_f1_drop: float = 0.0,
     max_group_accuracy_drop: float = 0.0,
     fail_on_new_case_failures: bool = True,
+    fail_on_case_set_change: bool = True,
 ) -> dict[str, Any]:
     """Return a deterministic, auditable release decision from a validated manifest."""
     from services.rag.calibration_baseline import validate_manifest
@@ -29,8 +30,21 @@ def evaluate_release_gate(
         "max_class_f1_drop": max_class_f1_drop,
         "max_group_accuracy_drop": max_group_accuracy_drop,
         "fail_on_new_case_failures": fail_on_new_case_failures,
+        "fail_on_case_set_change": fail_on_case_set_change,
     }
-    regressions = find_regressions(comparison, **policy)
+    regressions = find_regressions(comparison, **{
+        key: value for key, value in policy.items() if key != "fail_on_case_set_change"
+    })
+    case_changes = comparison.get("case_changes") or {}
+    case_set_changes = {
+        "added": case_changes.get("added", []),
+        "removed": case_changes.get("removed", []),
+    }
+    if fail_on_case_set_change:
+        for case_id in case_set_changes["added"]:
+            regressions.append(f"calibration case added: {case_id}")
+        for case_id in case_set_changes["removed"]:
+            regressions.append(f"calibration case removed: {case_id}")
     return {
         "schema_version": 1,
         "decision": "fail" if regressions else "pass",
@@ -46,6 +60,7 @@ def evaluate_release_gate(
         },
         "policy": policy,
         "regressions": regressions,
+        "case_set_changes": case_set_changes,
         "comparison": comparison,
         "interpretation": (
             "This gate checks fixture regression policy only; passing does not establish "
