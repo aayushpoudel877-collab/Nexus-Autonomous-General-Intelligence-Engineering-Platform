@@ -50,6 +50,10 @@ def main() -> int:
     parser.add_argument("--max-class-f1-drop", type=float, default=0.0)
     parser.add_argument("--max-group-accuracy-drop", type=float, default=0.0)
     parser.add_argument("--allow-new-case-failures", action="store_true")
+    parser.add_argument(
+        "--allow-case-set-change", action="store_true",
+        help="allow added or removed calibration cases (requires explicit review)",
+    )
     args = parser.parse_args()
 
     try:
@@ -62,6 +66,7 @@ def main() -> int:
             max_class_f1_drop=args.max_class_f1_drop,
             max_group_accuracy_drop=args.max_group_accuracy_drop,
             fail_on_new_case_failures=not args.allow_new_case_failures,
+            fail_on_case_set_change=not args.allow_case_set_change,
         )
         exit_code = 0 if decision["decision"] == "pass" else 1
     except (OSError, TypeError, ValueError, KeyError) as exc:
