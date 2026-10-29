@@ -29,6 +29,29 @@ jobs:
           name: rag-evaluation-report
           path: rag-evaluation-report.json
           if-no-files-found: ignore
+      - name: Run offline grounding calibration
+        run: python -m services.rag.grounding_calibration_cli --output grounding-calibration-current.json
+      - name: Enforce approved grounding calibration baseline when configured
+        if: ${{ hashFiles('tests/fixtures/rag/grounding-calibration-baseline.json') != '' }}
+        run: >-
+          python -m services.rag.calibration_release_gate_cli
+          --baseline-manifest tests/fixtures/rag/grounding-calibration-baseline.json
+          --current grounding-calibration-current.json
+          --output grounding-calibration-release-decision.json
+      - name: Archive grounding calibration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grounding-calibration-current-report
+          path: grounding-calibration-current.json
+          if-no-files-found: ignore
+      - name: Archive grounding calibration release decision
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grounding-calibration-release-decision
+          path: grounding-calibration-release-decision.json
+          if-no-files-found: ignore
       - name: Run offline prompt-injection evaluation
         run: python -m services.rag.prompt_injection_cli --dataset tests/fixtures/rag/prompt-injection-eval.jsonl --output prompt-injection-report.json
       - name: Archive prompt-injection evaluation report
