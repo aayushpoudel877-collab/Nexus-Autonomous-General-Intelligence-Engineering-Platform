@@ -222,3 +222,39 @@ def test_release_gate_rejects_invalid_metric_tolerance():
         assert "max_accuracy_drop" in str(exc)
     else:
         raise AssertionError("negative tolerance must be rejected")
+
+
+
+def test_cli_requires_explicit_opt_out_for_case_set_change(tmp_path):
+    baseline_path = tmp_path / "baseline.json"
+    current_path = tmp_path / "current.json"
+    output_path = tmp_path / "decision.json"
+    baseline_path.write_text(json.dumps(_manifest()), encoding="utf-8")
+    current = _report()
+    current["case_count"] = 3
+    current["case_results"].append({
+        "case_id": "c", "expected": "grounded", "actual": "grounded", "passed": True,
+    })
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+
+    blocked = _run(
+        "--baseline-manifest", str(baseline_path),
+        "--current", str(current_path),
+        "--output", str(output_path),
+    )
+    assert blocked.returncode == 1
+    assert "calibration case added: c" in json.loads(
+        output_path.read_text(encoding="utf-8")
+    )["regressions"]
+
+    allowed = _run(
+        "--baseline-manifest", str(baseline_path),
+        "--current", str(current_path),
+        "--output", str(output_path),
+        "--allow-case-set-change",
+    )
+    assert allowed.returncode == 0, allowed.stderr
+    artifact = json.loads(output_path.read_text(encoding="utf-8"))
+    assert artifact["decision"] == "pass"
+    assert artifact["policy"]["fail_on_case_set_change"] is False
+    assert artifact["case_set_changes"] == {"added": ["c"], "removed": []}
