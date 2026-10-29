@@ -173,3 +173,52 @@ def test_cli_rejects_non_finite_json_and_still_writes_error_artifact(tmp_path):
 
     assert result.returncode == 2
     assert json.loads(output_path.read_text(encoding="utf-8"))["decision"] == "error"
+
+
+
+def test_release_gate_fails_closed_when_calibration_cases_are_added_or_removed():
+    baseline = _report()
+    added = _report()
+    added["case_count"] = 3
+    added["case_results"].append({
+        "case_id": "c", "expected": "grounded", "actual": "grounded", "passed": True,
+    })
+    removed = _report()
+    removed["case_count"] = 1
+    removed["case_results"] = removed["case_results"][:1]
+
+    added_result = evaluate_release_gate(_manifest(baseline), added)
+    removed_result = evaluate_release_gate(_manifest(baseline), removed)
+
+    assert added_result["decision"] == "fail"
+    assert added_result["case_set_changes"] == {"added": ["c"], "removed": []}
+    assert "calibration case added: c" in added_result["regressions"]
+    assert removed_result["decision"] == "fail"
+    assert removed_result["case_set_changes"] == {"added": [], "removed": ["b"]}
+    assert "calibration case removed: b" in removed_result["regressions"]
+
+
+def test_release_gate_allows_case_set_change_only_with_explicit_override():
+    baseline = _report()
+    current = _report()
+    current["case_count"] = 3
+    current["case_results"].append({
+        "case_id": "c", "expected": "grounded", "actual": "grounded", "passed": True,
+    })
+
+    result = evaluate_release_gate(
+        _manifest(baseline), current, fail_on_case_set_change=False
+    )
+
+    assert result["decision"] == "pass"
+    assert result["case_set_changes"] == {"added": ["c"], "removed": []}
+    assert result["regressions"] == []
+
+
+def test_release_gate_rejects_invalid_metric_tolerance():
+    try:
+        evaluate_release_gate(_manifest(), _report(), max_accuracy_drop=-0.01)
+    except ValueError as exc:
+        assert "max_accuracy_drop" in str(exc)
+    else:
+        raise AssertionError("negative tolerance must be rejected")
