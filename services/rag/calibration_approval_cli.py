@@ -9,10 +9,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from services.rag.calibration_provenance import verify_input_files\nfrom services.rag.calibration_approval import (
+from services.rag.calibration_approval import (
     build_approval_record,
     validate_approval_record,
 )
+from services.rag.calibration_provenance import validate_attestation, verify_input_files
 
 
 def _read_json(path: Path) -> Any:
@@ -26,7 +27,7 @@ def _atomic_write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\\n") as stream:
             stream.write(content)
             stream.flush()
             os.fsync(stream.fileno())
@@ -39,25 +40,42 @@ def _atomic_write(path: Path, content: str) -> None:
         raise
 
 
+def _parse_inputs(values: list[str]) -> dict[str, Path]:
+    inputs: dict[str, Path] = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError("each --input must use LABEL=PATH")
+        label, path = value.split("=", 1)
+        if not label.strip() or not path.strip() or label in inputs:
+            raise ValueError("input labels and paths must be non-empty and labels unique")
+        inputs[label] = Path(path)
+    return inputs
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     create = commands.add_parser("create", help="record an explicit human review decision")
     create.add_argument("--manifest", required=True, type=Path)
     create.add_argument("--attestation", required=True, type=Path)
+    create.add_argument("--input", action="append", required=True, metavar="LABEL=PATH")
     create.add_argument("--reviewer-id", required=True)
     create.add_argument("--review-reason", required=True)
     create.add_argument("--reviewed-at", required=True, help="timezone-aware ISO-8601 timestamp")
     create.add_argument("--output", required=True, type=Path)
-    verify = commands.add_parser("verify", help="verify an approval against manifest and evidence")
+    verify = commands.add_parser("verify", help="verify approval, manifest, and source evidence")
     verify.add_argument("--manifest", required=True, type=Path)
     verify.add_argument("--attestation", required=True, type=Path)
     verify.add_argument("--approval", required=True, type=Path)
+    verify.add_argument("--input", action="append", required=True, metavar="LABEL=PATH")
     args = parser.parse_args(argv)
 
     try:
         manifest = _read_json(args.manifest)
         attestation = _read_json(args.attestation)
+        inputs = _parse_inputs(args.input)
+        validate_attestation(attestation, manifest["report"])
+        verify_input_files(attestation, inputs)
         if args.command == "create":
             record = build_approval_record(
                 manifest,
@@ -68,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             _atomic_write(
                 args.output,
-                json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\\n",
             )
             print(json.dumps({
                 "created": True,
