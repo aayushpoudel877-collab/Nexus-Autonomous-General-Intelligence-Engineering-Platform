@@ -127,7 +127,7 @@ def test_approval_requires_reviewer_reason_and_timezone(reviewer, reason, timest
 
 
 def test_approval_cli_create_and_verify(tmp_path):
-    manifest, attestation, _ = _evidence(tmp_path)
+    manifest, attestation, source = _evidence(tmp_path)
     manifest_path = tmp_path / "manifest.json"
     attestation_path = tmp_path / "attestation.json"
     approval_path = tmp_path / "approval.json"
@@ -141,7 +141,7 @@ def test_approval_cli_create_and_verify(tmp_path):
             "--reviewer-id", "reviewer-17",
             "--review-reason", "Reviewed candidate evidence",
             "--reviewed-at", "2026-10-30T09:00:00Z",
-            "--output", str(approval_path),
+            "--output", str(approval_path), "--input", f"dataset={source}",
         ],
         capture_output=True,
         text=True,
@@ -151,7 +151,7 @@ def test_approval_cli_create_and_verify(tmp_path):
         CLI + [
             "verify", "--manifest", str(manifest_path),
             "--attestation", str(attestation_path),
-            "--approval", str(approval_path),
+            "--approval", str(approval_path), "--input", f"dataset={source}",
         ],
         capture_output=True,
         text=True,
