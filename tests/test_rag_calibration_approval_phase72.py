@@ -197,3 +197,55 @@ def test_approval_cli_rejects_changed_attestation(tmp_path):
     )
     assert created.returncode == 0, created.stderr
     assert verified.returncode == 2
+
+
+def test_approval_record_rejects_boolean_schema_version(tmp_path):
+    manifest, attestation, _ = _evidence(tmp_path)
+    record = build_approval_record(
+        manifest,
+        attestation,
+        reviewer_id="reviewer",
+        review_reason="reviewed",
+        reviewed_at="2026-10-30T09:00:00Z",
+    )
+    record["schema_version"] = True
+    with pytest.raises(ValueError, match="schema_version"):
+        validate_approval_record(record, manifest, attestation)
+
+
+def test_approval_cli_rejects_modified_source_bytes(tmp_path):
+    manifest, attestation, source = _evidence(tmp_path)
+    manifest_path = tmp_path / "manifest.json"
+    attestation_path = tmp_path / "attestation.json"
+    approval_path = tmp_path / "approval.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    attestation_path.write_text(json.dumps(attestation), encoding="utf-8")
+    created = subprocess.run(
+        CLI + [
+            "create", "--manifest", str(manifest_path),
+            "--attestation", str(attestation_path),
+            "--input", f"dataset={source}",
+            "--reviewer-id", "reviewer",
+            "--review-reason", "Reviewed",
+            "--reviewed-at", "2026-10-30T09:00:00Z",
+            "--output", str(approval_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    source.write_text("changed bytes", encoding="utf-8")
+    verified = subprocess.run(
+        CLI + [
+            "verify", "--manifest", str(manifest_path),
+            "--attestation", str(attestation_path),
+            "--approval", str(approval_path),
+            "--input", f"dataset={source}",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert created.returncode == 0, created.stderr
+    assert verified.returncode == 2
+    assert "input mismatch" in verified.stderr
