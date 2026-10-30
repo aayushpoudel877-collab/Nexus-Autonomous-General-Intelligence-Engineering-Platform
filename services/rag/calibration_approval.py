@@ -92,7 +92,8 @@ def validate_approval_record(
         review_reason=record["review_reason"],
         reviewed_at=record["reviewed_at"],
     )
-    if record.get("schema_version") != APPROVAL_SCHEMA_VERSION:
+    schema_version = record.get("schema_version")
+    if isinstance(schema_version, bool) or schema_version != APPROVAL_SCHEMA_VERSION:
         raise ValueError("unsupported approval record schema_version")
     if record.get("decision") != "approved":
         raise ValueError("approval record decision must be approved")
