@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from services.rag.calibration_baseline import sha256_json, validate_report
 
@@ -52,7 +52,8 @@ def validate_attestation(attestation: Any, report: Any) -> dict[str, Any]:
     validate_report(report)
     if not isinstance(attestation, dict):
         raise TypeError("provenance attestation must be a JSON object")
-    if attestation.get("schema_version") != ATTESTATION_SCHEMA_VERSION:
+    schema_version = attestation.get("schema_version")
+    if isinstance(schema_version, bool) or schema_version != ATTESTATION_SCHEMA_VERSION:
         raise ValueError("unsupported provenance attestation schema_version")
     if attestation.get("report_sha256") != sha256_json(report):
         raise ValueError("provenance report SHA-256 does not match report")
