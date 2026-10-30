@@ -27,7 +27,7 @@ def _write_atomic(path: Path, payload: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\\n") as stream:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
@@ -79,7 +79,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write_atomic(
                 args.output,
-                json.dumps(attestation, ensure_ascii=False, indent=2, sort_keys=True) + "\\n",
+                json.dumps(attestation, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
             )
             print(json.dumps({"created": True, "report_sha256": attestation["report_sha256"]}))
             return 0
