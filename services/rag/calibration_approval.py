@@ -14,7 +14,7 @@ def _validate_timestamp(value: Any) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError("reviewed_at must be a timezone-aware ISO-8601 timestamp")
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value)
     except ValueError as exc:
         raise ValueError("reviewed_at must be a timezone-aware ISO-8601 timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
