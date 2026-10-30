@@ -65,7 +65,7 @@ def test_approval_record_binds_manifest_attestation_and_reviewer(tmp_path):
 
 
 def test_approval_rejects_attestation_for_different_report(tmp_path):
-    manifest, attestation, source = _evidence(tmp_path)
+    manifest, _attestation, source = _evidence(tmp_path)
     altered_report = _report()
     altered_report["accuracy"] = 0.5
     unrelated = build_attestation(
