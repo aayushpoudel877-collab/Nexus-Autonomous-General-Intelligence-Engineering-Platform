@@ -116,3 +116,25 @@ def test_attestation_requires_revision_and_evaluator(tmp_path, revision, evaluat
             _report(), inputs={"dataset": dataset},
             source_revision=revision, evaluator=evaluator,
         )
+
+
+def test_attestation_rejects_boolean_schema_version(tmp_path):
+    dataset = tmp_path / "dataset.jsonl"
+    dataset.write_text("data", encoding="utf-8")
+    attestation = build_attestation(
+        _report(), inputs={"dataset": dataset}, source_revision="abc", evaluator="eval"
+    )
+    attestation["schema_version"] = True
+    with pytest.raises(ValueError, match="schema_version"):
+        validate_attestation(attestation, _report())
+
+
+def test_attestation_rejects_malformed_input_digest(tmp_path):
+    dataset = tmp_path / "dataset.jsonl"
+    dataset.write_text("data", encoding="utf-8")
+    attestation = build_attestation(
+        _report(), inputs={"dataset": dataset}, source_revision="abc", evaluator="eval"
+    )
+    attestation["inputs"]["dataset"]["sha256"] = "not-a-digest"
+    with pytest.raises(ValueError, match="invalid SHA-256"):
+        validate_attestation(attestation, _report())
