@@ -46,8 +46,10 @@ def validate_github_review_payload(
     minimum_approvals: int = 1,
 ) -> dict[str, Any]:
     """Validate API-shaped PR/review data and calculate current trusted approvals."""
-    if not _REPOSITORY.fullmatch(repository):
-        raise ValueError("repository must use owner/name format")
+    if not _REPOSITORY.fullmatch(repository) or any(
+        part in {".", ".."} for part in repository.split("/")
+    ):
+        raise ValueError("repository must use a safe owner/name format")
     if isinstance(pull_request_number, bool) or not isinstance(pull_request_number, int) or pull_request_number < 1:
         raise ValueError("pull_request_number must be a positive integer")
     if not isinstance(expected_head_sha, str) or not _SHA.fullmatch(expected_head_sha):
@@ -148,10 +150,14 @@ def fetch_github_review_evidence(
     minimum_approvals: int = 1,
 ) -> dict[str, Any]:
     """Fetch PR and all review pages from GitHub using a workflow/API token."""
-    if not _REPOSITORY.fullmatch(repository):
-        raise ValueError("repository must use owner/name format")
+    if not _REPOSITORY.fullmatch(repository) or any(
+        part in {".", ".."} for part in repository.split("/")
+    ):
+        raise ValueError("repository must use a safe owner/name format")
     if not isinstance(token, str) or not token.strip():
         raise ValueError("GITHUB_TOKEN is required to fetch trusted review evidence")
+    if "\\r" in token or "\\n" in token:
+        raise ValueError("GITHUB_TOKEN contains invalid header characters")
     if isinstance(pull_request_number, bool) or not isinstance(pull_request_number, int) or pull_request_number < 1:
         raise ValueError("pull_request_number must be a positive integer")
     root = f"{_API_ROOT}/repos/{repository}/pulls/{pull_request_number}"
