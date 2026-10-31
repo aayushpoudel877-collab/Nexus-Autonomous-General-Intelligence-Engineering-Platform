@@ -10,6 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from services.rag.calibration_release_gate import evaluate_release_gate_from_path
+from services.rag.calibration_governance import (
+    evaluate_governed_release,
+    fetch_github_review_evidence,
+)
 
 
 def _read_json(path: Path) -> Any:
@@ -40,7 +44,7 @@ def _atomic_write(path: Path, payload: str) -> None:
         raise
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-manifest", required=True, type=Path)
     parser.add_argument("--current", required=True, type=Path, help="current report JSON")
@@ -50,14 +54,60 @@ def main() -> int:
     parser.add_argument("--max-class-f1-drop", type=float, default=0.0)
     parser.add_argument("--max-group-accuracy-drop", type=float, default=0.0)
     parser.add_argument("--allow-new-case-failures", action="store_true")
+    parser.add_argument("--require-governance", action="store_true")
+    parser.add_argument("--attestation", type=Path)
+    parser.add_argument("--approval", type=Path)
+    parser.add_argument("--ledger", type=Path)
+    parser.add_argument("--input", action="append", default=[], metavar="LABEL=PATH")
+    parser.add_argument("--repository")
+    parser.add_argument("--pull-request", type=int)
+    parser.add_argument("--allowed-reviewer", action="append", default=[])
+    parser.add_argument("--minimum-approvals", type=int, default=1)
     parser.add_argument(
         "--allow-case-set-change", action="store_true",
         help="allow added or removed calibration cases (requires explicit review)",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     try:
         current = _read_json(args.current)
+        governance_args = [args.attestation, args.approval, args.ledger, args.repository, args.pull_request]
+        if args.require_governance:
+            if any(value is None for value in governance_args) or not args.allowed_reviewer or not args.input:
+                raise ValueError("--require-governance needs attestation, approval, ledger, repository, pull request, allowlisted reviewer(s), and input(s)")
+            if args.minimum_approvals < 1:
+                raise ValueError("--minimum-approvals must be at least one")
+            input_paths: dict[str, Path] = {}
+            for item in args.input:
+                if "=" not in item:
+                    raise ValueError("each --input must use LABEL=PATH")
+                label, raw_path = item.split("=", 1)
+                if not label.strip() or not raw_path.strip() or label in input_paths:
+                    raise ValueError("--input labels and paths must be non-empty and labels unique")
+                input_paths[label] = Path(raw_path)
+            manifest_data = _read_json(args.baseline_manifest)
+            attestation_data = _read_json(args.attestation)
+            approval_data = _read_json(args.approval)
+            ledger_data = _read_json(args.ledger)
+            github_evidence = fetch_github_review_evidence(
+                repository=args.repository,
+                pull_request_number=args.pull_request,
+                expected_head_sha=attestation_data.get("source_revision"),
+                approval_reviewer_id=approval_data.get("reviewer_id"),
+                allowed_reviewers=set(args.allowed_reviewer),
+                token=os.environ.get("GITHUB_TOKEN", ""),
+                minimum_approvals=args.minimum_approvals,
+            )
+            governance_decision = evaluate_governed_release(
+                manifest=manifest_data,
+                attestation=attestation_data,
+                approval_record=approval_data,
+                ledger=ledger_data,
+                inputs=input_paths,
+                github_evidence=github_evidence,
+            )
+        elif any(value is not None for value in governance_args) or args.allowed_reviewer or args.input:
+            raise ValueError("governance evidence arguments require --require-governance")
         decision = evaluate_release_gate_from_path(
             str(args.baseline_manifest),
             current,
@@ -68,6 +118,8 @@ def main() -> int:
             fail_on_new_case_failures=not args.allow_new_case_failures,
             fail_on_case_set_change=not args.allow_case_set_change,
         )
+        if args.require_governance:
+            decision["governance"] = governance_decision
         exit_code = 0 if decision["decision"] == "pass" else 1
     except (OSError, TypeError, ValueError, KeyError) as exc:
         decision = {
