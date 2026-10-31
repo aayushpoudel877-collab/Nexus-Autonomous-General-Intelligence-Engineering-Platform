@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from services.rag import calibration_governance
 from services.rag.calibration_governance import validate_github_review_payload
 
 REPOSITORY = "aayushpoudel877-collab/Nexus-Autonomous-General-Intelligence-Engineering-Platform"
@@ -118,3 +119,47 @@ def test_github_review_evidence_requires_valid_sha_and_allowlist():
         _validate(expected_head_sha="short")
     with pytest.raises(ValueError, match="allowlisted"):
         _validate(allowed_reviewers=set())
+
+
+
+def test_github_review_fetch_requires_api_token():
+    with pytest.raises(ValueError, match="GITHUB_TOKEN"):
+        calibration_governance.fetch_github_review_evidence(
+            repository="owner/repo",
+            pull_request_number=74,
+            expected_head_sha=HEAD,
+            approval_reviewer_id="reviewer-17",
+            allowed_reviewers={"reviewer-17"},
+            token="",
+        )
+
+
+def test_github_review_fetch_paginates_all_review_pages(monkeypatch):
+    calls = []
+
+    def fake_get(url, token):
+        calls.append((url, token))
+        if url.endswith("/pulls/74"):
+            return _pr()
+        if "page=1" in url:
+            return [_review()] + [
+                _review(login="noise-reviewer", state="COMMENTED")
+                for _ in range(99)
+            ]
+        if "page=2" in url:
+            return [_review(login="reviewer-22", submitted="2026-10-31T09:15:00Z")]
+        raise AssertionError(f"unexpected API request: {url}")
+
+    monkeypatch.setattr(calibration_governance, "_github_get", fake_get)
+    result = calibration_governance.fetch_github_review_evidence(
+        repository=REPOSITORY,
+        pull_request_number=74,
+        expected_head_sha=HEAD,
+        approval_reviewer_id="reviewer-17",
+        allowed_reviewers={"reviewer-17", "reviewer-22"},
+        token="api-token",
+        minimum_approvals=2,
+    )
+    assert result["approved_reviewers"] == ["reviewer-17", "reviewer-22"]
+    assert len(calls) == 3
+    assert all(token == "api-token" for _, token in calls)
