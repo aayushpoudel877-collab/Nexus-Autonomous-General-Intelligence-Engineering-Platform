@@ -1,0 +1,91 @@
+name: Calibration Governance Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_manifest:
+        description: Path to the explicitly approved baseline manifest
+        required: true
+        type: string
+      current_report:
+        description: Path to the candidate calibration report
+        required: true
+        type: string
+      attestation:
+        description: Path to the provenance attestation
+        required: true
+        type: string
+      approval:
+        description: Path to the approval record
+        required: true
+        type: string
+      ledger:
+        description: Path to the approval lifecycle ledger
+        required: true
+        type: string
+      dataset:
+        description: Path to the exact attested input dataset
+        required: true
+        type: string
+      pull_request:
+        description: Merged GitHub pull request number for the attested source revision
+        required: true
+        type: string
+      allowed_reviewers:
+        description: Comma-separated trusted GitHub login allowlist
+        required: true
+        type: string
+      minimum_approvals:
+        description: Minimum number of distinct trusted approvals
+        required: true
+        default: "1"
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  governed-calibration-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+      - name: Verify trusted reviews, active approval, provenance, and regression policy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASELINE_MANIFEST: ${{ inputs.baseline_manifest }}
+          CURRENT_REPORT: ${{ inputs.current_report }}
+          ATTESTATION: ${{ inputs.attestation }}
+          APPROVAL: ${{ inputs.approval }}
+          LEDGER: ${{ inputs.ledger }}
+          DATASET: ${{ inputs.dataset }}
+          PULL_REQUEST: ${{ inputs.pull_request }}
+          ALLOWED_REVIEWERS: ${{ inputs.allowed_reviewers }}
+          MINIMUM_APPROVALS: ${{ inputs.minimum_approvals }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          python -m services.rag.calibration_release_gate_cli \
+            --baseline-manifest "$BASELINE_MANIFEST" \
+            --current "$CURRENT_REPORT" \
+            --output calibration-governance-decision.json \
+            --require-governance \
+            --attestation "$ATTESTATION" \
+            --approval "$APPROVAL" \
+            --ledger "$LEDGER" \
+            --input "dataset=$DATASET" \
+            --repository "$REPOSITORY" \
+            --pull-request "$PULL_REQUEST" \
+            --allowed-reviewer "$ALLOWED_REVIEWERS" \
+            --minimum-approvals "$MINIMUM_APPROVALS"
+      - name: Archive governed calibration decision
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calibration-governance-decision
+          path: calibration-governance-decision.json
+          if-no-files-found: ignore
