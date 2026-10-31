@@ -156,7 +156,7 @@ def fetch_github_review_evidence(
         raise ValueError("repository must use a safe owner/name format")
     if not isinstance(token, str) or not token.strip():
         raise ValueError("GITHUB_TOKEN is required to fetch trusted review evidence")
-    if "\\r" in token or "\\n" in token:
+    if "\r" in token or "\n" in token:
         raise ValueError("GITHUB_TOKEN contains invalid header characters")
     if isinstance(pull_request_number, bool) or not isinstance(pull_request_number, int) or pull_request_number < 1:
         raise ValueError("pull_request_number must be a positive integer")
