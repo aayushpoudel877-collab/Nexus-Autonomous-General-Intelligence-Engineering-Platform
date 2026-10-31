@@ -10,10 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from services.rag.calibration_release_gate import evaluate_release_gate_from_path
-from services.rag.calibration_governance import (
-    evaluate_governed_release,
-    fetch_github_review_evidence,
-)
+from services.rag.calibration_governance import evaluate_governed_release
 
 
 def _read_json(path: Path) -> Any:
@@ -89,22 +86,17 @@ def main(argv: list[str] | None = None) -> int:
             attestation_data = _read_json(args.attestation)
             approval_data = _read_json(args.approval)
             ledger_data = _read_json(args.ledger)
-            github_evidence = fetch_github_review_evidence(
-                repository=args.repository,
-                pull_request_number=args.pull_request,
-                expected_head_sha=attestation_data.get("source_revision"),
-                approval_reviewer_id=approval_data.get("reviewer_id"),
-                allowed_reviewers={name.strip() for value in args.allowed_reviewer for name in value.split(",") if name.strip()},
-                token=os.environ.get("GITHUB_TOKEN", ""),
-                minimum_approvals=args.minimum_approvals,
-            )
             governance_decision = evaluate_governed_release(
                 manifest=manifest_data,
                 attestation=attestation_data,
                 approval_record=approval_data,
                 ledger=ledger_data,
                 inputs=input_paths,
-                github_evidence=github_evidence,
+                repository=args.repository,
+                pull_request_number=args.pull_request,
+                allowed_reviewers={name.strip() for value in args.allowed_reviewer for name in value.split(",") if name.strip()},
+                token=os.environ.get("GITHUB_TOKEN", ""),
+                minimum_approvals=args.minimum_approvals,
             )
         elif any(value is not None for value in governance_args) or args.allowed_reviewer or args.input:
             raise ValueError("governance evidence arguments require --require-governance")
