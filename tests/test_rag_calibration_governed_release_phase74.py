@@ -4,6 +4,8 @@ import json
 
 import pytest
 
+from services.rag import calibration_release_gate_cli
+
 from services.rag.calibration_approval import build_approval_record
 from services.rag.calibration_approval_ledger import append_lifecycle_event, new_ledger
 from services.rag.calibration_baseline import build_manifest
@@ -128,3 +130,57 @@ def test_governed_release_rejects_malformed_github_evidence(tmp_path):
             manifest=manifest, attestation=attestation, approval_record=approval,
             ledger=ledger, inputs=inputs, github_evidence=evidence,
         )
+
+
+
+def test_release_gate_cli_can_require_trusted_governance(tmp_path, monkeypatch):
+    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
+    baseline_path = tmp_path / "baseline.json"
+    attestation_path = tmp_path / "attestation.json"
+    approval_path = tmp_path / "approval.json"
+    ledger_path = tmp_path / "ledger.json"
+    current_path = tmp_path / "current.json"
+    output_path = tmp_path / "decision.json"
+    baseline_path.write_text(json.dumps(manifest), encoding="utf-8")
+    attestation_path.write_text(json.dumps(attestation), encoding="utf-8")
+    approval_path.write_text(json.dumps(approval), encoding="utf-8")
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+    current_path.write_text(json.dumps(_report()), encoding="utf-8")
+    monkeypatch.setenv("GITHUB_TOKEN", "test-token")
+    monkeypatch.setattr(
+        calibration_release_gate_cli,
+        "fetch_github_review_evidence",
+        lambda **kwargs: evidence,
+    )
+    result = calibration_release_gate_cli.main([
+        "--baseline-manifest", str(baseline_path),
+        "--current", str(current_path),
+        "--output", str(output_path),
+        "--require-governance",
+        "--attestation", str(attestation_path),
+        "--approval", str(approval_path),
+        "--ledger", str(ledger_path),
+        "--input", f"dataset={inputs['dataset']}",
+        "--repository", "owner/repo",
+        "--pull-request", "74",
+        "--allowed-reviewer", "reviewer-17",
+    ])
+    decision = json.loads(output_path.read_text(encoding="utf-8"))
+    assert result == 0
+    assert decision["decision"] == "pass"
+    assert decision["governance"]["verified"] is True
+
+
+def test_release_gate_cli_fails_closed_when_governance_inputs_are_incomplete(tmp_path):
+    current = tmp_path / "current.json"
+    current.write_text(json.dumps(_report()), encoding="utf-8")
+    result = calibration_release_gate_cli.main([
+        "--baseline-manifest", str(tmp_path / "missing-manifest.json"),
+        "--current", str(current),
+        "--output", str(tmp_path / "decision.json"),
+        "--require-governance",
+    ])
+    assert result == 2
+    decision = json.loads((tmp_path / "decision.json").read_text(encoding="utf-8"))
+    assert decision["decision"] == "error"
+    assert "needs attestation" in decision["error"]
