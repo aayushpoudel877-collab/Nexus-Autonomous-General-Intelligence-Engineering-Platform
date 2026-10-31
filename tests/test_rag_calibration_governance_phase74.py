@@ -163,3 +163,29 @@ def test_github_review_fetch_paginates_all_review_pages(monkeypatch):
     assert result["approved_reviewers"] == ["reviewer-17", "reviewer-22"]
     assert len(calls) == 3
     assert all(token == "api-token" for _, token in calls)
+
+
+
+@pytest.mark.parametrize("repository", ["owner/../repo", "owner/repo/extra", "../repo"])
+def test_github_review_fetch_rejects_unsafe_repository_path(repository):
+    with pytest.raises(ValueError, match="safe owner/name"):
+        calibration_governance.fetch_github_review_evidence(
+            repository=repository,
+            pull_request_number=74,
+            expected_head_sha=HEAD,
+            approval_reviewer_id="reviewer-17",
+            allowed_reviewers={"reviewer-17"},
+            token="api-token",
+        )
+
+
+def test_github_review_fetch_rejects_newline_in_token():
+    with pytest.raises(ValueError, match="header characters"):
+        calibration_governance.fetch_github_review_evidence(
+            repository="owner/repo",
+            pull_request_number=74,
+            expected_head_sha=HEAD,
+            approval_reviewer_id="reviewer-17",
+            allowed_reviewers={"reviewer-17"},
+            token="token\nInjected: true",
+        )
