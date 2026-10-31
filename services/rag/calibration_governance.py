@@ -24,9 +24,9 @@ _API_ROOT = "https://api.github.com"
 
 def _parse_time(value: Any) -> datetime:
     if not isinstance(value, str):
-        raise ValueError("GitHub review submitted_at must be a timestamp")
+        raise TypeError("GitHub review submitted_at must be a timestamp")
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value)
     except ValueError as exc:
         raise ValueError("GitHub review submitted_at is malformed") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
@@ -161,7 +161,7 @@ def fetch_github_review_evidence(
     while True:
         page_data = _github_get(f"{root}/reviews?per_page=100&page={page}", token)
         if not isinstance(page_data, list):
-            raise ValueError("GitHub reviews endpoint returned an invalid page")
+            raise TypeError("GitHub reviews endpoint returned an invalid page")
         reviews.extend(page_data)
         if len(page_data) < 100:
             break
