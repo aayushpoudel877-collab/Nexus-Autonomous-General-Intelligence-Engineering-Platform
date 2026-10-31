@@ -141,12 +141,12 @@ def test_github_review_fetch_paginates_all_review_pages(monkeypatch):
         calls.append((url, token))
         if url.endswith("/pulls/74"):
             return _pr()
-        if "page=1" in url:
+        if url.endswith("page=1"):
             return [_review()] + [
                 _review(login="noise-reviewer", state="COMMENTED")
                 for _ in range(99)
             ]
-        if "page=2" in url:
+        if url.endswith("page=2"):
             return [_review(login="reviewer-22", submitted="2026-10-31T09:15:00Z")]
         raise AssertionError(f"unexpected API request: {url}")
 
