@@ -12,7 +12,8 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Hybrid lexical retrieval with optional externally generated dense similarity scores.
 - Evidence packaging, citation-reference validation, and retrieval metrics.
 - Unicode-aware lexical claim-grounding baseline with conservative abstention signals; lexical overlap is not semantic entailment.
-- Content-addressed, versioned grounding calibration baseline manifests with explicit approval reasons, hash verification, and guarded baseline replacement.\n- Reproducible calibration provenance sidecars binding reports to source revisions, evaluator identifiers, and exact input-file hashes; provenance is not approval.
+- Content-addressed, versioned grounding calibration baseline manifests with explicit approval reasons, hash verification, and guarded baseline replacement.
+- Reproducible calibration provenance sidecars binding reports to source revisions, evaluator identifiers, and exact input-file hashes; provenance is not approval.
 - Deterministic grounding calibration release decisions with configurable regression tolerances, fail-closed manifest validation, atomic JSON decision artifacts, and default rejection of calibration case-set drift.
 - Validated multimodal text representations with source provenance, credential-like metadata filtering, and collision-safe representation IDs; OCR/transcription providers remain unconnected.
 - Bounded graph-assisted retrieval over explicit tenant-scoped entity/chunk associations, with deterministic paths and limits on seeds, edges, entities, associations, and hops.
