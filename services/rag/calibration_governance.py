@@ -71,8 +71,10 @@ def validate_github_review_payload(
         raise ValueError("GitHub pull request belongs to a different repository")
     if pull_request.get("number") != pull_request_number:
         raise ValueError("GitHub pull request number does not match the requested record")
-    if pull_request.get("state") != "open" or pull_request.get("merged") is True:
-        raise ValueError("GitHub pull request must remain open and unmerged for review evidence")
+    if pull_request.get("state") != "closed" or pull_request.get("merged") is not True:
+        raise ValueError("GitHub pull request must be merged for release approval evidence")
+    if not isinstance(pull_request.get("merged_at"), str) or not pull_request["merged_at"]:
+        raise ValueError("merged GitHub pull request is missing merged_at")
     if head_sha != expected_head_sha:
         raise ValueError("GitHub pull request head does not match the attested source revision")
 
