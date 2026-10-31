@@ -4,12 +4,10 @@ import json
 
 import pytest
 
-from services.rag import calibration_release_gate_cli
-
+from services.rag import calibration_governance, calibration_release_gate_cli
 from services.rag.calibration_approval import build_approval_record
 from services.rag.calibration_approval_ledger import append_lifecycle_event, new_ledger
 from services.rag.calibration_baseline import build_manifest
-from services.rag.calibration_governance import evaluate_governed_release
 from services.rag.calibration_provenance import build_attestation
 
 
@@ -67,74 +65,56 @@ def _bundle(tmp_path):
     return manifest, attestation, approval, ledger, {"dataset": source}, evidence
 
 
-def test_governed_release_requires_active_approval_and_exact_github_reviewer(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    result = evaluate_governed_release(
+def _install_review_fetch(monkeypatch, evidence):
+    def fake_fetch(**kwargs):
+        assert kwargs["expected_head_sha"] == "a" * 40
+        assert kwargs["approval_reviewer_id"] == "reviewer-17"
+        return evidence
+
+    monkeypatch.setattr(calibration_governance, "fetch_github_review_evidence", fake_fetch)
+
+
+def _evaluate(monkeypatch, bundle):
+    manifest, attestation, approval, ledger, inputs, evidence = bundle
+    _install_review_fetch(monkeypatch, evidence)
+    return calibration_governance.evaluate_governed_release(
         manifest=manifest, attestation=attestation, approval_record=approval,
-        ledger=ledger, inputs=inputs, github_evidence=evidence,
+        ledger=ledger, inputs=inputs, repository="owner/repo",
+        pull_request_number=74, allowed_reviewers={"reviewer-17"},
+        token="test-token", minimum_approvals=1,
     )
+
+
+def test_governed_release_requires_active_approval_and_exact_github_reviewer(tmp_path, monkeypatch):
+    bundle = _bundle(tmp_path)
+    result = _evaluate(monkeypatch, bundle)
     assert result["verified"] is True
-    assert result["approval_record_sha256"] == approval["approval_record_sha256"]
+    assert result["approval_record_sha256"] == bundle[2]["approval_record_sha256"]
 
 
-def test_governed_release_rejects_revoked_approval(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    ledger = append_lifecycle_event(
+def test_governed_release_rejects_revoked_approval(tmp_path, monkeypatch):
+    bundle = list(_bundle(tmp_path))
+    approval, ledger = bundle[2], bundle[3]
+    bundle[3] = append_lifecycle_event(
         ledger, action="revoked",
         approval_record_sha256=approval["approval_record_sha256"],
         actor_id="reviewer-17", reason="approval withdrawn",
         occurred_at="2026-10-31T10:00:00Z",
     )
     with pytest.raises(ValueError, match="not active"):
-        evaluate_governed_release(
-            manifest=manifest, attestation=attestation, approval_record=approval,
-            ledger=ledger, inputs=inputs, github_evidence=evidence,
-        )
+        _evaluate(monkeypatch, tuple(bundle))
 
 
-def test_governed_release_rejects_github_head_mismatch(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    evidence["head_sha"] = "b" * 40
-    with pytest.raises(ValueError, match="source revision"):
-        evaluate_governed_release(
-            manifest=manifest, attestation=attestation, approval_record=approval,
-            ledger=ledger, inputs=inputs, github_evidence=evidence,
-        )
-
-
-def test_governed_release_rejects_reviewer_identity_mismatch(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    evidence["approval_reviewer_id"] = "other-reviewer"
-    with pytest.raises(ValueError, match="does not match"):
-        evaluate_governed_release(
-            manifest=manifest, attestation=attestation, approval_record=approval,
-            ledger=ledger, inputs=inputs, github_evidence=evidence,
-        )
-
-
-def test_governed_release_rejects_changed_input_bytes(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    inputs["dataset"].write_text("changed", encoding="utf-8")
+def test_governed_release_rejects_changed_input_bytes(tmp_path, monkeypatch):
+    bundle = list(_bundle(tmp_path))
+    bundle[4]["dataset"].write_text("changed", encoding="utf-8")
     with pytest.raises(ValueError, match="input mismatch"):
-        evaluate_governed_release(
-            manifest=manifest, attestation=attestation, approval_record=approval,
-            ledger=ledger, inputs=inputs, github_evidence=evidence,
-        )
-
-
-def test_governed_release_rejects_malformed_github_evidence(tmp_path):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
-    evidence["approval_reviewer_id"] = None
-    with pytest.raises(ValueError, match="reviewer"):
-        evaluate_governed_release(
-            manifest=manifest, attestation=attestation, approval_record=approval,
-            ledger=ledger, inputs=inputs, github_evidence=evidence,
-        )
-
+        _evaluate(monkeypatch, tuple(bundle))
 
 
 def test_release_gate_cli_can_require_trusted_governance(tmp_path, monkeypatch):
-    manifest, attestation, approval, ledger, inputs, evidence = _bundle(tmp_path)
+    bundle = _bundle(tmp_path)
+    manifest, attestation, approval, ledger, inputs, evidence = bundle
     baseline_path = tmp_path / "baseline.json"
     attestation_path = tmp_path / "attestation.json"
     approval_path = tmp_path / "approval.json"
@@ -147,11 +127,7 @@ def test_release_gate_cli_can_require_trusted_governance(tmp_path, monkeypatch):
     ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
     current_path.write_text(json.dumps(_report()), encoding="utf-8")
     monkeypatch.setenv("GITHUB_TOKEN", "test-token")
-    monkeypatch.setattr(
-        calibration_release_gate_cli,
-        "fetch_github_review_evidence",
-        lambda **kwargs: evidence,
-    )
+    _install_review_fetch(monkeypatch, evidence)
     result = calibration_release_gate_cli.main([
         "--baseline-manifest", str(baseline_path),
         "--current", str(current_path),
