@@ -36,3 +36,32 @@ This is a multi-phase research and engineering program. A large commit count is 
 - **Phase 53 — PostgreSQL idempotency and concurrency validation (integration tests added; pending CI):** exercises exact retry replay, changed-metadata conflict, and concurrent duplicate requests against the migrated PostgreSQL schema. The migration job runs the tests after its clean upgrade. These tests validate the unique-index invariant but do not prove all API-level tenant-isolation or prompt-injection controls; review CI results and security findings before marking the phase complete.
 
 A phase is complete only when its acceptance criteria, tests, documentation, and security review are recorded. Avoid artificial commits; use focused commits for meaningful increments.
+
+## Subsequent delivery record (Phases 54–75)
+
+The entries below extend the original Phase 26–53 foundation record. Detailed scope and acceptance notes live in the phase documents and merged pull requests.
+
+- **Phase 54 — Source artifact integrity:** bounded SHA-256 verification of source bytes with privacy-safe receipts.
+- **Phase 55 — Integrity worker foundation:** worker and persistence normalization for source-integrity processing.
+- **Phase 56 — Integrity regression corpus:** 100 separately reviewable source-integrity regression vectors and a data-driven test harness.
+- **Phase 57 — Evidence and citation integrity:** bounded structural validation of evidence records, source locators, offsets, scores, quotes, and citation references.
+- **Phase 58 — Grounding calibration corpus:** reproducible calibration fixtures and baseline reporting.
+- **Phase 59 — Calibration edge cases:** boundary and malformed-input regression coverage.
+- **Phase 60 — Calibration group breakdowns:** deterministic category/language accuracy reporting.
+- **Phase 61 — Calibration diversity:** expanded fixture diversity.
+- **Phase 62 — Calibration boundaries and Unicode:** input-boundary and Unicode regression coverage.
+- **Phase 63 — Calibration reporting corpus:** expanded reporting fixtures.
+- **Phase 64 — Calibration CLI and accuracy gate:** targeted calibration execution and threshold enforcement.
+- **Phase 65 — Calibration schema validation:** strict fixture schema hardening.
+- **Phase 66 — Per-status calibration metrics:** status-level metrics and macro-F1 release threshold.
+- **Phase 67 — Calibration report comparison:** baseline/candidate comparison and regression tracking.
+- **Phase 68 — Approved calibration baselines:** content-addressed baseline manifests and approval governance.
+- **Phase 69 — Calibration release gates:** automated release decisions and CI integration.
+- **Phase 70 — Calibration corpus drift protection:** explicit case-set drift policy.
+- **Phase 71 — Calibration provenance attestations:** report/source-revision and input-file hash attestations.
+- **Phase 72 — Calibration approval governance:** explicit approval records bound to baseline and provenance.
+- **Phase 73 — Approval lifecycle:** hash-chained approval activation/revocation ledger.
+- **Phase 74 — Trusted reviewer release enforcement:** authenticated GitHub review evidence bound to the attested source revision and active approval lifecycle.
+- **Phase 75 — Bounded trusted review ingestion:** per-response byte limits, aggregate review-count limits, and pagination request bounds for GitHub review evidence.
+
+Phase 75 adds resource bounds only; it does not change reviewer trust policy or claim that GitHub account identity proves a reviewer's legal identity. See `docs/rag-grounding-calibration-phase-75.md`.
