@@ -182,9 +182,13 @@ def evaluate_governed_release(
     approval_record: Any,
     ledger: Any,
     inputs: dict[str, Any],
-    github_evidence: dict[str, Any],
+    repository: str,
+    pull_request_number: int,
+    allowed_reviewers: set[str],
+    token: str,
+    minimum_approvals: int = 1,
 ) -> dict[str, Any]:
-    """Require an exact, active approval and trusted GitHub evidence before release."""
+    """Fetch trusted GitHub evidence and require an exact, active approval before release."""
     checked_attestation = validate_attestation(attestation, manifest["report"])
     verify_input_files(checked_attestation, inputs)
     checked_approval = validate_approval_record(approval_record, manifest, checked_attestation)
@@ -192,11 +196,15 @@ def evaluate_governed_release(
     digest = checked_approval["approval_record_sha256"]
     if digest not in active_approvals(checked_ledger):
         raise ValueError("approval record is not active in the verified lifecycle ledger")
-    if github_evidence.get("head_sha") != checked_attestation.get("source_revision"):
-        raise ValueError("trusted GitHub review head does not match attested source revision")
-    evidence_reviewer = github_evidence.get("approval_reviewer_id")
-    if not isinstance(evidence_reviewer, str) or evidence_reviewer.casefold() != checked_approval["reviewer_id"].casefold():
-        raise ValueError("trusted GitHub reviewer does not match approval record reviewer")
+    github_evidence = fetch_github_review_evidence(
+        repository=repository,
+        pull_request_number=pull_request_number,
+        expected_head_sha=checked_attestation["source_revision"],
+        approval_reviewer_id=checked_approval["reviewer_id"],
+        allowed_reviewers=allowed_reviewers,
+        token=token,
+        minimum_approvals=minimum_approvals,
+    )
     return {
         "verified": True,
         "approval_record_sha256": digest,
