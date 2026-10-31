@@ -94,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
                 pull_request_number=args.pull_request,
                 expected_head_sha=attestation_data.get("source_revision"),
                 approval_reviewer_id=approval_data.get("reviewer_id"),
-                allowed_reviewers=set(args.allowed_reviewer),
+                allowed_reviewers={name.strip() for value in args.allowed_reviewer for name in value.split(",") if name.strip()},
                 token=os.environ.get("GITHUB_TOKEN", ""),
                 minimum_approvals=args.minimum_approvals,
             )
