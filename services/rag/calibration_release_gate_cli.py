@@ -86,6 +86,8 @@ def main(argv: list[str] | None = None) -> int:
             attestation_data = _read_json(args.attestation)
             approval_data = _read_json(args.approval)
             ledger_data = _read_json(args.ledger)
+            if not isinstance(attestation_data, dict) or not isinstance(approval_data, dict):
+                raise TypeError("attestation and approval inputs must be JSON objects")
             governance_decision = evaluate_governed_release(
                 manifest=manifest_data,
                 attestation=attestation_data,
