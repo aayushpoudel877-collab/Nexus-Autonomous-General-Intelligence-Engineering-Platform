@@ -6,7 +6,9 @@ from services.rag import calibration_governance
 def test_github_get_rejects_declared_response_over_byte_limit(monkeypatch):
     class Response:
         status = 200
-        headers = {"Content-Length": "9"}
+
+        def __init__(self):
+            self.headers = {"Content-Length": "9"}
 
         def __enter__(self):
             return self
@@ -31,7 +33,9 @@ def test_github_get_rejects_declared_response_over_byte_limit(monkeypatch):
 def test_github_get_rejects_streamed_response_over_byte_limit(monkeypatch):
     class Response:
         status = 200
-        headers = {}
+
+        def __init__(self):
+            self.headers = {}
 
         def __enter__(self):
             return self
