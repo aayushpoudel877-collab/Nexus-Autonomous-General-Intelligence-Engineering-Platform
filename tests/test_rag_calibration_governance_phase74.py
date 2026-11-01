@@ -148,7 +148,7 @@ def test_github_review_fetch_paginates_all_review_pages(monkeypatch):
                 for index in range(99)
             ]
         if url.endswith("page=2"):
-            return [_review(login="reviewer-22", submitted="2026-10-31T09:15:00Z")]
+            return [_review(login="reviewer-22", submitted="2026-10-31T09:15:00Z", review_id=101)]
         raise AssertionError(f"unexpected API request: {url}")
 
     monkeypatch.setattr(calibration_governance, "_github_get", fake_get)
@@ -190,3 +190,59 @@ def test_github_review_fetch_rejects_newline_in_token():
             allowed_reviewers={"reviewer-17"},
             token="token\nInjected: true",
         )
+
+def test_review_id_breaks_equal_timestamp_ties_deterministically():
+    with pytest.raises(ValueError, match="below required"):
+        _validate(reviews=[
+            _review(state="APPROVED", review_id=10),
+            _review(state="DISMISSED", review_id=11),
+        ])
+
+
+def test_review_evidence_rejects_duplicate_review_ids():
+    with pytest.raises(ValueError, match="duplicate review id"):
+        _validate(reviews=[
+            _review(login="reviewer-17", review_id=55),
+            _review(login="reviewer-22", review_id=55),
+        ])
+
+
+@pytest.mark.parametrize("review_id", [0, -1, True, "12", None])
+def test_review_evidence_rejects_invalid_review_ids(review_id):
+    with pytest.raises(ValueError, match="positive integer"):
+        _validate(reviews=[_review(review_id=review_id)])
+
+
+def test_review_evidence_receipt_is_canonical_and_auditable():
+    from services.rag.calibration_baseline import sha256_json
+
+    result = _validate(reviews=[
+        _review(login="reviewer-22", submitted="2026-10-31T11:00:00+02:00", review_id=2),
+        _review(login="reviewer-17", submitted="2026-10-31T09:00:00Z", review_id=1),
+        _review(login="untrusted-user", state="COMMENTED", review_id=3),
+    ])
+    assert result["review_count"] == 3
+    assert result["review_decisions"] == [
+        {
+            "reviewer_login": "reviewer-17",
+            "review_id": 1,
+            "state": "APPROVED",
+            "submitted_at": "2026-10-31T09:00:00Z",
+            "head_sha": HEAD,
+        },
+        {
+            "reviewer_login": "reviewer-22",
+            "review_id": 2,
+            "state": "APPROVED",
+            "submitted_at": "2026-10-31T09:00:00Z",
+            "head_sha": HEAD,
+        },
+    ]
+    receipt = {
+        key: result[key]
+        for key in (
+            "provider", "repository", "pull_request", "head_sha",
+            "minimum_approvals", "approval_reviewer_id", "review_decisions",
+        )
+    }
+    assert result["review_evidence_sha256"] == sha256_json(receipt)
