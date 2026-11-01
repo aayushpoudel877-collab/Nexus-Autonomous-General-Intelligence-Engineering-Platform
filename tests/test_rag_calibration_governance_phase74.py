@@ -22,8 +22,9 @@ def _pr(**overrides):
     return value
 
 
-def _review(login="reviewer-17", state="APPROVED", *, commit=HEAD, submitted="2026-10-31T09:00:00Z"):
+def _review(login="reviewer-17", state="APPROVED", *, commit=HEAD, submitted="2026-10-31T09:00:00Z", review_id=1):
     return {
+        "id": review_id,
         "user": {"login": login},
         "state": state,
         "commit_id": commit,
@@ -68,7 +69,7 @@ def test_github_review_evidence_rejects_stale_head_reviews():
 def test_latest_review_state_wins_and_dismissal_revokes_approval():
     reviews = [
         _review(state="APPROVED", submitted="2026-10-31T09:00:00Z"),
-        _review(state="DISMISSED", submitted="2026-10-31T09:30:00Z"),
+        _review(state="DISMISSED", submitted="2026-10-31T09:30:00Z", review_id=2),
     ]
     with pytest.raises(ValueError, match="below required"):
         _validate(reviews=reviews)
@@ -77,7 +78,7 @@ def test_latest_review_state_wins_and_dismissal_revokes_approval():
 def test_latest_changes_requested_overrides_earlier_approval():
     reviews = [
         _review(state="APPROVED", submitted="2026-10-31T09:00:00Z"),
-        _review(state="CHANGES_REQUESTED", submitted="2026-10-31T09:30:00Z"),
+        _review(state="CHANGES_REQUESTED", submitted="2026-10-31T09:30:00Z", review_id=2),
     ]
     with pytest.raises(ValueError, match="below required"):
         _validate(reviews=reviews)
@@ -87,7 +88,7 @@ def test_distinct_allowlisted_approvals_satisfy_threshold():
     result = _validate(
         reviews=[
             _review(),
-            _review(login="reviewer-22", submitted="2026-10-31T09:15:00Z"),
+            _review(login="reviewer-22", submitted="2026-10-31T09:15:00Z", review_id=2),
         ],
         minimum_approvals=2,
     )
@@ -143,8 +144,8 @@ def test_github_review_fetch_paginates_all_review_pages(monkeypatch):
             return _pr()
         if url.endswith("page=1"):
             return [_review()] + [
-                _review(login="noise-reviewer", state="COMMENTED")
-                for _ in range(99)
+                _review(login="noise-reviewer", state="COMMENTED", review_id=index + 2)
+                for index in range(99)
             ]
         if url.endswith("page=2"):
             return [_review(login="reviewer-22", submitted="2026-10-31T09:15:00Z")]
