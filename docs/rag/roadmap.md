@@ -37,7 +37,7 @@ This is a multi-phase research and engineering program. A large commit count is 
 
 A phase is complete only when its acceptance criteria, tests, documentation, and security review are recorded. Avoid artificial commits; use focused commits for meaningful increments.
 
-## Subsequent delivery record (Phases 54–75)
+## Subsequent delivery record (Phases 54–76)
 
 The entries below extend the original Phase 26–53 foundation record. Detailed scope and acceptance notes live in the phase documents and merged pull requests.
 
@@ -63,5 +63,6 @@ The entries below extend the original Phase 26–53 foundation record. Detailed 
 - **Phase 73 — Approval lifecycle:** hash-chained approval activation/revocation ledger.
 - **Phase 74 — Trusted reviewer release enforcement:** authenticated GitHub review evidence bound to the attested source revision and active approval lifecycle.
 - **Phase 75 — Bounded trusted review ingestion:** per-response byte limits, aggregate review-count limits, and pagination request bounds for GitHub review evidence.
+- **Phase 76 — Deterministic trusted review evidence receipts:** positive/unique GitHub review IDs, stable timestamp tie-breaking, UTC-normalized trusted-review decisions, and canonical SHA-256 receipt digests in release decisions.
 
-Phase 75 adds resource bounds only; it does not change reviewer trust policy or claim that GitHub account identity proves a reviewer's legal identity. See `docs/rag-grounding-calibration-phase-75.md`.
+Phase 75 adds resource bounds only; it does not change reviewer trust policy or claim that GitHub account identity proves a reviewer's legal identity. Phase 76 adds an auditable checksum, not a provider signature or proof of reviewer identity. See `docs/rag-grounding-calibration-phase-75.md` and `docs/rag-grounding-calibration-phase-76.md`.
