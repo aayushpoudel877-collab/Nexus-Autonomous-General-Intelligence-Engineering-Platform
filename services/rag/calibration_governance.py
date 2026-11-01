@@ -20,6 +20,9 @@ from services.rag.calibration_provenance import validate_attestation, verify_inp
 _REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 _SHA = re.compile(r"^[0-9a-f]{40}$")
 _API_ROOT = "https://api.github.com"
+_MAX_GITHUB_RESPONSE_BYTES = 1_000_000
+_MAX_GITHUB_REVIEW_PAGES = 100
+_MAX_GITHUB_REVIEWS = 10_000
 
 
 def _parse_time(value: Any) -> datetime:
@@ -134,7 +137,18 @@ def _github_get(url: str, token: str) -> Any:
         with urllib.request.urlopen(request, timeout=20) as response:
             if response.status != 200:
                 raise ValueError(f"GitHub API returned HTTP {response.status}")
-            return json.loads(response.read().decode("utf-8"))
+            content_length = response.headers.get("Content-Length")
+            if content_length is not None:
+                try:
+                    declared_length = int(content_length)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("GitHub API returned an invalid Content-Length") from exc
+                if declared_length < 0 or declared_length > _MAX_GITHUB_RESPONSE_BYTES:
+                    raise ValueError("GitHub API response exceeds the configured byte limit")
+            payload = response.read(_MAX_GITHUB_RESPONSE_BYTES + 1)
+            if len(payload) > _MAX_GITHUB_RESPONSE_BYTES:
+                raise ValueError("GitHub API response exceeds the configured byte limit")
+            return json.loads(payload.decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise ValueError(f"could not obtain trusted GitHub review evidence: {exc}") from exc
 
@@ -168,12 +182,14 @@ def fetch_github_review_evidence(
         page_data = _github_get(f"{root}/reviews?per_page=100&page={page}", token)
         if not isinstance(page_data, list):
             raise TypeError("GitHub reviews endpoint returned an invalid page")
+        if len(reviews) + len(page_data) > _MAX_GITHUB_REVIEWS:
+            raise ValueError("GitHub review pagination exceeded the total review limit")
         reviews.extend(page_data)
         if len(page_data) < 100:
             break
         page += 1
-        if page > 100:
-            raise ValueError("GitHub review pagination exceeded the safety limit")
+        if page > _MAX_GITHUB_REVIEW_PAGES:
+            raise ValueError("GitHub review pagination exceeded the page limit")
     return validate_github_review_payload(
         pr, reviews, repository=repository, pull_request_number=pull_request_number,
         expected_head_sha=expected_head_sha, approval_reviewer_id=approval_reviewer_id,
