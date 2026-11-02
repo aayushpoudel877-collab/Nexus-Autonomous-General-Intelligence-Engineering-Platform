@@ -7,7 +7,7 @@ import pytest
 from services.rag import calibration_governance, calibration_release_gate_cli
 from services.rag.calibration_approval import build_approval_record
 from services.rag.calibration_approval_ledger import append_lifecycle_event, new_ledger
-from services.rag.calibration_baseline import build_manifest
+from services.rag.calibration_baseline import build_manifest, sha256_json
 from services.rag.calibration_provenance import build_attestation
 
 
@@ -53,14 +53,27 @@ def _bundle(tmp_path):
         actor_id="reviewer-17", reason="reviewed evidence",
         occurred_at="2026-10-31T09:01:00Z",
     )
-    evidence = {
+    receipt = {
+        "schema_version": 1,
         "provider": "github",
         "repository": "owner/repo",
         "pull_request": 74,
         "head_sha": "a" * 40,
-        "approved_reviewers": ["reviewer-17"],
         "minimum_approvals": 1,
         "approval_reviewer_id": "reviewer-17",
+        "review_decisions": [{
+            "reviewer_login": "reviewer-17",
+            "review_id": 1,
+            "state": "APPROVED",
+            "submitted_at": "2026-10-31T09:00:00Z",
+            "head_sha": "a" * 40,
+        }],
+    }
+    evidence = {
+        **receipt,
+        "approved_reviewers": ["reviewer-17"],
+        "review_count": 1,
+        "review_evidence_sha256": sha256_json(receipt),
     }
     return manifest, attestation, approval, ledger, {"dataset": source}, evidence
 
