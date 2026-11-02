@@ -17,6 +17,7 @@ from services.rag.calibration_approval import validate_approval_record
 from services.rag.calibration_approval_ledger import active_approvals, validate_ledger
 from services.rag.calibration_baseline import sha256_json
 from services.rag.calibration_provenance import validate_attestation, verify_input_files
+from services.rag.github_api_json import loads_github_json
 
 _REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 _SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -282,7 +283,7 @@ def _github_get(url: str, token: str) -> Any:
             payload = response.read(_MAX_GITHUB_RESPONSE_BYTES + 1)
             if len(payload) > _MAX_GITHUB_RESPONSE_BYTES:
                 raise ValueError("GitHub API response exceeds the configured byte limit")
-            return json.loads(payload.decode("utf-8"))
+            return loads_github_json(payload)
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise ValueError(f"could not obtain trusted GitHub review evidence: {exc}") from exc
 
