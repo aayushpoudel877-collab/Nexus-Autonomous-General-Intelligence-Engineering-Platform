@@ -24,10 +24,10 @@ def read_receipt(path: Path) -> dict[str, Any]:
     except OSError as exc:
         raise ValueError(f"cannot read review receipt from {path}: {exc}") from exc
     if len(payload) > _MAX_RECEIPT_BYTES:
-        raise ValueError("review receipt exceeds the 1000000-byte limit")
+        raise ValueError(f"review receipt exceeds the {_MAX_RECEIPT_BYTES}-byte limit")
     try:
-        value = json.loads(payload.decode("utf-8"), parse_constant=_reject_constant)
-    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        value = json.loads(\n            payload.decode("utf-8"),\n            parse_constant=_reject_constant,\n            object_pairs_hook=_reject_duplicate_keys,\n        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
         raise ValueError(f"cannot read valid review receipt JSON from {path}: {exc}") from exc
     if not isinstance(value, dict):
         raise TypeError("review receipt must be a JSON object")
