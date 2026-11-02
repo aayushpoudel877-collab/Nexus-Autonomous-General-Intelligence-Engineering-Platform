@@ -241,7 +241,7 @@ def test_review_evidence_receipt_is_canonical_and_auditable():
     receipt = {
         key: result[key]
         for key in (
-            "provider", "repository", "pull_request", "head_sha",
+            "schema_version", "provider", "repository", "pull_request", "head_sha",
             "minimum_approvals", "approval_reviewer_id", "review_decisions",
         )
     }
