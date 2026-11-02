@@ -78,7 +78,7 @@ def verify_github_review_receipt(evidence: Any) -> bool:
 
     decisions = evidence["review_decisions"]
     if not isinstance(decisions, list):
-        raise ValueError("GitHub review receipt decisions must be a list")
+        raise TypeError("GitHub review receipt decisions must be a list")
     decision_keys: list[str] = []
     seen_ids: set[int] = set()
     for decision in decisions:
