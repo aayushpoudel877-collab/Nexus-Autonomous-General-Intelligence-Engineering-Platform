@@ -75,8 +75,11 @@ def test_read_receipt_rejects_non_object_json(tmp_path, payload):
         read_receipt(path)
 
 
-@pytest.mark.parametrize("payload", ["{", '{"x": NaN}', '{"x": Infinity}'])
-def test_read_receipt_rejects_malformed_or_non_finite_json(tmp_path, payload):
+@pytest.mark.parametrize(
+    "payload",
+    ["{", '{"x": NaN}', '{"x": Infinity}', '{"outer": {"id": 1, "id": 2}}'],
+)
+def test_read_receipt_rejects_malformed_non_finite_or_duplicate_json(tmp_path, payload):
     path = tmp_path / "receipt.json"
     path.write_text(payload, encoding="utf-8")
     with pytest.raises(ValueError, match="valid review receipt JSON"):
