@@ -62,6 +62,21 @@ def test_receipt_rejects_missing_required_fields(field):
         verify_github_review_receipt(receipt)
 
 
+@pytest.mark.parametrize("version", [True, 0, 2, "1"])
+def test_receipt_rejects_unsupported_schema_versions(version):
+    receipt = _receipt()
+    receipt["schema_version"] = version
+    with pytest.raises(ValueError, match="version is unsupported"):
+        verify_github_review_receipt(receipt)
+
+
+def test_receipt_rejects_untrimmed_approval_identity():
+    receipt = _receipt()
+    receipt["approval_reviewer_id"] = " reviewer-17 "
+    with pytest.raises(ValueError, match="reviewer is missing"):
+        verify_github_review_receipt(receipt)
+
+
 def test_receipt_rejects_unrecognized_fields():
     receipt = _receipt()
     receipt["unreviewed_metadata"] = "not covered by schema"
