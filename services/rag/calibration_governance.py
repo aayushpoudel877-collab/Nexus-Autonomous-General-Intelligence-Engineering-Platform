@@ -311,6 +311,8 @@ def fetch_github_review_evidence(
         raise ValueError("pull_request_number must be a positive integer")
     root = f"{_API_ROOT}/repos/{repository}/pulls/{pull_request_number}"
     pr = _github_get(root, token)
+    if not isinstance(pr, dict):
+        raise TypeError("GitHub pull request endpoint returned an invalid object")
     reviews: list[Any] = []
     page = 1
     while True:
