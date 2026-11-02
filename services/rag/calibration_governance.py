@@ -9,7 +9,7 @@ import json
 import re
 import urllib.error
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from services.rag.calibration_approval import validate_approval_record
@@ -83,10 +83,17 @@ def validate_github_review_payload(
     if head_sha != expected_head_sha:
         raise ValueError("GitHub pull request head does not match the attested source revision")
 
-    latest: dict[str, tuple[datetime, str, str]] = {}
+    latest: dict[str, tuple[datetime, int, str, str]] = {}
+    seen_review_ids: set[int] = set()
     for review in reviews:
         if not isinstance(review, dict):
             raise TypeError("GitHub review entry must be an object")
+        review_id = review.get("id")
+        if isinstance(review_id, bool) or not isinstance(review_id, int) or review_id < 1:
+            raise ValueError("GitHub review id must be a positive integer")
+        if review_id in seen_review_ids:
+            raise ValueError("GitHub review pagination returned a duplicate review id")
+        seen_review_ids.add(review_id)
         user = review.get("user")
         login = user.get("login") if isinstance(user, dict) else None
         state = review.get("state")
@@ -99,12 +106,23 @@ def validate_github_review_payload(
         submitted = _parse_time(review.get("submitted_at"))
         key = login.casefold()
         previous = latest.get(key)
-        if previous is None or submitted > previous[0]:
-            latest[key] = (submitted, state, login)
+        if previous is None or (submitted, review_id) > (previous[0], previous[1]):
+            latest[key] = (submitted, review_id, state, login)
 
+    review_decisions = [
+        {
+            "reviewer_login": login,
+            "review_id": review_id,
+            "state": state,
+            "submitted_at": submitted.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "head_sha": expected_head_sha,
+        }
+        for key, (submitted, review_id, state, login) in sorted(latest.items())
+        if key in normalized_allowlist
+    ]
     approved = sorted(
-        login for key, (_, state, login) in latest.items()
-        if state == "APPROVED" and key in normalized_allowlist
+        decision["reviewer_login"] for decision in review_decisions
+        if decision["state"] == "APPROVED"
     )
     if len(approved) < minimum_approvals:
         raise ValueError(
@@ -112,14 +130,20 @@ def validate_github_review_payload(
         )
     if approval_reviewer_id.casefold() not in {login.casefold() for login in approved}:
         raise ValueError("approval record reviewer_id does not have a current trusted GitHub approval")
-    return {
+    receipt = {
         "provider": "github",
         "repository": repository,
         "pull_request": pull_request_number,
         "head_sha": expected_head_sha,
-        "approved_reviewers": approved,
         "minimum_approvals": minimum_approvals,
         "approval_reviewer_id": approval_reviewer_id,
+        "review_decisions": review_decisions,
+    }
+    return {
+        **receipt,
+        "approved_reviewers": approved,
+        "review_count": len(reviews),
+        "review_evidence_sha256": sha256_json(receipt),
     }
 
 
