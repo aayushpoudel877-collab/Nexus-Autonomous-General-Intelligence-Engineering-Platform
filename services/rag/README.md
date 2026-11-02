@@ -24,7 +24,8 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Calibration release governance that verifies active approval-ledger entries and authenticated GitHub pull-request reviews against the exact attested source revision.
 - Trusted GitHub review ingestion is resource-bounded by per-response byte, total-review, and pagination limits; oversized evidence fails closed.
 - Governed release decisions include deterministic, UTC-normalized receipts of the latest allowlisted GitHub review states and a canonical SHA-256 evidence digest; duplicate review IDs fail closed.
-- Governed-release evaluation independently validates a versioned review receipt, recomputes its digest, checks decision/approval consistency, and rejects tampered or unknown receipt fields.\n- Offline review-receipt CLI reuses the strict verifier for saved JSON artifacts, applies a 1 MB input bound, rejects malformed/non-finite JSON, and emits a compact machine-readable result.
+- Governed-release evaluation independently validates a versioned review receipt, recomputes its digest, checks decision/approval consistency, and rejects tampered or unknown receipt fields.
+- Offline review-receipt CLI reuses the strict verifier for saved JSON artifacts, applies a 1 MB input bound, rejects malformed/non-finite JSON, and emits a compact machine-readable result.
 
 ## Offline multilingual ablation
 
@@ -60,4 +61,14 @@ python -m services.rag.demo
 Apply database migrations with the repository's normal Alembic workflow before using persistence in a deployed API.
 
 See `docs/rag-grounding-calibration-phase-77.md` for strict versioned review-receipt verification and `docs/rag-grounding-calibration-phase-76.md` for deterministic trusted review receipts, `docs/rag-grounding-calibration-phase-75.md` for bounded trusted review ingestion, and `docs/rag-grounding-calibration-phase-74.md` for trusted GitHub reviewer verification and governed release enforcement, `docs/rag-grounding-calibration-phase-73.md` for approval lifecycle, `docs/rag-grounding-calibration-phase-72.md` for approval governance, and `docs/rag-grounding-calibration-phase-71.md` for report provenance attestations. See `docs/rag-grounding-calibration-phase-68.md` for approved baseline manifests, `docs/rag-grounding-calibration-phase-69.md` for release-gate decisions and CI integration, and `docs/rag-grounding-calibration-phase-70.md` for case-set drift policy. See `docs/rag/phase-26-architecture.md`, `docs/rag/phase-27-persistent-corpus.md`, `docs/rag/phase-37-multilingual-low-resource.md`, `docs/rag/phase-38-multimodal-ingestion-quality.md`, `docs/rag/phase-39-graph-assisted-retrieval-hardening.md`, `docs/rag/phase-40-prompt-injection-evaluation.md`, `docs/rag/phase-43-untrusted-tool-output.md`, `docs/rag/phase-44-tool-output-provenance.md`, `docs/rag/phase-45-safe-provenance-serialization.md`, `docs/rag/phase-46-tool-provenance-audit-bridge.md`, `docs/rag/phase-47-checksummed-audit-envelopes.md`, `docs/rag/phase-48-execution-boundary-audit-hook.md`, `docs/rag/phase-49-database-tool-audit-writer.md`, `docs/rag/phase-58-grounding-calibration.md`, and `docs/rag/roadmap.md`.
-\n\n## Offline review-receipt verification\n\nVerify a saved Phase 77 GitHub review receipt without contacting GitHub:\n\n```bash\npython -m services.rag.calibration_review_receipt_cli --receipt review-receipt.json\n```\n\nThis checks receipt structure, policy consistency, and its canonical digest. It does not authenticate the artifact's origin or refresh live GitHub approval status. See `docs/rag-grounding-calibration-phase-78.md`.\n
+
+
+## Offline review-receipt verification
+
+Verify a saved Phase 77 GitHub review receipt without contacting GitHub:
+
+```bash
+python -m services.rag.calibration_review_receipt_cli --receipt review-receipt.json
+```
+
+This checks receipt structure, policy consistency, and its canonical digest. It does not authenticate the artifact's origin or refresh live GitHub approval status. See `docs/rag-grounding-calibration-phase-78.md`.
