@@ -5,6 +5,7 @@ names or copied review JSON are never treated as authentication.
 """
 from __future__ import annotations
 
+import hmac
 import json
 import re
 import urllib.error
@@ -35,6 +36,107 @@ def _parse_time(value: Any) -> datetime:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError("GitHub review submitted_at must include a timezone")
     return parsed
+
+
+def verify_github_review_receipt(evidence: Any) -> bool:
+    """Fail closed unless a versioned GitHub review receipt is internally consistent."""
+    expected_keys = {
+        "schema_version", "provider", "repository", "pull_request", "head_sha",
+        "minimum_approvals", "approval_reviewer_id", "review_decisions",
+        "approved_reviewers", "review_count", "review_evidence_sha256",
+    }
+    if not isinstance(evidence, dict) or set(evidence) != expected_keys:
+        raise ValueError("GitHub review receipt has an invalid schema")
+    if evidence["schema_version"] != 1 or evidence["provider"] != "github":
+        raise ValueError("GitHub review receipt version or provider is unsupported")
+    repository = evidence["repository"]
+    if (
+        not isinstance(repository, str)
+        or not _REPOSITORY.fullmatch(repository)
+        or any(part in {".", ".."} for part in repository.split("/"))
+    ):
+        raise ValueError("GitHub review receipt repository is invalid")
+    pull_request = evidence["pull_request"]
+    minimum = evidence["minimum_approvals"]
+    if isinstance(pull_request, bool) or not isinstance(pull_request, int) or pull_request < 1:
+        raise ValueError("GitHub review receipt pull request must be positive")
+    if isinstance(minimum, bool) or not isinstance(minimum, int) or minimum < 1:
+        raise ValueError("GitHub review receipt approval threshold must be positive")
+    head_sha = evidence["head_sha"]
+    if not isinstance(head_sha, str) or not _SHA.fullmatch(head_sha):
+        raise ValueError("GitHub review receipt head SHA is invalid")
+    reviewer_id = evidence["approval_reviewer_id"]
+    if not isinstance(reviewer_id, str) or not reviewer_id.strip():
+        raise ValueError("GitHub review receipt approval reviewer is missing")
+
+    decisions = evidence["review_decisions"]
+    if not isinstance(decisions, list):
+        raise ValueError("GitHub review receipt decisions must be a list")
+    decision_keys: list[str] = []
+    seen_ids: set[int] = set()
+    for decision in decisions:
+        if not isinstance(decision, dict) or set(decision) != {
+            "reviewer_login", "review_id", "state", "submitted_at", "head_sha"
+        }:
+            raise ValueError("GitHub review receipt decision has an invalid schema")
+        login = decision["reviewer_login"]
+        review_id = decision["review_id"]
+        if not isinstance(login, str) or not login.strip() or login != login.strip():
+            raise ValueError("GitHub review receipt reviewer login is invalid")
+        if isinstance(review_id, bool) or not isinstance(review_id, int) or review_id < 1:
+            raise ValueError("GitHub review receipt review id must be positive")
+        if review_id in seen_ids:
+            raise ValueError("GitHub review receipt contains duplicate review ids")
+        seen_ids.add(review_id)
+        if decision["state"] not in {
+            "APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"
+        }:
+            raise ValueError("GitHub review receipt contains an unsupported state")
+        if decision["head_sha"] != head_sha:
+            raise ValueError("GitHub review receipt decision is bound to another head")
+        timestamp = decision["submitted_at"]
+        parsed = _parse_time(timestamp)
+        if not timestamp.endswith("Z") or parsed.utcoffset().total_seconds() != 0:
+            raise ValueError("GitHub review receipt timestamps must be UTC-normalized")
+        decision_keys.append(login.casefold())
+    if decision_keys != sorted(decision_keys) or len(decision_keys) != len(set(decision_keys)):
+        raise ValueError("GitHub review receipt decisions are not uniquely sorted")
+
+    review_count = evidence["review_count"]
+    if (
+        isinstance(review_count, bool)
+        or not isinstance(review_count, int)
+        or review_count < len(decisions)
+    ):
+        raise ValueError("GitHub review receipt count is invalid")
+    approved = sorted(
+        decision["reviewer_login"]
+        for decision in decisions
+        if decision["state"] == "APPROVED"
+    )
+    if evidence["approved_reviewers"] != approved:
+        raise ValueError("GitHub review receipt approved-reviewer list is inconsistent")
+    if len(approved) < minimum or reviewer_id.casefold() not in {
+        login.casefold() for login in approved
+    }:
+        raise ValueError("GitHub review receipt does not satisfy its approval policy")
+
+    receipt = {
+        "schema_version": evidence["schema_version"],
+        "provider": evidence["provider"],
+        "repository": repository,
+        "pull_request": pull_request,
+        "head_sha": head_sha,
+        "minimum_approvals": minimum,
+        "approval_reviewer_id": reviewer_id,
+        "review_decisions": decisions,
+    }
+    digest = evidence["review_evidence_sha256"]
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ValueError("GitHub review receipt digest is malformed")
+    if not hmac.compare_digest(digest, sha256_json(receipt)):
+        raise ValueError("GitHub review receipt digest does not match its contents")
+    return True
 
 
 def validate_github_review_payload(
@@ -131,6 +233,7 @@ def validate_github_review_payload(
     if approval_reviewer_id.casefold() not in {login.casefold() for login in approved}:
         raise ValueError("approval record reviewer_id does not have a current trusted GitHub approval")
     receipt = {
+        "schema_version": 1,
         "provider": "github",
         "repository": repository,
         "pull_request": pull_request_number,
@@ -251,6 +354,7 @@ def evaluate_governed_release(
         token=token,
         minimum_approvals=minimum_approvals,
     )
+    verify_github_review_receipt(github_evidence)
     return {
         "verified": True,
         "approval_record_sha256": digest,
