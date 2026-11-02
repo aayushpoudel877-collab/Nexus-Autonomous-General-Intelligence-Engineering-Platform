@@ -47,7 +47,10 @@ def verify_github_review_receipt(evidence: Any) -> bool:
     }
     if not isinstance(evidence, dict) or set(evidence) != expected_keys:
         raise ValueError("GitHub review receipt has an invalid schema")
-    if evidence["schema_version"] != 1 or evidence["provider"] != "github":
+    version = evidence["schema_version"]
+    if isinstance(version, bool) or not isinstance(version, int) or version != 1:
+        raise ValueError("GitHub review receipt version is unsupported")
+    if evidence["provider"] != "github":
         raise ValueError("GitHub review receipt version or provider is unsupported")
     repository = evidence["repository"]
     if (
@@ -66,7 +69,11 @@ def verify_github_review_receipt(evidence: Any) -> bool:
     if not isinstance(head_sha, str) or not _SHA.fullmatch(head_sha):
         raise ValueError("GitHub review receipt head SHA is invalid")
     reviewer_id = evidence["approval_reviewer_id"]
-    if not isinstance(reviewer_id, str) or not reviewer_id.strip():
+    if (
+        not isinstance(reviewer_id, str)
+        or not reviewer_id.strip()
+        or reviewer_id != reviewer_id.strip()
+    ):
         raise ValueError("GitHub review receipt approval reviewer is missing")
 
     decisions = evidence["review_decisions"]
