@@ -26,6 +26,7 @@ A tenant-aware Retrieval-Augmented Generation (RAG) subsystem for NEXUS-Ω. The 
 - Governed release decisions include deterministic, UTC-normalized receipts of the latest allowlisted GitHub review states and a canonical SHA-256 evidence digest; duplicate review IDs fail closed.
 - Governed-release evaluation independently validates a versioned review receipt, recomputes its digest, checks decision/approval consistency, and rejects tampered or unknown receipt fields.
 - Offline review-receipt CLI reuses the strict verifier for saved JSON artifacts, applies a 1 MB input bound, rejects malformed/non-finite JSON, and emits a compact machine-readable result.
+- Authenticated GitHub review ingestion strictly decodes UTF-8 JSON, rejects duplicate keys/non-finite numbers, and validates the pull-request response shape before pagination.
 
 ## Offline multilingual ablation
 
@@ -72,3 +73,8 @@ python -m services.rag.calibration_review_receipt_cli --receipt review-receipt.j
 ```
 
 This checks receipt structure, policy consistency, and its canonical digest. It does not authenticate the artifact's origin or refresh live GitHub approval status. See `docs/rag-grounding-calibration-phase-78.md`.
+
+
+## Trusted GitHub API response validation
+
+The review-governance transport rejects duplicate JSON keys, non-finite numeric constants, malformed UTF-8/JSON, and invalid pull-request response shapes while retaining existing response-size and pagination limits. See `docs/rag-grounding-calibration-phase-79.md`.
