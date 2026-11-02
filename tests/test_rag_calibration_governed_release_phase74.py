@@ -125,6 +125,13 @@ def test_governed_release_rejects_changed_input_bytes(tmp_path, monkeypatch):
         _evaluate(monkeypatch, tuple(bundle))
 
 
+def test_governed_release_rejects_tampered_review_receipt(tmp_path, monkeypatch):
+    bundle = list(_bundle(tmp_path))
+    bundle[5]["repository"] = "attacker/forged"
+    with pytest.raises(ValueError, match="digest does not match"):
+        _evaluate(monkeypatch, tuple(bundle))
+
+
 def test_release_gate_cli_can_require_trusted_governance(tmp_path, monkeypatch):
     bundle = _bundle(tmp_path)
     manifest, attestation, approval, ledger, inputs, evidence = bundle
