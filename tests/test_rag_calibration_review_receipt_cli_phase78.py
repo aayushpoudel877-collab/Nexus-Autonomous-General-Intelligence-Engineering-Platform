@@ -6,7 +6,6 @@ import pytest
 
 from services.rag.calibration_baseline import sha256_json
 from services.rag.calibration_review_receipt_cli import (
-    _MAX_RECEIPT_BYTES,
     main,
     read_receipt,
     verify_receipt_file,
