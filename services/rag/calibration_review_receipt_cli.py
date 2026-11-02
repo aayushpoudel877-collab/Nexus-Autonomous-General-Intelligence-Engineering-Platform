@@ -16,6 +16,15 @@ def _reject_constant(value: str) -> None:
     raise ValueError(f"non-finite JSON number is not allowed: {value}")
 
 
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key is not allowed: {key}")
+        result[key] = value
+    return result
+
+
 def read_receipt(path: Path) -> dict[str, Any]:
     """Read one bounded JSON object and reject ambiguous or malformed input."""
     try:
@@ -26,7 +35,11 @@ def read_receipt(path: Path) -> dict[str, Any]:
     if len(payload) > _MAX_RECEIPT_BYTES:
         raise ValueError(f"review receipt exceeds the {_MAX_RECEIPT_BYTES}-byte limit")
     try:
-        value = json.loads(\n            payload.decode("utf-8"),\n            parse_constant=_reject_constant,\n            object_pairs_hook=_reject_duplicate_keys,\n        )
+        value = json.loads(
+            payload.decode("utf-8"),
+            parse_constant=_reject_constant,
+            object_pairs_hook=_reject_duplicate_keys,
+        )
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
         raise ValueError(f"cannot read valid review receipt JSON from {path}: {exc}") from exc
     if not isinstance(value, dict):
@@ -52,7 +65,9 @@ def verify_receipt_file(path: Path) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--receipt", required=True, type=Path, help="serialized review receipt JSON")
+    parser.add_argument(
+        "--receipt", required=True, type=Path, help="serialized review receipt JSON"
+    )
     args = parser.parse_args(argv)
     try:
         print(json.dumps(verify_receipt_file(args.receipt), sort_keys=True))
