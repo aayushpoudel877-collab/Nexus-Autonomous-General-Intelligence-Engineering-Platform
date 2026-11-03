@@ -124,3 +124,30 @@ def test_receipt_rejects_digest_with_wrong_format():
     receipt["review_evidence_sha256"] = "not-a-digest"
     with pytest.raises(ValueError, match="digest is malformed"):
         verify_github_review_receipt(receipt)
+
+
+def test_receipt_rejects_more_decisions_than_live_ingestion_limit(monkeypatch):
+    from services.rag import calibration_governance
+
+    receipt = _receipt()
+    monkeypatch.setattr(calibration_governance, "_MAX_GITHUB_REVIEWS", 2)
+    receipt["review_decisions"].append({"unvalidated": "must fail at count boundary"})
+    with pytest.raises(ValueError, match="decision count exceeds"):
+        verify_github_review_receipt(receipt)
+
+
+def test_receipt_rejects_review_count_above_live_ingestion_limit(monkeypatch):
+    from services.rag import calibration_governance
+
+    receipt = _receipt()
+    monkeypatch.setattr(calibration_governance, "_MAX_GITHUB_REVIEWS", 2)
+    receipt["review_count"] = 3
+    with pytest.raises(ValueError, match="review count exceeds"):
+        verify_github_review_receipt(receipt)
+
+
+def test_receipt_accepts_decision_and_review_counts_at_limit(monkeypatch):
+    from services.rag import calibration_governance
+
+    monkeypatch.setattr(calibration_governance, "_MAX_GITHUB_REVIEWS", 2)
+    assert verify_github_review_receipt(_receipt()) is True
