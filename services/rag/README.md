@@ -78,3 +78,8 @@ This checks receipt structure, policy consistency, and its canonical digest. It 
 ## Trusted GitHub API response validation
 
 The review-governance transport rejects duplicate JSON keys, non-finite numeric constants, malformed UTF-8/JSON, and invalid pull-request response shapes while retaining existing response-size and pagination limits. See `docs/rag-grounding-calibration-phase-79.md`.
+
+
+## Bounded offline review-receipt verification
+
+Offline review receipt verification enforces the same 10,000-review ceiling as live GitHub ingestion for both serialized decisions and the aggregate review count. Over-limit receipts are rejected before decision traversal and digest verification. See `docs/rag-grounding-calibration-phase-80.md`.

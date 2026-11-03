@@ -71,3 +71,5 @@ Phase 75 adds resource bounds only; it does not change reviewer trust policy or 
 - **Phase 78 — Offline review receipt verification CLI:** verifies saved Phase 77 receipts without a live API call; enforces bounded input, strict UTF-8/JSON parsing, duplicate-key and non-finite-number rejection, and compact machine-readable output. Offline verification does not authenticate receipt origin or refresh live approval status.
 
 - **Phase 79 — Strict GitHub API response decoding:** authenticated review ingestion rejects invalid UTF-8, malformed/non-finite JSON, duplicate keys at any nesting level, and invalid pull-request response shapes before pagination; existing byte and pagination limits remain in force.
+
+- **Phase 80 — Bounded offline review-receipt verification:** applies the live 10,000-review resource ceiling to both serialized reviewer decisions and aggregate review counts before per-decision validation and digest recomputation. This aligns offline verification with the ingestion budget; it does not authenticate receipt origin or refresh live review state.
