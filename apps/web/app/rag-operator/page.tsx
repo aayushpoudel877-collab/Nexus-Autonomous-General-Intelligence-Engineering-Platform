@@ -162,7 +162,7 @@ export default function RAGOperatorPage() {
       <p className="eyebrow">NEXUS-Ω / RAG PHASES 36–37</p>
       <h1>RAG Operator Workbench</h1>
       <p className="lead">Inspect corpus health, compare multilingual lexical retrieval, triage feedback and manage reindex approvals within your selected organization.</p>
-      <p><a href="/dashboard">Dashboard</a> · <a href="/audit">Audit stream</a> · <a href="/">Home</a> · <button className="secondary" onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh data"}</button></p>
+      <p><a href="/dashboard">Dashboard</a> · <a href="/rag-studio">RAG Studio</a> · <a href="/audit">Audit stream</a> · <a href="/">Home</a> · <button className="secondary" onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh data"}</button></p>
     </section>
 
     {error && <p role="alert" className="error" style={{ maxWidth: 1120, margin: "20px auto" }}>{error}</p>}
