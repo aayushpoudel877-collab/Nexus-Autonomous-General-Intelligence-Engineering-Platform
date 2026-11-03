@@ -64,6 +64,15 @@ function shortDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
 }
 
+function safeHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function RAGStudioPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -263,7 +272,7 @@ export default function RAGStudioPage() {
                 <button className="rag-source-select" onClick={() => setSelectedDocument(current => current === item.id ? "" : item.id)} aria-expanded={selectedDocument === item.id}>
                   <span className="rag-file-icon">▤</span><span className="rag-source-copy"><strong>{item.title}</strong><small>{item.content_chars.toLocaleString()} characters · {shortDate(item.created_at)}</small></span><span className="rag-chevron">{selectedDocument === item.id ? "−" : "+"}</span>
                 </button>
-                {selectedDocument === item.id && <div className="rag-source-detail"><span className="rag-ready-pill">Ready for retrieval</span><small>Content ID: {item.id.slice(0, 8)}…</small><small>SHA-256: {item.content_sha256?.slice(0, 16) ?? "available in source record"}…</small>{item.source_uri && <a href={item.source_uri} target="_blank" rel="noreferrer">Open original source ↗</a>}<button className="rag-remove-link" onClick={() => void removeSource(item)} disabled={busy !== ""}>Remove from active library</button></div>}
+                {selectedDocument === item.id && <div className="rag-source-detail"><span className="rag-ready-pill">Ready for retrieval</span><small>Content ID: {item.id.slice(0, 8)}…</small><small>SHA-256: {item.content_sha256?.slice(0, 16) ?? "available in source record"}…</small>{safeHttpUrl(item.source_uri) && <a href={safeHttpUrl(item.source_uri)} target="_blank" rel="noreferrer">Open original source ↗</a>}<button className="rag-remove-link" onClick={() => void removeSource(item)} disabled={busy !== ""}>Remove from active library</button></div>}
               </div>
             ))}
             {!loading && !documents.length && <div className="rag-empty-state"><span>▤</span><strong>Your library is empty</strong><p>Add your first source to make it searchable.</p><button className="rag-text-button" onClick={() => { setActiveTab("sources"); document.getElementById("rag-add-source")?.scrollIntoView({ behavior: "smooth" }); }}>Add a source →</button></div>}
@@ -315,7 +324,7 @@ export default function RAGStudioPage() {
                     return <article className="rag-evidence-card" key={item.evidence_id}>
                       <div className="rag-evidence-top"><span className="rag-evidence-number">0{index + 1}</span><div><strong>{item.title}</strong><small>Characters {item.start_char.toLocaleString()}–{item.end_char.toLocaleString()}</small></div><span className="rag-score">{(item.score * 100).toFixed(0)}<small>match</small></span></div>
                       <p className={expanded ? "rag-evidence-text expanded" : "rag-evidence-text"}>{item.text}</p>
-                      <div className="rag-evidence-actions"><button onClick={() => toggleEvidence(item.evidence_id)}>{expanded ? "Show less" : "Read full passage"}</button>{item.source_uri && <a href={item.source_uri} target="_blank" rel="noreferrer">Open source ↗</a>}</div>
+                      <div className="rag-evidence-actions"><button onClick={() => toggleEvidence(item.evidence_id)}>{expanded ? "Show less" : "Read full passage"}</button>{safeHttpUrl(item.source_uri) && <a href={safeHttpUrl(item.source_uri)} target="_blank" rel="noreferrer">Open source ↗</a>}</div>
                       <div className="rag-evidence-feedback"><span>Was this passage useful?</span><button disabled={busy !== ""} onClick={() => void sendFeedback("helpful", item)}>Useful</button><button disabled={busy !== ""} onClick={() => void sendFeedback("unhelpful", item)}>Not useful</button></div>
                     </article>;
                   })}
