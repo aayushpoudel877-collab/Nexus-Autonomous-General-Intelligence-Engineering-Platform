@@ -127,6 +127,51 @@ async def feedback_summary(
     }
 
 
+@router.get("/feedback/trend")
+async def feedback_trend(
+    days: int = Query(default=30, ge=7, le=90),
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a bounded UTC daily feedback trend for the active organization."""
+    from datetime import datetime, time, timedelta, timezone
+
+    membership = await get_membership(user, db)
+    today = datetime.now(timezone.utc).date()
+    first_day = today - timedelta(days=days - 1)
+    since = datetime.combine(first_day, time.min, tzinfo=timezone.utc)
+    rows = await db.execute(
+        select(
+            func.date_trunc("day", RAGFeedback.created_at, "UTC"),
+            RAGFeedback.rating,
+            func.count(RAGFeedback.id),
+        )
+        .where(
+            RAGFeedback.organization_id == membership.organization_id,
+            RAGFeedback.created_at >= since,
+        )
+        .group_by(func.date_trunc("day", RAGFeedback.created_at, "UTC"), RAGFeedback.rating)
+        .order_by(func.date_trunc("day", RAGFeedback.created_at, "UTC"))
+    )
+    buckets = {
+        (first_day + timedelta(days=index)).isoformat(): {"helpful": 0, "unhelpful": 0, "total": 0}
+        for index in range(days)
+    }
+    for bucket_at, rating, count in rows.all():
+        bucket_date = bucket_at.date() if hasattr(bucket_at, "date") else bucket_at
+        key = bucket_date.isoformat()
+        if key in buckets and rating in ("helpful", "unhelpful"):
+            buckets[key][rating] += int(count)
+            buckets[key]["total"] += int(count)
+    return {
+        "days": days,
+        "timezone": "UTC",
+        "total": sum(item["total"] for item in buckets.values()),
+        "series": [{"date": day, **counts} for day, counts in buckets.items()],
+        "privacy": "Daily aggregates only; raw queries, notes, actors, and evidence IDs are not returned.",
+    }
+
+
 @router.post("/feedback", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     payload: FeedbackCreate,
