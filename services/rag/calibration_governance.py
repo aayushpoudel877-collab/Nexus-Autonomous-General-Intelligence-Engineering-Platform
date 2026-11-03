@@ -80,6 +80,8 @@ def verify_github_review_receipt(evidence: Any) -> bool:
     decisions = evidence["review_decisions"]
     if not isinstance(decisions, list):
         raise TypeError("GitHub review receipt decisions must be a list")
+    if len(decisions) > _MAX_GITHUB_REVIEWS:
+        raise ValueError("GitHub review receipt decision count exceeds the configured review limit")
     decision_keys: list[str] = []
     seen_ids: set[int] = set()
     for decision in decisions:
@@ -117,6 +119,8 @@ def verify_github_review_receipt(evidence: Any) -> bool:
         or review_count < len(decisions)
     ):
         raise ValueError("GitHub review receipt count is invalid")
+    if review_count > _MAX_GITHUB_REVIEWS:
+        raise ValueError("GitHub review receipt review count exceeds the configured review limit")
     approved = sorted(
         decision["reviewer_login"]
         for decision in decisions
