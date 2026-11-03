@@ -73,3 +73,5 @@ Phase 75 adds resource bounds only; it does not change reviewer trust policy or 
 - **Phase 79 — Strict GitHub API response decoding:** authenticated review ingestion rejects invalid UTF-8, malformed/non-finite JSON, duplicate keys at any nesting level, and invalid pull-request response shapes before pagination; existing byte and pagination limits remain in force.
 
 - **Phase 80 — Bounded offline review-receipt verification:** applies the live 10,000-review resource ceiling to both serialized reviewer decisions and aggregate review counts before per-decision validation and digest recomputation. This aligns offline verification with the ingestion budget; it does not authenticate receipt origin or refresh live review state.
+
+- **Phase 81 — Guided RAG Studio:** adds a responsive, end-user knowledge workspace for document upload and text ingestion, active source browsing, lexical evidence search, expandable source passages, and usefulness feedback. The UI reflects synchronous ingestion and the current lexical-only retrieval capability without implying hosted answer generation or background indexing.
