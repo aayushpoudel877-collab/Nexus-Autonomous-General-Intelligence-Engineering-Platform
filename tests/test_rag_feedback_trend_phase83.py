@@ -1,6 +1,6 @@
 from datetime import datetime, time, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -37,10 +37,10 @@ async def test_feedback_trend_returns_zero_filled_utc_days_and_tenant_scoped_cou
     session = AsyncMock()
     today = datetime.now(timezone.utc).date()
     bucket_at = datetime.combine(today, time.min, tzinfo=timezone.utc)
-    session.execute.return_value.all.return_value = [
+    session.execute.return_value = MagicMock(all=lambda: [
         (bucket_at, "helpful", 2),
         (bucket_at, "unhelpful", 1),
-    ]
+    ])
 
     async def membership_for_user(_user, _session):
         return membership
@@ -72,7 +72,7 @@ async def test_feedback_trend_empty_period_returns_zero_counts(monkeypatch):
     user = SimpleNamespace(id=uuid4())
     membership = SimpleNamespace(organization_id=uuid4())
     session = AsyncMock()
-    session.execute.return_value.all.return_value = []
+    session.execute.return_value = MagicMock(all=lambda: [])
 
     async def membership_for_user(_user, _session):
         return membership
