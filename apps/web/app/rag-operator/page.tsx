@@ -265,14 +265,14 @@ export default function RAGOperatorPage() {
         </div>
         {feedbackTrend ? <>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
-            <span className="muted">■ Helpful</span><span className="muted">■ Needs improvement</span>
+            <span className="muted"><span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "#16856b", marginRight: 6 }} />Helpful</span><span className="muted"><span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "#d97757", marginRight: 6 }} />Needs improvement</span>
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {feedbackTrend.series.map(day => {
               const max = Math.max(1, ...feedbackTrend.series.map(item => item.total));
               return <div key={day.date} style={{ display: "grid", gridTemplateColumns: "104px minmax(80px,1fr) 34px", alignItems: "center", gap: 10 }}>
                 <small className="muted">{day.date.slice(5)}</small>
-                <div aria-label={day.date + ": " + day.helpful + " helpful, " + day.unhelpful + " needs improvement"} style={{ display: "grid", gap: 3 }}>
+                <div role="img" aria-label={day.date + ": " + day.helpful + " helpful, " + day.unhelpful + " needs improvement"} style={{ display: "grid", gap: 3 }}>
                   <div style={{ height: 7, width: Math.max(day.helpful ? 3 : 0, day.helpful / max * 100) + "%", background: "#16856b", borderRadius: 6 }} />
                   <div style={{ height: 7, width: Math.max(day.unhelpful ? 3 : 0, day.unhelpful / max * 100) + "%", background: "#d97757", borderRadius: 6 }} />
                 </div>
