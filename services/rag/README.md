@@ -93,3 +93,8 @@ The web app provides a guided `/rag-studio` workspace for adding TXT, Markdown, 
 ## Feedback insights
 
 The operator workbench displays tenant-scoped aggregate feedback counts and helpful-rate summaries from the existing privacy-conscious feedback records. The summary endpoint returns aggregate values only and does not expose raw query text, digests, notes, actors, or evidence IDs. Helpful ratings describe user-perceived usefulness, not factual correctness. See `docs/rag-feedback-insights-phase-82.md`.
+
+
+## Feedback activity trends
+
+The RAG Operator Workbench can display daily helpful/unhelpful feedback counts over a bounded 7–90 day UTC window. Aggregation is performed in the database and scoped to the active organization; only daily counts are returned. Feedback is a user-reported usefulness signal, not a correctness metric. See `docs/rag-feedback-trends-phase-83.md`.
