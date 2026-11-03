@@ -83,3 +83,8 @@ The review-governance transport rejects duplicate JSON keys, non-finite numeric 
 ## Bounded offline review-receipt verification
 
 Offline review receipt verification enforces the same 10,000-review ceiling as live GitHub ingestion for both serialized decisions and the aggregate review count. Over-limit receipts are rejected before decision traversal and digest verification. See `docs/rag-grounding-calibration-phase-80.md`.
+
+
+## Guided RAG Studio
+
+The web app provides a guided `/rag-studio` workspace for adding TXT, Markdown, HTML, PDF, and DOCX sources or pasting text, browsing the active organization-scoped library, querying with lexical retrieval, expanding evidence passages, and submitting usefulness feedback. The interface reports synchronous ingestion and lexical retrieval accurately; it does not present retrieved passages as generated answers or ranking scores as factual confidence. See `docs/rag-grounding-calibration-phase-81.md`.
