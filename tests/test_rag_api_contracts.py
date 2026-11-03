@@ -76,6 +76,7 @@ def test_operator_routes_are_registered_and_authenticated():
     assert "get" in paths["/api/v1/rag/operator/health"]
     assert "post" in paths["/api/v1/rag/operator/feedback"]
     assert "get" in paths["/api/v1/rag/operator/feedback"]
+    assert "get" in paths["/api/v1/rag/operator/feedback/summary"]
     assert "patch" in paths["/api/v1/rag/operator/feedback/{feedback_id}"]
     assert "post" in paths["/api/v1/rag/operator/documents/{document_id}/reindex"]
     assert "patch" in paths["/api/v1/rag/operator/reindex-requests/{request_id}"]

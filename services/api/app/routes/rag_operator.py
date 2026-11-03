@@ -99,6 +99,34 @@ async def operator_health(
     }
 
 
+@router.get("/feedback/summary")
+async def feedback_summary(
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return privacy-conscious feedback aggregates for the active organization."""
+    membership = await get_membership(user, db)
+    rows = await db.execute(
+        select(RAGFeedback.rating, RAGFeedback.status, func.count(RAGFeedback.id))
+        .where(RAGFeedback.organization_id == membership.organization_id)
+        .group_by(RAGFeedback.rating, RAGFeedback.status)
+    )
+    by_rating = {"helpful": 0, "unhelpful": 0}
+    by_status = {"new": 0, "triaged": 0, "resolved": 0, "ignored": 0}
+    for rating, feedback_status, count in rows.all():
+        by_rating[rating] = int(by_rating.get(rating, 0) + count)
+        by_status[feedback_status] = int(by_status.get(feedback_status, 0) + count)
+    total = sum(by_rating.values())
+    helpful_rate = round((by_rating["helpful"] / total) * 100, 1) if total else None
+    return {
+        "total": total,
+        "by_rating": by_rating,
+        "by_status": by_status,
+        "helpful_rate_percent": helpful_rate,
+        "privacy": "Aggregates only; raw queries and feedback notes are not returned.",
+    }
+
+
 @router.post("/feedback", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     payload: FeedbackCreate,

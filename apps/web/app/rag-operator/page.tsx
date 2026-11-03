@@ -16,6 +16,7 @@ type Document = { id: string; title: string; source_uri: string; status: string;
 type Evidence = { evidence_id: string; document_id: string; chunk_id: string; title: string; source_uri: string; text: string; start_char: number; end_char: number; score: number; character_ngram_score?: number };
 type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: string; created_at: string };
+type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
 type ReindexRequest = { id: string; document_id: string; reason: string; status: string; requested_by_user_id: string | null; reviewed_by_user_id: string | null; created_at: string };
 
 async function request(path: string, init?: RequestInit) {
@@ -40,6 +41,7 @@ export default function RAGOperatorPage() {
   const [health, setHealth] = useState<Health | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
   const [characterNgramWeight, setCharacterNgramWeight] = useState("0");
@@ -59,11 +61,13 @@ export default function RAGOperatorPage() {
       request("/rag/documents?status=active&limit=100") as Promise<Document[]>,
       request("/rag/operator/feedback?status=new&limit=50") as Promise<Feedback[]>,
       request("/rag/operator/reindex-requests?limit=50") as Promise<ReindexRequest[]>,
+      request("/rag/operator/feedback/summary") as Promise<FeedbackSummary>,
     ]);
     if (results[0].status === "fulfilled") setHealth(results[0].value);
     if (results[1].status === "fulfilled") setDocuments(results[1].value);
     if (results[2].status === "fulfilled") setFeedback(results[2].value);
     if (results[3].status === "fulfilled") setRequests(results[3].value);
+    if (results[4].status === "fulfilled") setFeedbackSummary(results[4].value);
     const failures = results.filter((item): item is PromiseRejectedResult => item.status === "rejected");
     if (failures.length === results.length) setError(failures.map(item => item.reason instanceof Error ? item.reason.message : "Could not load operator data.").join(" · "));
     else if (failures.length) setNotice("Some operator sections are unavailable for this role. The API enforces permissions per action.");
@@ -219,6 +223,26 @@ export default function RAGOperatorPage() {
             <div><button type="submit" className="secondary" disabled={busy !== ""}>Flag this result set</button></div>
           </form>}
         </div>}
+      </article>
+
+      <article>
+        <p className="eyebrow">FEEDBACK INSIGHTS</p>
+        <h2>How is retrieval working for your team?</h2>
+        {feedbackSummary ? <>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+            <Metric label="TOTAL RESPONSES" value={feedbackSummary.total} detail="All recorded feedback" />
+            <Metric label="HELPFUL" value={feedbackSummary.by_rating.helpful} detail="Marked useful by users" />
+            <Metric label="NEEDS IMPROVEMENT" value={feedbackSummary.by_rating.unhelpful} detail="Marked not useful" />
+            <Metric label="HELPFUL RATE" value={feedbackSummary.helpful_rate_percent === null ? "—" : feedbackSummary.helpful_rate_percent + "%"} detail="Of all submitted ratings" />
+          </div>
+          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 16 }}>
+            <span className="muted">New: <strong>{feedbackSummary.by_status.new}</strong></span>
+            <span className="muted">Triaged: <strong>{feedbackSummary.by_status.triaged}</strong></span>
+            <span className="muted">Resolved: <strong>{feedbackSummary.by_status.resolved}</strong></span>
+            <span className="muted">Ignored: <strong>{feedbackSummary.by_status.ignored}</strong></span>
+          </div>
+          <p className="muted">{feedbackSummary.privacy}</p>
+        </> : <p className="muted">Feedback insight aggregates are unavailable for this role or could not be loaded.</p>}
       </article>
 
       <article>

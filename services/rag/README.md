@@ -88,3 +88,8 @@ Offline review receipt verification enforces the same 10,000-review ceiling as l
 ## Guided RAG Studio
 
 The web app provides a guided `/rag-studio` workspace for adding TXT, Markdown, HTML, PDF, and DOCX sources or pasting text, browsing the active organization-scoped library, querying with lexical retrieval, expanding evidence passages, and submitting usefulness feedback. The interface reports synchronous ingestion and lexical retrieval accurately; it does not present retrieved passages as generated answers or ranking scores as factual confidence. See `docs/rag-grounding-calibration-phase-81.md`.
+
+
+## Feedback insights
+
+The operator workbench displays tenant-scoped aggregate feedback counts and helpful-rate summaries from the existing privacy-conscious feedback records. The summary endpoint returns aggregate values only and does not expose raw query text, digests, notes, actors, or evidence IDs. Helpful ratings describe user-perceived usefulness, not factual correctness. See `docs/rag-feedback-insights-phase-82.md`.
