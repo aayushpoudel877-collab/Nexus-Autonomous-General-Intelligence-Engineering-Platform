@@ -62,7 +62,9 @@ async def test_feedback_trend_returns_zero_filled_utc_days_and_tenant_scoped_cou
     statement = session.execute.await_args.args[0]
     sql = str(statement)
     assert "rag_feedback.organization_id" in sql
-    assert str(organization_id) not in sql
+    assert "rag_feedback.created_at" in sql
+    compiled = statement.compile()
+    assert organization_id in compiled.params.values()
 
 
 @pytest.mark.asyncio
