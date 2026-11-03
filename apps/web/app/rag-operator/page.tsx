@@ -17,6 +17,7 @@ type Evidence = { evidence_id: string; document_id: string; chunk_id: string; ti
 type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: string; created_at: string };
 type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
+type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { date: string; helpful: number; unhelpful: number; total: number }[]; privacy: string };
 type ReindexRequest = { id: string; document_id: string; reason: string; status: string; requested_by_user_id: string | null; reviewed_by_user_id: string | null; created_at: string };
 
 async function request(path: string, init?: RequestInit) {
@@ -42,6 +43,8 @@ export default function RAGOperatorPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
+  const [feedbackTrend, setFeedbackTrend] = useState<FeedbackTrend | null>(null);
+  const [trendDays, setTrendDays] = useState("30");
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
   const [characterNgramWeight, setCharacterNgramWeight] = useState("0");
@@ -62,19 +65,21 @@ export default function RAGOperatorPage() {
       request("/rag/operator/feedback?status=new&limit=50") as Promise<Feedback[]>,
       request("/rag/operator/reindex-requests?limit=50") as Promise<ReindexRequest[]>,
       request("/rag/operator/feedback/summary") as Promise<FeedbackSummary>,
+      request(`/rag/operator/feedback/trend?days=${trendDays}`) as Promise<FeedbackTrend>,
     ]);
     if (results[0].status === "fulfilled") setHealth(results[0].value);
     if (results[1].status === "fulfilled") setDocuments(results[1].value);
     if (results[2].status === "fulfilled") setFeedback(results[2].value);
     if (results[3].status === "fulfilled") setRequests(results[3].value);
     if (results[4].status === "fulfilled") setFeedbackSummary(results[4].value);
+    if (results[5].status === "fulfilled") setFeedbackTrend(results[5].value);
     const failures = results.filter((item): item is PromiseRejectedResult => item.status === "rejected");
     if (failures.length === results.length) setError(failures.map(item => item.reason instanceof Error ? item.reason.message : "Could not load operator data.").join(" · "));
     else if (failures.length) setNotice("Some operator sections are unavailable for this role. The API enforces permissions per action.");
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [trendDays]);
 
   async function runQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -243,6 +248,40 @@ export default function RAGOperatorPage() {
           </div>
           <p className="muted">{feedbackSummary.privacy}</p>
         </> : <p className="muted">Feedback insight aggregates are unavailable for this role or could not be loaded.</p>}
+      </article>
+
+      <article>
+        <p className="eyebrow">FEEDBACK ACTIVITY</p>
+        <h2>Feedback over time</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", margin: "12px 0 18px" }}>
+          <label>Time window
+            <select value={trendDays} onChange={event => setTrendDays(event.target.value)} style={{ marginLeft: 8 }}>
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+          </label>
+          <span className="muted">{feedbackTrend?.total ?? "—"} responses · UTC</span>
+        </div>
+        {feedbackTrend ? <>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
+            <span className="muted">■ Helpful</span><span className="muted">■ Needs improvement</span>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {feedbackTrend.series.map(day => {
+              const max = Math.max(1, ...feedbackTrend.series.map(item => item.total));
+              return <div key={day.date} style={{ display: "grid", gridTemplateColumns: "104px minmax(80px,1fr) 34px", alignItems: "center", gap: 10 }}>
+                <small className="muted">{day.date.slice(5)}</small>
+                <div aria-label={day.date + ": " + day.helpful + " helpful, " + day.unhelpful + " needs improvement"} style={{ display: "grid", gap: 3 }}>
+                  <div style={{ height: 7, width: Math.max(day.helpful ? 3 : 0, day.helpful / max * 100) + "%", background: "#16856b", borderRadius: 6 }} />
+                  <div style={{ height: 7, width: Math.max(day.unhelpful ? 3 : 0, day.unhelpful / max * 100) + "%", background: "#d97757", borderRadius: 6 }} />
+                </div>
+                <small className="muted" style={{ textAlign: "right" }}>{day.total}</small>
+              </div>;
+            })}
+          </div>
+          <p className="muted" style={{ marginTop: 14 }}>{feedbackTrend.privacy}</p>
+        </> : <p className="muted">Daily feedback activity is unavailable for this role or could not be loaded.</p>}
       </article>
 
       <article>
