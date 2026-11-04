@@ -15,7 +15,8 @@ type Health = {
 type Document = { id: string; title: string; source_uri: string; status: string; content_chars: number; created_at: string };
 type Evidence = { evidence_id: string; document_id: string; chunk_id: string; title: string; source_uri: string; text: string; start_char: number; end_char: number; score: number; character_ngram_score?: number };
 type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
-type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: string; created_at: string };
+type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: "new" | "triaged" | "resolved" | "ignored"; created_at: string };
+type FeedbackHistory = { current_status: Feedback["status"]; events: { event: "submitted" | "triaged" | "resolved" | "ignored"; created_at: string }[]; privacy: string };
 type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
 type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { date: string; helpful: number; unhelpful: number; total: number }[]; privacy: string };
 type FeedbackPeriod = { start_date: string; end_date_exclusive: string; helpful: number; unhelpful: number; total: number; helpful_rate_percent: number | null };
@@ -46,6 +47,10 @@ export default function RAGOperatorPage() {
   const [health, setHealth] = useState<Health | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [feedbackStatusFilter, setFeedbackStatusFilter] = useState<Feedback["status"]>("new");
+  const [feedbackHistory, setFeedbackHistory] = useState<Record<string, FeedbackHistory>>({});
+  const [expandedHistory, setExpandedHistory] = useState("");
+  const [historyLoading, setHistoryLoading] = useState("");
   const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
   const [feedbackTrend, setFeedbackTrend] = useState<FeedbackTrend | null>(null);
   const [feedbackComparison, setFeedbackComparison] = useState<FeedbackComparison | null>(null);
@@ -69,7 +74,7 @@ export default function RAGOperatorPage() {
     const results = await Promise.allSettled([
       request("/rag/operator/health") as Promise<Health>,
       request("/rag/documents?status=active&limit=100") as Promise<Document[]>,
-      request("/rag/operator/feedback?status=new&limit=50") as Promise<Feedback[]>,
+      request(`/rag/operator/feedback?status=${feedbackStatusFilter}&limit=50`) as Promise<Feedback[]>,
       request("/rag/operator/reindex-requests?limit=50") as Promise<ReindexRequest[]>,
       request("/rag/operator/feedback/summary") as Promise<FeedbackSummary>,
       request(`/rag/operator/feedback/trend?days=${trendDays}`) as Promise<FeedbackTrend>,
@@ -92,7 +97,7 @@ export default function RAGOperatorPage() {
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, [trendDays]);
+  useEffect(() => { void load(); }, [trendDays, feedbackStatusFilter]);
 
   async function runQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -142,11 +147,30 @@ export default function RAGOperatorPage() {
     try {
       await request("/rag/operator/feedback/" + id, { method: "PATCH", body: JSON.stringify({ status }) });
       setNotice("Feedback status updated.");
+      setFeedbackHistory(current => { const next = { ...current }; delete next[id]; return next; });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update feedback.");
     } finally {
       setBusy("");
+    }
+  }
+
+  async function toggleFeedbackHistory(id: string) {
+    if (expandedHistory === id) {
+      setExpandedHistory("");
+      return;
+    }
+    setExpandedHistory(id);
+    if (feedbackHistory[id]) return;
+    setHistoryLoading(id);
+    try {
+      const history = await request("/rag/operator/feedback/" + id + "/history") as FeedbackHistory;
+      setFeedbackHistory(current => ({ ...current, [id]: history }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load feedback history.");
+    } finally {
+      setHistoryLoading("");
     }
   }
 
@@ -376,19 +400,43 @@ export default function RAGOperatorPage() {
 
       <article>
         <p className="eyebrow">FEEDBACK TRIAGE</p>
-        <h2>New feedback</h2>
+        <h2>Feedback queue</h2>
+        <label style={{ display: "inline-grid", gap: 6, marginBottom: 12 }}>Filter by status
+          <select value={feedbackStatusFilter} onChange={event => setFeedbackStatusFilter(event.target.value as Feedback["status"])}>
+            <option value="new">New</option>
+            <option value="triaged">Triaged</option>
+            <option value="resolved">Resolved</option>
+            <option value="ignored">Ignored</option>
+          </select>
+        </label>
         <p className="muted">Feedback contains query digests and evidence IDs rather than the raw query. Access is restricted by API role permissions.</p>
         {feedback.map(item => <div key={item.id} style={{ borderTop: "1px solid #e4e7ec", padding: "14px 0" }}>
-          <p><strong>{item.rating === "helpful" ? "Helpful" : "Needs improvement"}</strong> · {new Date(item.created_at).toLocaleString()}</p>
+          <p><strong>{item.rating === "helpful" ? "Helpful" : "Needs improvement"}</strong> · {item.status} · {new Date(item.created_at).toLocaleString()}</p>
           <p className="muted">Query digest: <code>{item.query_sha256.slice(0, 16)}…</code> · Evidence IDs: {item.evidence_ids.join(", ") || "none"}</p>
           {item.note && <p>{item.note}</p>}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "triaged")}>Mark triaged</button>
-            <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "resolved")}>Resolve</button>
-            <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "ignored")}>Ignore</button>
+            {item.status === "new" && <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "triaged")}>Mark triaged</button>}
+            {(item.status === "new" || item.status === "triaged") && <>
+              <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "resolved")}>Resolve</button>
+              <button className="secondary" disabled={busy !== ""} onClick={() => void updateFeedback(item.id, "ignored")}>Ignore</button>
+            </>}
+            <button className="secondary" disabled={historyLoading === item.id} onClick={() => void toggleFeedbackHistory(item.id)}>
+              {historyLoading === item.id ? "Loading history…" : expandedHistory === item.id ? "Hide history" : "View history"}
+            </button>
           </div>
+          {expandedHistory === item.id && <div style={{ marginTop: 12, padding: 12, background: "#f8fafc", borderRadius: 8 }}>
+            <strong>Lifecycle history · current status: {feedbackHistory[item.id]?.current_status ?? item.status}</strong>
+            {feedbackHistory[item.id] ? <>
+              <ol style={{ margin: "10px 0 0", paddingLeft: 22 }}>
+                {feedbackHistory[item.id].events.map((event, index) => <li key={event.event + event.created_at + index} style={{ marginBottom: 6 }}>
+                  <span>{event.event.charAt(0).toUpperCase() + event.event.slice(1)}</span> · <time dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time>
+                </li>)}
+              </ol>
+              <small className="muted">{feedbackHistory[item.id].privacy}</small>
+            </> : <p className="muted">History is loading or unavailable.</p>}
+          </div>}
         </div>)}
-        {!feedback.length && <p className="muted">No new feedback or the triage queue is not available to this role.</p>}
+        {!feedback.length && <p className="muted">No feedback matches this status filter or the queue is unavailable for this role.</p>}
       </article>
 
       <article>
