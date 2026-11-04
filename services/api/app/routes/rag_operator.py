@@ -402,6 +402,51 @@ async def list_feedback(
     return [_feedback_dict(row) for row in rows.all()]
 
 
+@router.get("/feedback/{feedback_id}/history")
+async def feedback_history(
+    feedback_id: UUID,
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a privacy-conscious lifecycle timeline for one tenant-owned feedback item."""
+    membership = await get_membership(user, db)
+    feedback = await db.scalar(
+        select(RAGFeedback).where(
+            RAGFeedback.id == feedback_id,
+            RAGFeedback.organization_id == membership.organization_id,
+        )
+    )
+    if feedback is None:
+        raise HTTPException(status_code=404, detail="Feedback not found")
+
+    rows = await db.execute(
+        select(AuditEvent.action, AuditEvent.detail, AuditEvent.created_at)
+        .where(
+            AuditEvent.organization_id == membership.organization_id,
+            AuditEvent.resource_type == "rag_feedback",
+            AuditEvent.resource_id == str(feedback_id),
+            AuditEvent.action.in_(("rag.feedback.created", "rag.feedback.status_updated")),
+        )
+        .order_by(AuditEvent.created_at.asc(), AuditEvent.id.asc())
+    )
+    events = []
+    for action, detail, created_at in rows.all():
+        if action == "rag.feedback.created":
+            event_type = "submitted"
+        elif action == "rag.feedback.status_updated":
+            event_type = (detail or {}).get("status")
+            if event_type not in ("triaged", "resolved", "ignored"):
+                continue
+        else:
+            continue
+        events.append({"event": event_type, "created_at": created_at})
+    return {
+        "current_status": feedback.status,
+        "events": events,
+        "privacy": "Lifecycle timestamps only; audit actor identifiers and raw audit details are not returned.",
+    }
+
+
 @router.patch("/feedback/{feedback_id}")
 async def update_feedback_status(
     feedback_id: UUID,
