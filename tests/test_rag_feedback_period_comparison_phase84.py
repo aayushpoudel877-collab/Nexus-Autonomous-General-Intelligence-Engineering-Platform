@@ -1,4 +1,5 @@
-from datetime import date\nfrom types import SimpleNamespace
+from datetime import date
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
@@ -63,7 +64,9 @@ async def test_feedback_comparison_returns_adjacent_period_aggregates_and_change
         "unhelpful": {"absolute": -2, "percent": -33.3},
         "helpful_rate_percentage_points": 20.0,
     }
-    assert response["current"]["end_date_exclusive"] == response["previous"]["start_date"]\n    assert (date.fromisoformat(response["current"]["end_date_exclusive"]) - date.fromisoformat(response["current"]["start_date"])).days == 7\n    assert (date.fromisoformat(response["previous"]["end_date_exclusive"]) - date.fromisoformat(response["previous"]["start_date"])).days == 7
+    assert response["current"]["end_date_exclusive"] == response["previous"]["start_date"]
+    assert (date.fromisoformat(response["current"]["end_date_exclusive"]) - date.fromisoformat(response["current"]["start_date"])).days == 7
+    assert (date.fromisoformat(response["previous"]["end_date_exclusive"]) - date.fromisoformat(response["previous"]["start_date"])).days == 7
     assert "raw queries" in response["privacy"]
     assert "evidence IDs" in response["privacy"]
 
