@@ -72,7 +72,7 @@ async def test_feedback_trend_empty_period_returns_zero_counts(monkeypatch):
     user = SimpleNamespace(id=uuid4())
     membership = SimpleNamespace(organization_id=uuid4())
     session = AsyncMock()
-    session.execute.return_value = MagicMock(all=lambda: [])
+    session.execute.return_value = MagicMock(all=list)
 
     async def membership_for_user(_user, _session):
         return membership
