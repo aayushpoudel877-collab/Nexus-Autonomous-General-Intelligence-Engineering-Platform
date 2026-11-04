@@ -50,6 +50,8 @@ export default function RAGOperatorPage() {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [feedbackPage, setFeedbackPage] = useState<FeedbackPage | null>(null);
   const [feedbackOffset, setFeedbackOffset] = useState(0);
+  const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<string[]>([]);
+  const [bulkTargetStatus, setBulkTargetStatus] = useState<"triaged" | "resolved" | "ignored">("triaged");
   const [feedbackStatusFilter, setFeedbackStatusFilter] = useState<Feedback["status"]>("new");
   const [feedbackHistory, setFeedbackHistory] = useState<Record<string, FeedbackHistory>>({});
   const [expandedHistory, setExpandedHistory] = useState("");
@@ -154,6 +156,24 @@ export default function RAGOperatorPage() {
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update feedback.");
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function bulkUpdateFeedback() {
+    if (!selectedFeedbackIds.length || busy) return;
+    setBusy("bulk-feedback"); setError(""); setNotice("");
+    try {
+      const result = await request("/rag/operator/feedback/bulk-update", {
+        method: "POST",
+        body: JSON.stringify({ feedback_ids: selectedFeedbackIds, status: bulkTargetStatus }),
+      }) as { updated: number; unchanged: number; status: string };
+      setSelectedFeedbackIds([]);
+      setNotice(`${result.updated} feedback item(s) updated; ${result.unchanged} already had status ${result.status}.`);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not bulk-update feedback.");
     } finally {
       setBusy("");
     }
@@ -405,15 +425,38 @@ export default function RAGOperatorPage() {
         <p className="eyebrow">FEEDBACK TRIAGE</p>
         <h2>Feedback queue</h2>
         <label style={{ display: "inline-grid", gap: 6, marginBottom: 12 }}>Filter by status
-          <select value={feedbackStatusFilter} onChange={event => { setFeedbackOffset(0); setFeedbackStatusFilter(event.target.value as Feedback["status"]); }}>
+          <select value={feedbackStatusFilter} onChange={event => {
+            const nextStatus = event.target.value as Feedback["status"];
+            setFeedbackOffset(0);
+            setSelectedFeedbackIds([]);
+            setFeedbackStatusFilter(nextStatus);
+            setBulkTargetStatus(nextStatus === "new" ? "triaged" : "resolved");
+          }}>
             <option value="new">New</option>
             <option value="triaged">Triaged</option>
             <option value="resolved">Resolved</option>
             <option value="ignored">Ignored</option>
           </select>
         </label>
+        {(feedbackStatusFilter === "new" || feedbackStatusFilter === "triaged") && <div style={{ display: "flex", alignItems: "end", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+          <label style={{ display: "grid", gap: 6 }}>Apply status to selected
+            <select value={bulkTargetStatus} onChange={event => setBulkTargetStatus(event.target.value as "triaged" | "resolved" | "ignored")}>
+              {feedbackStatusFilter === "new" && <option value="triaged">Triaged</option>}
+              <option value="resolved">Resolved</option>
+              <option value="ignored">Ignored</option>
+            </select>
+          </label>
+          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => void bulkUpdateFeedback()}>
+            {busy === "bulk-feedback" ? "Updating…" : `Apply to ${selectedFeedbackIds.length} selected`}
+          </button>
+          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => setSelectedFeedbackIds([])}>Clear selection</button>
+        </div>}
         <p className="muted">Feedback contains query digests and evidence IDs rather than the raw query. Access is restricted by API role permissions.</p>
         {feedback.map(item => <div key={item.id} style={{ borderTop: "1px solid #e4e7ec", padding: "14px 0" }}>
+          {(item.status === "new" || item.status === "triaged") && <label style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <input type="checkbox" checked={selectedFeedbackIds.includes(item.id)} onChange={event => setSelectedFeedbackIds(current => event.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />
+            Select for bulk update
+          </label>}
           <p><strong>{item.rating === "helpful" ? "Helpful" : "Needs improvement"}</strong> · {item.status} · {new Date(item.created_at).toLocaleString()}</p>
           <p className="muted">Query digest: <code>{item.query_sha256.slice(0, 16)}…</code> · Evidence IDs: {item.evidence_ids.join(", ") || "none"}</p>
           {item.note && <p>{item.note}</p>}
@@ -443,8 +486,8 @@ export default function RAGOperatorPage() {
         {feedbackPage && <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
           <small className="muted">Showing {feedback.length ? feedbackPage.offset + 1 : 0}–{Math.min(feedbackPage.offset + feedback.length, feedbackPage.total)} of {feedbackPage.total}</small>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="secondary" disabled={loading || feedbackPage.offset === 0} onClick={() => setFeedbackOffset(Math.max(0, feedbackPage.offset - feedbackPage.limit))}>Previous</button>
-            <button className="secondary" disabled={loading || !feedbackPage.has_more} onClick={() => setFeedbackOffset(feedbackPage.offset + feedbackPage.limit)}>Next</button>
+            <button className="secondary" disabled={loading || feedbackPage.offset === 0} onClick={() => { setSelectedFeedbackIds([]); setFeedbackOffset(Math.max(0, feedbackPage.offset - feedbackPage.limit)); }}>Previous</button>
+            <button className="secondary" disabled={loading || !feedbackPage.has_more} onClick={() => { setSelectedFeedbackIds([]); setFeedbackOffset(feedbackPage.offset + feedbackPage.limit); }}>Next</button>
           </div>
         </div>}
       </article>
