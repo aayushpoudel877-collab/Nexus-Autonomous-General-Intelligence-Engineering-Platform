@@ -122,3 +122,7 @@ The operator API provides bounded pages for one feedback lifecycle status, with 
 ## Feedback bulk triage
 
 Authorized operators can update 1–50 unique feedback records in one atomic status transition. The endpoint locks records within the active organization, validates the full batch before mutation, rejects missing/cross-tenant or invalid transitions without partial updates, writes per-record audit events, and commits once. Already-matching statuses are unchanged. The workbench provides bulk controls for new and triaged feedback. See `docs/rag-feedback-bulk-triage-phase-89.md`.
+
+## Bulk triage preview
+
+The operator API provides a non-mutating preview of a selected bulk feedback transition, returning eligible, unchanged, and blocked counts only. The workbench enables apply only when all selected transitions are valid. The apply endpoint independently locks and revalidates every record to handle concurrent status changes. See `docs/rag-bulk-triage-preview-phase-90.md`.
