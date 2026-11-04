@@ -40,6 +40,7 @@ async def test_feedback_backlog_returns_all_age_buckets_and_tenant_scoped_counts
     session.execute.return_value = _result([
         ("under_24_hours", "new", 2),
         ("1_to_7_days", "triaged", 3),
+        ("7_to_30_days", "triaged", 5),
         ("over_30_days", "new", 1),
     ])
 
@@ -50,9 +51,9 @@ async def test_feedback_backlog_returns_all_age_buckets_and_tenant_scoped_counts
     response = await rag_operator.feedback_backlog_aging(user=user, db=session)
 
     assert response["timezone"] == "UTC"
-    assert response["total_open"] == 6
+    assert response["total_open"] == 11
     assert response["new_total"] == 3
-    assert response["triaged_total"] == 3
+    assert response["triaged_total"] == 8
     assert [item["key"] for item in response["series"]] == [
         "under_24_hours", "1_to_7_days", "7_to_30_days", "over_30_days"
     ]
@@ -63,7 +64,8 @@ async def test_feedback_backlog_returns_all_age_buckets_and_tenant_scoped_counts
         "triaged": 0,
         "total": 2,
     }
-    assert response["series"][2]["total"] == 0
+    assert response["series"][2]["triaged"] == 5
+    assert response["series"][2]["total"] == 5
     assert response["series"][3]["new"] == 1
     assert "no individual feedback fields" in response["privacy"]
 
@@ -72,7 +74,9 @@ async def test_feedback_backlog_returns_all_age_buckets_and_tenant_scoped_counts
     assert "rag_feedback.organization_id" in sql
     assert "rag_feedback.created_at" in sql
     assert "rag_feedback.status" in sql
-    assert organization_id in statement.compile().params.values()
+    params = statement.compile().params
+    assert organization_id in params.values()
+    assert ["new", "triaged"] in params.values()
 
 
 @pytest.mark.asyncio
