@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.dependencies import get_current_user, get_membership, require_roles
@@ -245,6 +245,51 @@ async def feedback_period_comparison(
             ),
         },
         "privacy": "Two complete-period aggregates only; raw queries, notes, actors, and evidence IDs are not returned.",
+    }
+
+
+@router.get("/feedback/backlog")
+async def feedback_backlog_aging(
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return age buckets for unresolved feedback in the active organization."""
+    from datetime import datetime, timedelta, timezone
+
+    membership = await get_membership(user, db)
+    now = datetime.now(timezone.utc)
+    age_bucket = case(
+        (RAGFeedback.created_at >= now - timedelta(hours=24), "under_24_hours"),
+        (RAGFeedback.created_at >= now - timedelta(days=7), "1_to_7_days"),
+        (RAGFeedback.created_at >= now - timedelta(days=30), "7_to_30_days"),
+        else_="over_30_days",
+    )
+    rows = await db.execute(
+        select(age_bucket, RAGFeedback.status, func.count(RAGFeedback.id))
+        .where(
+            RAGFeedback.organization_id == membership.organization_id,
+            RAGFeedback.status.in_(("new", "triaged")),
+        )
+        .group_by(age_bucket, RAGFeedback.status)
+    )
+    buckets = {
+        "under_24_hours": {"label": "Under 24 hours", "new": 0, "triaged": 0, "total": 0},
+        "1_to_7_days": {"label": "1–7 days", "new": 0, "triaged": 0, "total": 0},
+        "7_to_30_days": {"label": "7–30 days", "new": 0, "triaged": 0, "total": 0},
+        "over_30_days": {"label": "Over 30 days", "new": 0, "triaged": 0, "total": 0},
+    }
+    for bucket, feedback_status, count in rows.all():
+        if bucket in buckets and feedback_status in ("new", "triaged"):
+            buckets[bucket][feedback_status] = int(count)
+            buckets[bucket]["total"] += int(count)
+    series = [{"key": key, **values} for key, values in buckets.items()]
+    return {
+        "timezone": "UTC",
+        "total_open": sum(item["total"] for item in series),
+        "new_total": sum(item["new"] for item in series),
+        "triaged_total": sum(item["triaged"] for item in series),
+        "series": series,
+        "privacy": "Age-bucket aggregates for new and triaged feedback only; no individual feedback fields are returned.",
     }
 
 
