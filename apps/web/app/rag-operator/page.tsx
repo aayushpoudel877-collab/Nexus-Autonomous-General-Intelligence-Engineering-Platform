@@ -16,6 +16,7 @@ type Document = { id: string; title: string; source_uri: string; status: string;
 type Evidence = { evidence_id: string; document_id: string; chunk_id: string; title: string; source_uri: string; text: string; start_char: number; end_char: number; score: number; character_ngram_score?: number };
 type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: "new" | "triaged" | "resolved" | "ignored"; created_at: string };
+type FeedbackPage = { items: Feedback[]; total: number; limit: number; offset: number; has_more: boolean };
 type FeedbackHistory = { current_status: Feedback["status"]; events: { event: "submitted" | "triaged" | "resolved" | "ignored"; created_at: string }[]; privacy: string };
 type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
 type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { date: string; helpful: number; unhelpful: number; total: number }[]; privacy: string };
@@ -47,6 +48,8 @@ export default function RAGOperatorPage() {
   const [health, setHealth] = useState<Health | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [feedbackPage, setFeedbackPage] = useState<FeedbackPage | null>(null);
+  const [feedbackOffset, setFeedbackOffset] = useState(0);
   const [feedbackStatusFilter, setFeedbackStatusFilter] = useState<Feedback["status"]>("new");
   const [feedbackHistory, setFeedbackHistory] = useState<Record<string, FeedbackHistory>>({});
   const [expandedHistory, setExpandedHistory] = useState("");
@@ -74,7 +77,7 @@ export default function RAGOperatorPage() {
     const results = await Promise.allSettled([
       request("/rag/operator/health") as Promise<Health>,
       request("/rag/documents?status=active&limit=100") as Promise<Document[]>,
-      request(`/rag/operator/feedback?status=${feedbackStatusFilter}&limit=50`) as Promise<Feedback[]>,
+      request(`/rag/operator/feedback/page?status=${feedbackStatusFilter}&limit=25&offset=${feedbackOffset}`) as Promise<FeedbackPage>,
       request("/rag/operator/reindex-requests?limit=50") as Promise<ReindexRequest[]>,
       request("/rag/operator/feedback/summary") as Promise<FeedbackSummary>,
       request(`/rag/operator/feedback/trend?days=${trendDays}`) as Promise<FeedbackTrend>,
@@ -84,7 +87,7 @@ export default function RAGOperatorPage() {
     ]);
     if (results[0].status === "fulfilled") setHealth(results[0].value);
     if (results[1].status === "fulfilled") setDocuments(results[1].value);
-    if (results[2].status === "fulfilled") setFeedback(results[2].value);
+    if (results[2].status === "fulfilled") { setFeedback(results[2].value.items); setFeedbackPage(results[2].value); }
     if (results[3].status === "fulfilled") setRequests(results[3].value);
     if (results[4].status === "fulfilled") setFeedbackSummary(results[4].value);
     if (results[5].status === "fulfilled") setFeedbackTrend(results[5].value);
@@ -97,7 +100,7 @@ export default function RAGOperatorPage() {
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, [trendDays, feedbackStatusFilter]);
+  useEffect(() => { void load(); }, [trendDays, feedbackStatusFilter, feedbackOffset]);
 
   async function runQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -402,7 +405,7 @@ export default function RAGOperatorPage() {
         <p className="eyebrow">FEEDBACK TRIAGE</p>
         <h2>Feedback queue</h2>
         <label style={{ display: "inline-grid", gap: 6, marginBottom: 12 }}>Filter by status
-          <select value={feedbackStatusFilter} onChange={event => setFeedbackStatusFilter(event.target.value as Feedback["status"])}>
+          <select value={feedbackStatusFilter} onChange={event => { setFeedbackOffset(0); setFeedbackStatusFilter(event.target.value as Feedback["status"]); }}>
             <option value="new">New</option>
             <option value="triaged">Triaged</option>
             <option value="resolved">Resolved</option>
@@ -437,6 +440,13 @@ export default function RAGOperatorPage() {
           </div>}
         </div>)}
         {!feedback.length && <p className="muted">No feedback matches this status filter or the queue is unavailable for this role.</p>}
+        {feedbackPage && <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
+          <small className="muted">Showing {feedback.length ? feedbackPage.offset + 1 : 0}–{Math.min(feedbackPage.offset + feedback.length, feedbackPage.total)} of {feedbackPage.total}</small>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="secondary" disabled={loading || feedbackPage.offset === 0} onClick={() => setFeedbackOffset(Math.max(0, feedbackPage.offset - feedbackPage.limit))}>Previous</button>
+            <button className="secondary" disabled={loading || !feedbackPage.has_more} onClick={() => setFeedbackOffset(feedbackPage.offset + feedbackPage.limit)}>Next</button>
+          </div>
+        </div>}
       </article>
 
       <article>

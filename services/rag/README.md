@@ -114,3 +114,7 @@ The operator API reports daily UTC counts for feedback submissions and transitio
 ## Feedback item lifecycle history
 
 Authorized operators can inspect a tenant-scoped, timestamp-only history for an individual feedback record, including submission and triage/resolution/ignored transitions. The workbench supports status filters and expandable histories. Actor identifiers and raw audit details are excluded; legacy records may have incomplete histories. No new audit writes or schema migration are introduced. See `docs/rag-feedback-item-history-phase-87.md`.
+
+## Feedback queue pagination
+
+The operator API provides bounded pages for one feedback lifecycle status, with tenant-scoped totals, stable ordering, and a `has_more` indicator. The workbench loads 25 items per page and retains status filters and per-item lifecycle history. The legacy feedback-list endpoint remains available for compatibility. See `docs/rag-feedback-queue-pagination-phase-88.md`.
