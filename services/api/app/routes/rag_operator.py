@@ -172,6 +172,82 @@ async def feedback_trend(
     }
 
 
+@router.get("/feedback/compare")
+async def feedback_period_comparison(
+    days: int = Query(default=30, ge=7, le=90),
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Compare two adjacent, complete UTC feedback windows using aggregates only."""
+    from datetime import datetime, time, timedelta, timezone
+
+    membership = await get_membership(user, db)
+    today = datetime.now(timezone.utc).date()
+    current_start_day = today - timedelta(days=days)
+    previous_start_day = current_start_day - timedelta(days=days)
+
+    async def period_counts(start_day, end_day):
+        start_at = datetime.combine(start_day, time.min, tzinfo=timezone.utc)
+        end_at = datetime.combine(end_day, time.min, tzinfo=timezone.utc)
+        result = await db.execute(
+            select(RAGFeedback.rating, func.count(RAGFeedback.id))
+            .where(
+                RAGFeedback.organization_id == membership.organization_id,
+                RAGFeedback.created_at >= start_at,
+                RAGFeedback.created_at < end_at,
+            )
+            .group_by(RAGFeedback.rating)
+        )
+        counts = {"helpful": 0, "unhelpful": 0}
+        for rating, count in result.all():
+            if rating in counts:
+                counts[rating] = int(count)
+        total = counts["helpful"] + counts["unhelpful"]
+        return {
+            "start_date": start_day.isoformat(),
+            "end_date_exclusive": end_day.isoformat(),
+            "helpful": counts["helpful"],
+            "unhelpful": counts["unhelpful"],
+            "total": total,
+            "helpful_rate_percent": round(counts["helpful"] / total * 100, 1) if total else None,
+        }
+
+    current = await period_counts(current_start_day, today)
+    previous = await period_counts(previous_start_day, current_start_day)
+
+    def count_change(key):
+        current_value = current[key]
+        previous_value = previous[key]
+        return {
+            "absolute": current_value - previous_value,
+            "percent": (
+                round((current_value - previous_value) / previous_value * 100, 1)
+                if previous_value
+                else None
+            ),
+        }
+
+    current_rate = current["helpful_rate_percent"]
+    previous_rate = previous["helpful_rate_percent"]
+    return {
+        "days": days,
+        "timezone": "UTC",
+        "current": current,
+        "previous": previous,
+        "change": {
+            "total": count_change("total"),
+            "helpful": count_change("helpful"),
+            "unhelpful": count_change("unhelpful"),
+            "helpful_rate_percentage_points": (
+                round(current_rate - previous_rate, 1)
+                if current_rate is not None and previous_rate is not None
+                else None
+            ),
+        },
+        "privacy": "Two complete-period aggregates only; raw queries, notes, actors, and evidence IDs are not returned.",
+    }
+
+
 @router.post("/feedback", status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     payload: FeedbackCreate,
