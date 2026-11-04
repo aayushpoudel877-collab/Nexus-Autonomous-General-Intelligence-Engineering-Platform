@@ -193,6 +193,7 @@ export default function RAGOperatorPage() {
       setNotice(`${result.updated} feedback item(s) updated; ${result.unchanged} already had status ${result.status}.`);
       await load();
     } catch (e) {
+      setBulkPreview(null);
       setError(e instanceof Error ? e.message : "Could not bulk-update feedback.");
     } finally {
       setBusy("");
