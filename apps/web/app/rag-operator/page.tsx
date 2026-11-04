@@ -17,6 +17,7 @@ type Evidence = { evidence_id: string; document_id: string; chunk_id: string; ti
 type QueryResult = { query: string; retrieval_mode: string; character_ngram_weight?: number; evidence: Evidence[]; note: string };
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: "new" | "triaged" | "resolved" | "ignored"; created_at: string };
 type FeedbackPage = { items: Feedback[]; total: number; limit: number; offset: number; has_more: boolean };
+type FeedbackBulkPreview = { requested: number; target_status: string; eligible: number; unchanged: number; blocked: number; blocked_by_status: Record<string, number>; can_apply: boolean; privacy: string; notice: string };
 type FeedbackHistory = { current_status: Feedback["status"]; events: { event: "submitted" | "triaged" | "resolved" | "ignored"; created_at: string }[]; privacy: string };
 type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
 type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { date: string; helpful: number; unhelpful: number; total: number }[]; privacy: string };
@@ -52,6 +53,7 @@ export default function RAGOperatorPage() {
   const [feedbackOffset, setFeedbackOffset] = useState(0);
   const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<string[]>([]);
   const [bulkTargetStatus, setBulkTargetStatus] = useState<"triaged" | "resolved" | "ignored">("triaged");
+  const [bulkPreview, setBulkPreview] = useState<FeedbackBulkPreview | null>(null);
   const [feedbackStatusFilter, setFeedbackStatusFilter] = useState<Feedback["status"]>("new");
   const [feedbackHistory, setFeedbackHistory] = useState<Record<string, FeedbackHistory>>({});
   const [expandedHistory, setExpandedHistory] = useState("");
@@ -161,8 +163,25 @@ export default function RAGOperatorPage() {
     }
   }
 
-  async function bulkUpdateFeedback() {
+  async function previewBulkFeedback() {
     if (!selectedFeedbackIds.length || busy) return;
+    setBusy("bulk-preview"); setError(""); setNotice("");
+    try {
+      const preview = await request("/rag/operator/feedback/bulk-preview", {
+        method: "POST",
+        body: JSON.stringify({ feedback_ids: selectedFeedbackIds, status: bulkTargetStatus }),
+      }) as FeedbackBulkPreview;
+      setBulkPreview(preview);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not preview bulk feedback update.");
+      setBulkPreview(null);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function bulkUpdateFeedback() {
+    if (!selectedFeedbackIds.length || !bulkPreview?.can_apply || busy) return;
     setBusy("bulk-feedback"); setError(""); setNotice("");
     try {
       const result = await request("/rag/operator/feedback/bulk-update", {
@@ -170,6 +189,7 @@ export default function RAGOperatorPage() {
         body: JSON.stringify({ feedback_ids: selectedFeedbackIds, status: bulkTargetStatus }),
       }) as { updated: number; unchanged: number; status: string };
       setSelectedFeedbackIds([]);
+      setBulkPreview(null);
       setNotice(`${result.updated} feedback item(s) updated; ${result.unchanged} already had status ${result.status}.`);
       await load();
     } catch (e) {
@@ -429,6 +449,7 @@ export default function RAGOperatorPage() {
             const nextStatus = event.target.value as Feedback["status"];
             setFeedbackOffset(0);
             setSelectedFeedbackIds([]);
+            setBulkPreview(null);
             setFeedbackStatusFilter(nextStatus);
             setBulkTargetStatus(nextStatus === "new" ? "triaged" : "resolved");
           }}>
@@ -440,21 +461,30 @@ export default function RAGOperatorPage() {
         </label>
         {(feedbackStatusFilter === "new" || feedbackStatusFilter === "triaged") && <div style={{ display: "flex", alignItems: "end", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <label style={{ display: "grid", gap: 6 }}>Apply status to selected
-            <select value={bulkTargetStatus} onChange={event => setBulkTargetStatus(event.target.value as "triaged" | "resolved" | "ignored")}>
+            <select value={bulkTargetStatus} onChange={event => { setBulkPreview(null); setBulkTargetStatus(event.target.value as "triaged" | "resolved" | "ignored"); }}>
               {feedbackStatusFilter === "new" && <option value="triaged">Triaged</option>}
               <option value="resolved">Resolved</option>
               <option value="ignored">Ignored</option>
             </select>
           </label>
-          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => void bulkUpdateFeedback()}>
+          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => void previewBulkFeedback()}>
+            {busy === "bulk-preview" ? "Checking…" : "Preview selection"}
+          </button>
+          <button className="secondary" disabled={!selectedFeedbackIds.length || !bulkPreview?.can_apply || busy !== ""} onClick={() => void bulkUpdateFeedback()}>
             {busy === "bulk-feedback" ? "Updating…" : `Apply to ${selectedFeedbackIds.length} selected`}
           </button>
-          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => setSelectedFeedbackIds([])}>Clear selection</button>
+          <button className="secondary" disabled={!selectedFeedbackIds.length || busy !== ""} onClick={() => { setSelectedFeedbackIds([]); setBulkPreview(null); }}>Clear selection</button>
+        </div>}
+        {bulkPreview && <div role="status" style={{ padding: 12, border: "1px solid #d0d5dd", borderRadius: 8, marginBottom: 14 }}>
+          <strong>{bulkPreview.can_apply ? "Batch is ready to apply" : "Batch contains blocked transitions"}</strong>
+          <p className="muted" style={{ margin: "6px 0" }}>{bulkPreview.eligible} eligible · {bulkPreview.unchanged} unchanged · {bulkPreview.blocked} blocked · target: {bulkPreview.target_status}</p>
+          {bulkPreview.blocked > 0 && <p className="muted">No items will be changed. Adjust the selection or target status before applying.</p>}
+          <small className="muted">{bulkPreview.notice}</small>
         </div>}
         <p className="muted">Feedback contains query digests and evidence IDs rather than the raw query. Access is restricted by API role permissions.</p>
         {feedback.map(item => <div key={item.id} style={{ borderTop: "1px solid #e4e7ec", padding: "14px 0" }}>
           {(item.status === "new" || item.status === "triaged") && <label style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <input type="checkbox" checked={selectedFeedbackIds.includes(item.id)} onChange={event => setSelectedFeedbackIds(current => event.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />
+            <input type="checkbox" checked={selectedFeedbackIds.includes(item.id)} onChange={event => { setBulkPreview(null); setSelectedFeedbackIds(current => event.target.checked ? [...current, item.id] : current.filter(id => id !== item.id)); }} />
             Select for bulk update
           </label>}
           <p><strong>{item.rating === "helpful" ? "Helpful" : "Needs improvement"}</strong> · {item.status} · {new Date(item.created_at).toLocaleString()}</p>
@@ -486,8 +516,8 @@ export default function RAGOperatorPage() {
         {feedbackPage && <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
           <small className="muted">Showing {feedback.length ? feedbackPage.offset + 1 : 0}–{Math.min(feedbackPage.offset + feedback.length, feedbackPage.total)} of {feedbackPage.total}</small>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="secondary" disabled={loading || feedbackPage.offset === 0} onClick={() => { setSelectedFeedbackIds([]); setFeedbackOffset(Math.max(0, feedbackPage.offset - feedbackPage.limit)); }}>Previous</button>
-            <button className="secondary" disabled={loading || !feedbackPage.has_more} onClick={() => { setSelectedFeedbackIds([]); setFeedbackOffset(feedbackPage.offset + feedbackPage.limit); }}>Next</button>
+            <button className="secondary" disabled={loading || feedbackPage.offset === 0} onClick={() => { setSelectedFeedbackIds([]); setBulkPreview(null); setFeedbackOffset(Math.max(0, feedbackPage.offset - feedbackPage.limit)); }}>Previous</button>
+            <button className="secondary" disabled={loading || !feedbackPage.has_more} onClick={() => { setSelectedFeedbackIds([]); setBulkPreview(null); setFeedbackOffset(feedbackPage.offset + feedbackPage.limit); }}>Next</button>
           </div>
         </div>}
       </article>
