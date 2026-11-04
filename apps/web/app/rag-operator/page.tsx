@@ -18,6 +18,8 @@ type QueryResult = { query: string; retrieval_mode: string; character_ngram_weig
 type Feedback = { id: string; query_sha256: string; evidence_ids: string[]; rating: "helpful" | "unhelpful"; note: string; status: string; created_at: string };
 type FeedbackSummary = { total: number; by_rating: { helpful: number; unhelpful: number }; by_status: { new: number; triaged: number; resolved: number; ignored: number }; helpful_rate_percent: number | null; privacy: string };
 type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { date: string; helpful: number; unhelpful: number; total: number }[]; privacy: string };
+type FeedbackPeriod = { start_date: string; end_date_exclusive: string; helpful: number; unhelpful: number; total: number; helpful_rate_percent: number | null };
+type FeedbackComparison = { days: number; timezone: "UTC"; current: FeedbackPeriod; previous: FeedbackPeriod; change: { total: { absolute: number; percent: number | null }; helpful: { absolute: number; percent: number | null }; unhelpful: { absolute: number; percent: number | null }; helpful_rate_percentage_points: number | null }; privacy: string };
 type ReindexRequest = { id: string; document_id: string; reason: string; status: string; requested_by_user_id: string | null; reviewed_by_user_id: string | null; created_at: string };
 
 async function request(path: string, init?: RequestInit) {
@@ -44,6 +46,7 @@ export default function RAGOperatorPage() {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
   const [feedbackTrend, setFeedbackTrend] = useState<FeedbackTrend | null>(null);
+  const [feedbackComparison, setFeedbackComparison] = useState<FeedbackComparison | null>(null);
   const [trendDays, setTrendDays] = useState("30");
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
@@ -66,6 +69,7 @@ export default function RAGOperatorPage() {
       request("/rag/operator/reindex-requests?limit=50") as Promise<ReindexRequest[]>,
       request("/rag/operator/feedback/summary") as Promise<FeedbackSummary>,
       request(`/rag/operator/feedback/trend?days=${trendDays}`) as Promise<FeedbackTrend>,
+      request(`/rag/operator/feedback/compare?days=${trendDays}`) as Promise<FeedbackComparison>,
     ]);
     if (results[0].status === "fulfilled") setHealth(results[0].value);
     if (results[1].status === "fulfilled") setDocuments(results[1].value);
@@ -73,6 +77,7 @@ export default function RAGOperatorPage() {
     if (results[3].status === "fulfilled") setRequests(results[3].value);
     if (results[4].status === "fulfilled") setFeedbackSummary(results[4].value);
     if (results[5].status === "fulfilled") setFeedbackTrend(results[5].value);
+    if (results[6].status === "fulfilled") setFeedbackComparison(results[6].value);
     const failures = results.filter((item): item is PromiseRejectedResult => item.status === "rejected");
     if (failures.length === results.length) setError(failures.map(item => item.reason instanceof Error ? item.reason.message : "Could not load operator data.").join(" · "));
     else if (failures.length) setNotice("Some operator sections are unavailable for this role. The API enforces permissions per action.");
@@ -263,6 +268,16 @@ export default function RAGOperatorPage() {
           </label>
           <span className="muted">{feedbackTrend?.total ?? "—"} responses · UTC</span>
         </div>
+        {feedbackComparison ? <section aria-label="Feedback period comparison" style={{ display: "grid", gap: 10, margin: "8px 0 20px" }}>
+          <p className="eyebrow">PERIOD-OVER-PERIOD · {feedbackComparison.days} COMPLETE UTC DAYS</p>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(155px,1fr))", gap: 12 }}>
+            <Metric label="CURRENT PERIOD" value={feedbackComparison.current.total} detail={feedbackComparison.current.start_date + " to " + feedbackComparison.current.end_date_exclusive + " (exclusive)"} />
+            <Metric label="PREVIOUS PERIOD" value={feedbackComparison.previous.total} detail={feedbackComparison.previous.start_date + " to " + feedbackComparison.previous.end_date_exclusive + " (exclusive)"} />
+            <Metric label="RESPONSE CHANGE" value={(feedbackComparison.change.total.absolute > 0 ? "+" : "") + feedbackComparison.change.total.absolute} detail={feedbackComparison.change.total.percent === null ? "Percentage change unavailable (no prior responses)" : (feedbackComparison.change.total.percent > 0 ? "+" : "") + feedbackComparison.change.total.percent + "% vs previous period"} />
+            <Metric label="HELPFUL-RATE CHANGE" value={feedbackComparison.change.helpful_rate_percentage_points === null ? "—" : (feedbackComparison.change.helpful_rate_percentage_points > 0 ? "+" : "") + feedbackComparison.change.helpful_rate_percentage_points + " pp"} detail="Percentage-point difference; user-perceived usefulness only" />
+          </div>
+          <p className="muted">{feedbackComparison.privacy}</p>
+        </section> : <p className="muted">Period comparison is unavailable for this role or could not be loaded.</p>}
         {feedbackTrend ? <>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
             <span className="muted"><span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "#16856b", marginRight: 6 }} />Helpful</span><span className="muted"><span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "#d97757", marginRight: 6 }} />Needs improvement</span>
