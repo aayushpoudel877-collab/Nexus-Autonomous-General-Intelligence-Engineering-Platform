@@ -494,6 +494,48 @@ async def page_feedback(
     }
 
 
+@router.post("/feedback/bulk-preview")
+async def preview_bulk_feedback_status(
+    payload: FeedbackBulkStatusUpdate,
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Preview eligibility for a bulk feedback transition without mutating records."""
+    membership = await get_membership(user, db)
+    rows_result = await db.scalars(
+        select(RAGFeedback).where(
+            RAGFeedback.organization_id == membership.organization_id,
+            RAGFeedback.id.in_(payload.feedback_ids),
+        )
+    )
+    rows = rows_result.all()
+    if len(rows) != len(payload.feedback_ids):
+        raise HTTPException(status_code=404, detail="One or more feedback records were not found")
+
+    blocked_by_status = {"new": 0, "triaged": 0, "resolved": 0, "ignored": 0}
+    eligible = 0
+    unchanged = 0
+    for row in rows:
+        if row.status == payload.status:
+            unchanged += 1
+        elif _feedback_transition_allowed(row.status, payload.status):
+            eligible += 1
+        else:
+            blocked_by_status[row.status] = blocked_by_status.get(row.status, 0) + 1
+    blocked = sum(blocked_by_status.values())
+    return {
+        "requested": len(payload.feedback_ids),
+        "target_status": payload.status,
+        "eligible": eligible,
+        "unchanged": unchanged,
+        "blocked": blocked,
+        "blocked_by_status": blocked_by_status,
+        "can_apply": blocked == 0,
+        "privacy": "Preview counts only; no feedback IDs, notes, actors, or evidence IDs are returned.",
+        "notice": "The apply endpoint revalidates every transition under row locks; this preview is not a reservation.",
+    }
+
+
 @router.post("/feedback/bulk-update")
 async def bulk_update_feedback_status(
     payload: FeedbackBulkStatusUpdate,
