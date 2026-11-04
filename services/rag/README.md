@@ -98,3 +98,7 @@ The operator workbench displays tenant-scoped aggregate feedback counts and help
 ## Feedback activity trends
 
 The RAG Operator Workbench can display daily helpful/unhelpful feedback counts over a bounded 7–90 day UTC window. Aggregation is performed in the database and scoped to the active organization; only daily counts are returned. Feedback is a user-reported usefulness signal, not a correctness metric. See `docs/rag-feedback-trends-phase-83.md`.
+
+## Feedback period comparison
+
+The operator API compares two adjacent complete UTC periods of 7–90 days and returns tenant-scoped helpful/unhelpful counts, total volume, absolute and relative count changes, and helpful-rate percentage-point movement. Relative change is omitted when the previous period has no responses; helpful-rate movement is omitted when either period is empty. The operator workbench presents these aggregates alongside the daily feedback chart. User feedback remains a usefulness signal rather than a correctness label. See `docs/rag-feedback-period-comparison-phase-84.md`.
