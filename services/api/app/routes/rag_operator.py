@@ -47,6 +47,19 @@ class FeedbackStatusUpdate(BaseModel):
     status: Literal["triaged", "resolved", "ignored"]
 
 
+class FeedbackBulkStatusUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    feedback_ids: list[UUID] = Field(min_length=1, max_length=50)
+    status: Literal["triaged", "resolved", "ignored"]
+
+    @field_validator("feedback_ids")
+    @classmethod
+    def feedback_ids_are_unique(cls, values: list[UUID]) -> list[UUID]:
+        if len(set(values)) != len(values):
+            raise ValueError("feedback IDs must be unique")
+        return values
+
+
 class ReindexRequestCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     reason: str = Field(min_length=1, max_length=1000)
@@ -478,6 +491,64 @@ async def page_feedback(
         "limit": limit,
         "offset": offset,
         "has_more": offset + len(items) < total,
+    }
+
+
+@router.post("/feedback/bulk-update")
+async def bulk_update_feedback_status(
+    payload: FeedbackBulkStatusUpdate,
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Apply one valid status transition to a bounded tenant-scoped batch atomically."""
+    membership = await get_membership(user, db)
+    rows_result = await db.scalars(
+        select(RAGFeedback)
+        .where(
+            RAGFeedback.organization_id == membership.organization_id,
+            RAGFeedback.id.in_(payload.feedback_ids),
+        )
+        .with_for_update()
+    )
+    rows = rows_result.all()
+    if len(rows) != len(payload.feedback_ids):
+        raise HTTPException(status_code=404, detail="One or more feedback records were not found")
+
+    invalid_rows = [
+        row for row in rows
+        if not _feedback_transition_allowed(row.status, payload.status)
+    ]
+    if invalid_rows:
+        raise HTTPException(
+            status_code=409,
+            detail="Bulk update rejected; at least one feedback item cannot make this transition",
+        )
+
+    changed_rows = [row for row in rows if row.status != payload.status]
+    try:
+        for row in changed_rows:
+            row.status = payload.status
+            row.triaged_by_user_id = user.id
+            await record_audit(
+                db,
+                action="rag.feedback.status_updated",
+                resource_type="rag_feedback",
+                actor_user_id=user.id,
+                organization_id=membership.organization_id,
+                resource_id=str(row.id),
+                detail={"status": payload.status, "bulk": True},
+            )
+        if changed_rows:
+            await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+    return {
+        "requested": len(payload.feedback_ids),
+        "updated": len(changed_rows),
+        "unchanged": len(rows) - len(changed_rows),
+        "status": payload.status,
     }
 
 

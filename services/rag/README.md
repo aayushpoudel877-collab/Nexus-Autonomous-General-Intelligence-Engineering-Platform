@@ -118,3 +118,7 @@ Authorized operators can inspect a tenant-scoped, timestamp-only history for an 
 ## Feedback queue pagination
 
 The operator API provides bounded pages for one feedback lifecycle status, with tenant-scoped totals, stable ordering, and a `has_more` indicator. The workbench loads 25 items per page and retains status filters and per-item lifecycle history. The legacy feedback-list endpoint remains available for compatibility. See `docs/rag-feedback-queue-pagination-phase-88.md`.
+
+## Feedback bulk triage
+
+Authorized operators can update 1–50 unique feedback records in one atomic status transition. The endpoint locks records within the active organization, validates the full batch before mutation, rejects missing/cross-tenant or invalid transitions without partial updates, writes per-record audit events, and commits once. Already-matching statuses are unchanged. The workbench provides bulk controls for new and triaged feedback. See `docs/rag-feedback-bulk-triage-phase-89.md`.
