@@ -102,3 +102,7 @@ The RAG Operator Workbench can display daily helpful/unhelpful feedback counts o
 ## Feedback period comparison
 
 The operator API compares two adjacent complete UTC periods of 7–90 days and returns tenant-scoped helpful/unhelpful counts, total volume, absolute and relative count changes, and helpful-rate percentage-point movement. Relative change is omitted when the previous period has no responses; helpful-rate movement is omitted when either period is empty. The operator workbench presents these aggregates alongside the daily feedback chart. User feedback remains a usefulness signal rather than a correctness label. See `docs/rag-feedback-period-comparison-phase-84.md`.
+
+## Feedback backlog aging
+
+The operator API reports aggregate counts for unresolved feedback (`new` and `triaged`) in four rolling UTC age bands: under 24 hours, 1–7 days, 7–30 days, and over 30 days. The query is tenant-scoped and returns zero-filled buckets without individual feedback fields. The operator workbench presents the status breakdown for triage planning. Backlog age is an operational workload signal, not a retrieval-quality metric. See `docs/rag-feedback-backlog-aging-phase-85.md`.
