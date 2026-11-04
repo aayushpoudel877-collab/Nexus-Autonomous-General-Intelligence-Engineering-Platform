@@ -65,8 +65,10 @@ async def test_feedback_comparison_returns_adjacent_period_aggregates_and_change
         "helpful_rate_percentage_points": 20.0,
     }
     assert response["current"]["end_date_exclusive"] == response["previous"]["start_date"]
-    assert (date.fromisoformat(response["current"]["end_date_exclusive"]) - date.fromisoformat(response["current"]["start_date"])).days == 7
-    assert (date.fromisoformat(response["previous"]["end_date_exclusive"]) - date.fromisoformat(response["previous"]["start_date"])).days == 7
+    current_duration = date.fromisoformat(response["current"]["end_date_exclusive"]) - date.fromisoformat(response["current"]["start_date"])
+    previous_duration = date.fromisoformat(response["previous"]["end_date_exclusive"]) - date.fromisoformat(response["previous"]["start_date"])
+    assert current_duration.days == 7
+    assert previous_duration.days == 7
     assert "raw queries" in response["privacy"]
     assert "evidence IDs" in response["privacy"]
 
