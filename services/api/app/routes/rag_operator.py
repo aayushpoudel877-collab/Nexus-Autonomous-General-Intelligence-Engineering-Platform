@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.dependencies import get_current_user, get_membership, require_roles
 from ..db.session import get_db
-from ..models import RAGChunk, RAGDocument, User
+from ..models import AuditEvent, RAGChunk, RAGDocument, User
 from ..models.rag import RAGFeedback, RAGReindexRequest
 from ..services.audit import record_audit
 
@@ -290,6 +290,68 @@ async def feedback_backlog_aging(
         "triaged_total": sum(item["triaged"] for item in series),
         "series": series,
         "privacy": "Age-bucket aggregates for new and triaged feedback only; no individual feedback fields are returned.",
+    }
+
+
+@router.get("/feedback/lifecycle-trend")
+async def feedback_lifecycle_trend(
+    days: int = Query(default=30, ge=7, le=90),
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return daily feedback lifecycle action counts from tenant-scoped audit events."""
+    from datetime import datetime, time, timedelta, timezone
+
+    membership = await get_membership(user, db)
+    today = datetime.now(timezone.utc).date()
+    first_day = today - timedelta(days=days - 1)
+    since = datetime.combine(first_day, time.min, tzinfo=timezone.utc)
+    until = datetime.combine(today + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    status_value = AuditEvent.detail["status"].as_string()
+    activity_type = case(
+        (AuditEvent.action == "rag.feedback.created", "created"),
+        (status_value == "triaged", "triaged"),
+        (status_value == "resolved", "resolved"),
+        (status_value == "ignored", "ignored"),
+        else_=None,
+    )
+    day_bucket = func.date_trunc("day", AuditEvent.created_at, "UTC")
+    rows = await db.execute(
+        select(day_bucket, activity_type, func.count(AuditEvent.id))
+        .where(
+            AuditEvent.organization_id == membership.organization_id,
+            AuditEvent.resource_type == "rag_feedback",
+            AuditEvent.action.in_(("rag.feedback.created", "rag.feedback.status_updated")),
+            AuditEvent.created_at >= since,
+            AuditEvent.created_at < until,
+        )
+        .group_by(day_bucket, activity_type)
+        .order_by(day_bucket)
+    )
+    buckets = {
+        (first_day + timedelta(days=index)).isoformat(): {
+            "created": 0, "triaged": 0, "resolved": 0, "ignored": 0, "total_actions": 0
+        }
+        for index in range(days)
+    }
+    for bucket_at, activity, count in rows.all():
+        bucket_date = bucket_at.date() if hasattr(bucket_at, "date") else bucket_at
+        key = bucket_date.isoformat()
+        if key in buckets and activity in ("created", "triaged", "resolved", "ignored"):
+            buckets[key][activity] += int(count)
+            buckets[key]["total_actions"] += int(count)
+    series = [{"date": day, **counts} for day, counts in buckets.items()]
+    totals = {
+        key: sum(item[key] for item in series)
+        for key in ("created", "triaged", "resolved", "ignored", "total_actions")
+    }
+    return {
+        "days": days,
+        "timezone": "UTC",
+        "totals": totals,
+        "series": series,
+        "interpretation": "Counts are audit actions, not unique feedback records; one item may be triaged and later resolved or ignored.",
+        "privacy": "Daily lifecycle aggregates only; audit actors, resource IDs, query digests, notes, and evidence IDs are not returned.",
     }
 
 

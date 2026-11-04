@@ -21,6 +21,7 @@ type FeedbackTrend = { days: number; timezone: "UTC"; total: number; series: { d
 type FeedbackPeriod = { start_date: string; end_date_exclusive: string; helpful: number; unhelpful: number; total: number; helpful_rate_percent: number | null };
 type FeedbackComparison = { days: number; timezone: "UTC"; current: FeedbackPeriod; previous: FeedbackPeriod; change: { total: { absolute: number; percent: number | null }; helpful: { absolute: number; percent: number | null }; unhelpful: { absolute: number; percent: number | null }; helpful_rate_percentage_points: number | null }; privacy: string };
 type FeedbackBacklog = { timezone: "UTC"; total_open: number; new_total: number; triaged_total: number; series: { key: string; label: string; new: number; triaged: number; total: number }[]; privacy: string };
+type FeedbackLifecycleTrend = { days: number; timezone: "UTC"; totals: { created: number; triaged: number; resolved: number; ignored: number; total_actions: number }; series: { date: string; created: number; triaged: number; resolved: number; ignored: number; total_actions: number }[]; interpretation: string; privacy: string };
 type ReindexRequest = { id: string; document_id: string; reason: string; status: string; requested_by_user_id: string | null; reviewed_by_user_id: string | null; created_at: string };
 
 async function request(path: string, init?: RequestInit) {
@@ -49,6 +50,7 @@ export default function RAGOperatorPage() {
   const [feedbackTrend, setFeedbackTrend] = useState<FeedbackTrend | null>(null);
   const [feedbackComparison, setFeedbackComparison] = useState<FeedbackComparison | null>(null);
   const [feedbackBacklog, setFeedbackBacklog] = useState<FeedbackBacklog | null>(null);
+  const [feedbackLifecycle, setFeedbackLifecycle] = useState<FeedbackLifecycleTrend | null>(null);
   const [trendDays, setTrendDays] = useState("30");
   const [requests, setRequests] = useState<ReindexRequest[]>([]);
   const [query, setQuery] = useState("");
@@ -73,6 +75,7 @@ export default function RAGOperatorPage() {
       request(`/rag/operator/feedback/trend?days=${trendDays}`) as Promise<FeedbackTrend>,
       request(`/rag/operator/feedback/compare?days=${trendDays}`) as Promise<FeedbackComparison>,
       request("/rag/operator/feedback/backlog") as Promise<FeedbackBacklog>,
+      request(`/rag/operator/feedback/lifecycle-trend?days=${trendDays}`) as Promise<FeedbackLifecycleTrend>,
     ]);
     if (results[0].status === "fulfilled") setHealth(results[0].value);
     if (results[1].status === "fulfilled") setDocuments(results[1].value);
@@ -82,6 +85,7 @@ export default function RAGOperatorPage() {
     if (results[5].status === "fulfilled") setFeedbackTrend(results[5].value);
     if (results[6].status === "fulfilled") setFeedbackComparison(results[6].value);
     if (results[7].status === "fulfilled") setFeedbackBacklog(results[7].value);
+    if (results[8].status === "fulfilled") setFeedbackLifecycle(results[8].value);
     const failures = results.filter((item): item is PromiseRejectedResult => item.status === "rejected");
     if (failures.length === results.length) setError(failures.map(item => item.reason instanceof Error ? item.reason.message : "Could not load operator data.").join(" · "));
     else if (failures.length) setNotice("Some operator sections are unavailable for this role. The API enforces permissions per action.");
@@ -303,6 +307,42 @@ export default function RAGOperatorPage() {
           </div>
           <p className="muted" style={{ marginTop: 14 }}>{feedbackTrend.privacy}</p>
         </> : <p className="muted">Daily feedback activity is unavailable for this role or could not be loaded.</p>}
+      </article>
+
+      <article>
+        <p className="eyebrow">FEEDBACK LIFECYCLE</p>
+        <h2>Submission, triage and resolution activity</h2>
+        {feedbackLifecycle ? <>
+          <p className="muted">{feedbackLifecycle.days}-day activity window · UTC · {feedbackLifecycle.totals.total_actions} recorded actions</p>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(145px,1fr))", gap: 12, marginBottom: 16 }}>
+            <Metric label="SUBMITTED" value={feedbackLifecycle.totals.created} detail="Feedback created" />
+            <Metric label="TRIAGED" value={feedbackLifecycle.totals.triaged} detail="Moved into triage" />
+            <Metric label="RESOLVED" value={feedbackLifecycle.totals.resolved} detail="Marked resolved" />
+            <Metric label="IGNORED" value={feedbackLifecycle.totals.ignored} detail="Marked ignored" />
+          </div>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+            <span className="muted">Submitted <span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, background: "#64748b", borderRadius: 3 }} /></span>
+            <span className="muted">Triaged <span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, background: "#16856b", borderRadius: 3 }} /></span>
+            <span className="muted">Resolved <span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, background: "#2563eb", borderRadius: 3 }} /></span>
+            <span className="muted">Ignored <span aria-hidden="true" style={{ display: "inline-block", width: 9, height: 9, background: "#d97757", borderRadius: 3 }} /></span>
+          </div>
+          <div style={{ display: "grid", gap: 7 }}>
+            {feedbackLifecycle.series.map(day => {
+              const max = Math.max(1, ...feedbackLifecycle.series.map(item => item.total_actions));
+              return <div key={day.date} style={{ display: "grid", gridTemplateColumns: "90px minmax(100px,1fr) 32px", alignItems: "center", gap: 10 }}>
+                <small className="muted">{day.date.slice(5)}</small>
+                <div role="img" aria-label={day.date + ": " + day.created + " submitted, " + day.triaged + " triaged, " + day.resolved + " resolved, " + day.ignored + " ignored"} style={{ display: "grid", gap: 3 }}>
+                  {[["created", "#64748b"], ["triaged", "#16856b"], ["resolved", "#2563eb"], ["ignored", "#d97757"]].map(([key, color]) => {
+                    const count = day[key as "created" | "triaged" | "resolved" | "ignored"];
+                    return <div key={key} style={{ height: 5, width: Math.max(count ? 3 : 0, count / max * 100) + "%", background: color, borderRadius: 5 }} />;
+                  })}
+                </div>
+                <small className="muted" style={{ textAlign: "right" }}>{day.total_actions}</small>
+              </div>;
+            })}
+          </div>
+          <p className="muted" style={{ marginTop: 14 }}>{feedbackLifecycle.interpretation} {feedbackLifecycle.privacy}</p>
+        </> : <p className="muted">Feedback lifecycle analytics are unavailable for this role or could not be loaded.</p>}
       </article>
 
       <article>

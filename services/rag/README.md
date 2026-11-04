@@ -106,3 +106,7 @@ The operator API compares two adjacent complete UTC periods of 7–90 days and r
 ## Feedback backlog aging
 
 The operator API reports aggregate counts for unresolved feedback (`new` and `triaged`) in four rolling UTC age bands: under 24 hours, 1–7 days, 7–30 days, and over 30 days. The query is tenant-scoped and returns zero-filled buckets without individual feedback fields. The operator workbench presents the status breakdown for triage planning. Backlog age is an operational workload signal, not a retrieval-quality metric. See `docs/rag-feedback-backlog-aging-phase-85.md`.
+
+## Feedback lifecycle analytics
+
+The operator API reports daily UTC counts for feedback submissions and transitions into triaged, resolved, and ignored states from the existing tenant-scoped audit trail. The bounded 7–90 day response is zero-filled and contains aggregate counts only. Counts represent audit actions rather than distinct feedback records. The operator workbench presents the lifecycle totals and daily activity. See `docs/rag-feedback-lifecycle-analytics-phase-86.md`.
