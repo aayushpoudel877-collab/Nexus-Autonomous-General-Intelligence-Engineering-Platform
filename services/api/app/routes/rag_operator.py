@@ -447,6 +447,40 @@ async def feedback_history(
     }
 
 
+@router.get("/feedback/page")
+async def page_feedback(
+    status_filter: Literal["new", "triaged", "resolved", "ignored"] = Query(default="new", alias="status"),
+    limit: int = Query(default=25, ge=1, le=100),
+    offset: int = Query(default=0, ge=0, le=1_000_000),
+    user: User = Depends(require_roles("owner", "admin", "instructor")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a bounded, tenant-scoped feedback page with total-count metadata."""
+    membership = await get_membership(user, db)
+    filters = [
+        RAGFeedback.organization_id == membership.organization_id,
+        RAGFeedback.status == status_filter,
+    ]
+    total = int(await db.scalar(
+        select(func.count(RAGFeedback.id)).where(*filters)
+    ) or 0)
+    rows = await db.scalars(
+        select(RAGFeedback)
+        .where(*filters)
+        .order_by(RAGFeedback.created_at.desc(), RAGFeedback.id.asc())
+        .offset(offset)
+        .limit(limit)
+    )
+    items = [_feedback_dict(row) for row in rows.all()]
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "has_more": offset + len(items) < total,
+    }
+
+
 @router.patch("/feedback/{feedback_id}")
 async def update_feedback_status(
     feedback_id: UUID,
