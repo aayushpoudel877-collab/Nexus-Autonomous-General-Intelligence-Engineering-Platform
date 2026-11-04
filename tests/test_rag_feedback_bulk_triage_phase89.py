@@ -130,3 +130,48 @@ async def test_bulk_feedback_rejects_missing_or_cross_tenant_ids(monkeypatch):
 
     assert error.value.status_code == 404
     session.commit.assert_not_awaited()
+
+@pytest.mark.asyncio
+async def test_bulk_feedback_same_status_is_reported_unchanged_without_audit(monkeypatch):
+    user = SimpleNamespace(id=uuid4())
+    membership = SimpleNamespace(organization_id=uuid4())
+    rows = [_row("triaged"), _row("triaged")]
+    session = AsyncMock()
+    result = MagicMock()
+    result.all.return_value = rows
+    session.scalars.return_value = result
+    audit = AsyncMock()
+    monkeypatch.setattr(rag_operator, "get_membership", AsyncMock(return_value=membership))
+    monkeypatch.setattr(rag_operator, "record_audit", audit)
+
+    response = await rag_operator.bulk_update_feedback_status(
+        payload=_payload(rows, status="triaged"), user=user, db=session
+    )
+
+    assert response == {"requested": 2, "updated": 0, "unchanged": 2, "status": "triaged"}
+    audit.assert_not_awaited()
+    session.commit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_bulk_feedback_rolls_back_when_commit_fails(monkeypatch):
+    user = SimpleNamespace(id=uuid4())
+    membership = SimpleNamespace(organization_id=uuid4())
+    rows = [_row(), _row()]
+    session = AsyncMock()
+    result = MagicMock()
+    result.all.return_value = rows
+    session.scalars.return_value = result
+    session.commit.side_effect = RuntimeError("commit failed")
+    audit = AsyncMock()
+    monkeypatch.setattr(rag_operator, "get_membership", AsyncMock(return_value=membership))
+    monkeypatch.setattr(rag_operator, "record_audit", audit)
+
+    with pytest.raises(RuntimeError, match="commit failed"):
+        await rag_operator.bulk_update_feedback_status(
+            payload=_payload(rows), user=user, db=session
+        )
+
+    assert audit.await_count == 2
+    session.rollback.assert_awaited_once()
+
