@@ -110,3 +110,7 @@ The operator API reports aggregate counts for unresolved feedback (`new` and `tr
 ## Feedback lifecycle analytics
 
 The operator API reports daily UTC counts for feedback submissions and transitions into triaged, resolved, and ignored states from the existing tenant-scoped audit trail. The bounded 7–90 day response is zero-filled and contains aggregate counts only. Counts represent audit actions rather than distinct feedback records. The operator workbench presents the lifecycle totals and daily activity. See `docs/rag-feedback-lifecycle-analytics-phase-86.md`.
+
+## Feedback item lifecycle history
+
+Authorized operators can inspect a tenant-scoped, timestamp-only history for an individual feedback record, including submission and triage/resolution/ignored transitions. The workbench supports status filters and expandable histories. Actor identifiers and raw audit details are excluded; legacy records may have incomplete histories. No new audit writes or schema migration are introduced. See `docs/rag-feedback-item-history-phase-87.md`.
